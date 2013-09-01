@@ -1,0 +1,985 @@
+<?php
+
+/**
+ * @file
+ * harmony_core.module
+ */
+
+/**
+ * Thread is not published.
+ */
+define('THREAD_NOT_PUBLISHED', 0);
+
+/**
+ * Thread is published.
+ */
+define('THREAD_PUBLISHED', 1);
+
+/**
+ * Thread is not pinned.
+ */
+define('THREAD_NOT_PINNED', 0);
+
+/**
+ * Thread is pinned at the top of listings.
+ */
+define('THREAD_PINNED', 1);
+
+/**
+ * Thread is not locked.
+ */
+define('THREAD_NOT_LOCKED', 0);
+
+/**
+ * Thread is locked and cannot be posted on.
+ */
+define('THREAD_LOCKED', 1);
+
+/**
+ * Modules should return this value from hook_thread_access() to allow access to a thread.
+ */
+define('THREAD_ACCESS_ALLOW', 'allow');
+
+/**
+ * Modules should return this value from hook_thread_access() to deny access to a thread.
+ */
+define('THREAD_ACCESS_DENY', 'deny');
+
+/**
+ * Modules should return this value from hook_thread_access() to not affect access to a thread.
+ */
+define('THREAD_ACCESS_IGNORE', NULL);
+
+/**
+ * Load includes.
+ */
+module_load_include('inc', 'harmony_core', 'includes/harmony_core.controller');
+module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
+
+/**
+ * Implements hook_entity_info().
+ */
+function harmony_core_entity_info() {
+  $return['thread'] = array(
+    'label' => t('Thread'),
+    'plural label' => t('Threads'),
+    'entity class' => 'Thread',
+    'controller class' => 'ThreadController',
+    'base table' => 'thread',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'thread_id',
+    ),
+    'bundles' => array(
+      'thread' => array(
+        'label' => t('Thread'),
+        'admin' => array(
+          'path' => 'admin/structure/harmony/thread',
+          'real path' => 'admin/structure/harmony/thread',
+          'access arguments' => array('administer thread type'),
+        ),
+      ),
+    ),
+    'load hook' => 'harmony_core_thread_load',
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Default'),
+        'custom settings' => FALSE,
+      ),
+    ),
+    'label callback' => 'harmony_core_thread_label',
+    'uri callback' => 'harmony_core_thread_uri',
+    'module' => 'harmony_core',
+    'access callback' => 'harmony_core_thread_access_callback',
+  );
+
+  /*$return['post'] = array(
+    'label' => t('Post'),
+    'entity class' => 'Post',
+    'controller class' => 'PostController',
+    'base table' => 'post',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'pid',
+      'bundle' => 'type',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'bundles' => array(),
+    'load hook' => 'post_load',
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Default'),
+        'custom settings' => FALSE,
+      ),
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'module' => 'harmony_core',
+    'access callback' => 'post_access',
+  );*/
+
+  return $return;
+}
+
+/**
+ * Implements hook_entity_property_info().
+ */
+function harmony_core_entity_property_info() {
+  $info = array();
+  $properties = &$info['thread']['properties'];
+
+  $properties['thread_id'] = array(
+    'label' => t('Thread ID'), 
+    'type' => 'integer', 
+    'description' => t('The unique thread ID.'),
+  );
+  $properties['title'] = array(
+    'label' => t('Title'),
+    'description' => t('The title of the thread.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'title',
+  );
+  $properties['uid'] = array(
+    'label' => t('Author'),
+    'type' => 'user',
+    'description' => t('The author of the thread.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'required' => TRUE,
+    'schema field' => 'uid',
+  );
+  $properties['status'] = array(
+    'label' => t('Status'),
+    'description' => t('Whether the thread is published or unpublished.'),
+    'type' => 'integer',
+    'options list' => 'entity_metadata_status_options_list',
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'status',
+  );
+  $properties['pinned'] = array(
+    'label' => t('Pinned'),
+    'description' => t('Whether the thread should be displayed at the top of lists in which it appears.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'pinned',
+    'type' => 'boolean',
+  );
+  $properties['locked'] = array(
+    'label' => t('Locked'),
+    'description' => t('Whether the thread is locked from changes.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'locked',
+    'type' => 'boolean',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function harmony_core_permission() {
+  return array(
+    'administer harmony settings' => array(
+      'title' => t('Administer Harmony settings'),
+      'description' => t('Allows users to configure general settings for Harmony.'),
+      'restrict access' => TRUE,
+    ),
+    'administer thread type' => array(
+      'title' => t('Administer thread type'),
+      'description' => t('Allows users to configure the thread entity type and its fields.'),
+      'restrict access' => TRUE,
+    ),
+    'administer post type' => array(
+      'title' => t('Administer post type'),
+      'description' => t('Allows users to configure the post entity type and its fields.'),
+      'restrict access' => TRUE,
+    ),
+    'administer forum content' => array(
+      'title' => t('Administer forum content'),
+      'description' => t('Allows users to create, edit and delete any forum threads or posts.'),
+      'restrict access' => TRUE,
+    ),
+    'bypass forum access control' => array(
+      'title' => t('Bypass forum access control'),
+      'description' => t('Allows users to bypass access checks.'),
+      'restrict access' => TRUE,
+    ),
+    'view threads' => array(
+      'title' => t('View threads'),
+      'description' => t('Allows users to view threads.'),
+    ),
+    'create threads' => array(
+      'title' => t('Create new threads'),
+      'description' => t('Allows users to create threads.'),
+    ),
+    'edit any thread' => array(
+      'title' => t('Edit any thread'),
+      'description' => t('Allows users to edit any thread.'),
+      'restrict access' => TRUE,
+    ),
+    'edit own threads' => array(
+      'title' => t('Edit own threads'),
+      'description' => t('Allows users to edit their own threads.'),
+      'restrict access' => TRUE,
+    ),
+    'delete any thread' => array(
+      'title' => t('Delete any thread'),
+      'description' => t('Allows users to delete any threads.'),
+      'restrict access' => TRUE,
+    ),
+    'delete own threads' => array(
+      'title' => t('Delete own threads'),
+      'description' => t('Allows users to delete own threads.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function harmony_core_menu() {
+  $items = array();
+
+  $includes_dir = drupal_get_path('module', 'harmony_core') . '/includes';
+
+  // Administration menu items.
+  $items['admin/structure/harmony'] = array(
+    'title' => 'Harmony',
+    'access arguments' => array('administer harmony settings'),
+    'page callback' => 'harmony_core_harmony_structure_settings',
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+    'weight' => -10,
+  );
+
+  $items['admin/structure/harmony/thread'] = array(
+    'title' => 'Thread settings',
+    'access arguments' => array('administer thread type'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_thread_type_form'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['admin/structure/harmony/thread/edit'] = array(
+    'title' => 'Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  // Standard CRUD menu items.
+  $items['thread/add'] = array(
+    'title' => 'Create thread',
+    'page callback' => 'harmony_core_thread_add',
+    'access arguments' => array('create threads'),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['thread/%harmony_core_thread'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('thread', 1),
+    'page callback' => 'harmony_core_thread_view',
+    'page arguments' => array(1),
+    'access callback' => 'harmony_core_thread_access_callback',
+    'access arguments' => array('view', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['thread/%harmony_core_thread/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['thread/%harmony_core_thread/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_thread_form', 1),
+    'access callback' => 'harmony_core_thread_access_callback',
+    'access arguments' => array('update', 1),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['thread/%harmony_core_thread/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_thread_delete_confirm', 1),
+    'access callback' => 'harmony_core_thread_access_callback',
+    'access arguments' => array('delete', 1),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function harmony_core_views_api() {
+  return array(
+    'api'   => '3',
+    'path'  => drupal_get_path('module', 'harmony_core') . '/views',
+  );
+}
+
+/**
+ * Determines whether the current user may perform the operation on the thread.
+ *
+ * @param $op
+ *   The operation to be performed on the node. Possible values are:
+ *   - "view"
+ *   - "update"
+ *   - "delete"
+ *   - "create"
+ * @param $entity
+ *   The thread object on which the operation is to be performed.
+ * @param $account
+ *   Optional, a user object representing the user for whom the operation is to
+ *   be performed. Determines access for a user other than the current user.
+ * @param $entity_type
+ *   Optional, the type of entity passed in.
+ *
+ * @return
+ *   TRUE if the operation may be performed, FALSE otherwise.
+ */
+function harmony_core_thread_access_callback($op, $entity, $account = NULL, $entity_type = NULL) {
+  $rights = &drupal_static(__FUNCTION__, array());
+
+  // Check that the operation is valid.
+  if (!in_array($op, array('view', 'update', 'delete', 'create'), TRUE)) {
+    return FALSE;
+  }
+
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  if (!$entity_type) {
+    $entity_type = 'thread';
+  }
+
+  // Use the best available identifier for the cache ID.
+  if (is_object($entity)) {
+    list($cid) = entity_extract_ids($entity_type, $entity);
+  }
+  elseif ($entity_type) {
+    $cid = $entity_type;
+  }
+  elseif (is_string($entity)) {
+    $cid = $entity;
+  }
+  else {
+    // Nothing to use, prevent caching.
+    $cid = '';
+    unset($rights[$account->uid][$cid][$op]);
+  }
+
+  // If we've already checked access for this entity, return from cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  // Admin-ish access checks.
+  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // We grant access to the node if both of the following conditions are met:
+  // - No modules say to deny access.
+  // - At least one module says to grant access.
+  // If no module specified either allow or deny, we fall back to the
+  // node_access table.
+  $access = module_invoke_all('thread_access', $op, $entity, $account, $entity_type);
+  if (in_array(THREAD_ACCESS_DENY, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+  elseif (in_array(THREAD_ACCESS_ALLOW, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  /* @todo Implement thread access grants. */
+  if (module_exists('harmony_access')) {
+
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_thread_access().
+ */
+function harmony_core_thread_access($op, $entity, $account, $entity_type) {
+  switch ($op) {
+    case 'view':
+      if (user_access('view threads', $account)) {
+        return THREAD_ACCESS_ALLOW;
+      }
+    case 'update':
+      if (user_access('edit any thread', $account) || $entity && $account->uid == $entity->uid && user_access('edit own threads', $account)) {
+        return THREAD_ACCESS_ALLOW;
+      }
+    case 'delete':
+      if (user_access('delete any thread', $account) || $entity && $account->uid == $entity->uid && user_access('delete own threads', $account)) {
+        return THREAD_ACCESS_ALLOW;
+      }
+    case 'create':
+      if (user_access('create threads', $account)) {
+        return THREAD_ACCESS_ALLOW;
+      }
+  }
+
+  return THREAD_ACCESS_IGNORE;
+}
+
+function harmony_core_thread_label($entity, $entity_type) {
+  return empty($entity->title) ? t('Untitled thread') : $entity->title;
+}
+
+function harmony_core_thread_uri($entity) {
+  return array(
+    'path' => 'thread/' . $entity->thread_id,
+  );
+}
+
+/**
+ * Access callback for post entity.
+ */
+function harmony_core_post_access($op, $entity, $account = NULL, $entity_type = NULL) {
+  global $user;
+  
+  /* @todo Check that the user has access to the associated thread and also ability to post */
+
+  if (!isset($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('administer example_task entities', $account)
+          || user_access('create example_task entities', $account);
+    case 'view':
+      return user_access('administer example_task entities', $account)
+          || user_access('view example_task entities', $account);
+    case 'edit':
+      return user_access('administer example_task entities')
+          || user_access('edit any example_task entities')
+          || (user_access('edit own example_task entities') && ($task->uid == $account->uid));
+    case 'delete':
+      return FALSE;
+  }
+}
+
+/**
+ * Load a thread.
+ */
+function harmony_core_thread_load($thread_id, $reset = FALSE) {
+  $threads = harmony_core_thread_load_multiple(array($thread_id), array(), $reset);
+  return reset($threads);
+}
+
+/**
+ * Load multiple threads based on certain conditions.
+ */
+function harmony_core_thread_load_multiple($thread_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('thread', $thread_ids, $conditions, $reset);
+}
+
+/**
+ * Save a thread.
+ */
+function harmony_core_thread_save($thread) {
+  return entity_get_controller('thread')->save($thread);
+}
+
+/**
+ * Delete multiple threads.
+ */
+function harmony_core_thread_delete_multiple($thread_ids) {
+  entity_delete_multiple('thread', $thread_ids);
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function harmony_core_cron_queue_info() {
+  $queues = array();
+
+  $queues['update_post_title'] = array(
+    'worker callback' => 'harmony_core_update_post_title',
+    'time' => 120,
+  );
+
+  $queues['delete_posts'] = array(
+    'worker callback' => 'node_delete',
+    'time' => 120,
+  );
+
+  return $queues;
+}
+
+/**
+ * Thread add/edit form callback.
+ */
+function harmony_core_thread_form($form, &$form_state, $thread) {
+  $form = array();
+
+  $form['thread'] = array(
+    '#type' => 'value',
+    '#value' => $thread,
+  );
+  $form['#thread_edit_form'] = TRUE;
+  $form['#attributes']['class'][] = 'thread-form';
+
+  if (empty($thread->is_new)) {
+    $thread->is_new = FALSE;
+  }
+
+  // Basic thread information.
+  // These elements are just values so they are not even sent to the client.
+  foreach (array('thread_id', 'uid', 'is_new') as $key) {
+    $form[$key] = array(
+      '#type' => 'value',
+      '#value' => isset($thread->$key) ? $thread->$key : NULL,
+    );
+  }
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Thread title'),
+    '#required' => TRUE,
+    '#default_value' => $thread->title,
+    '#attributes' => array(
+      'placeholder' => t('Thread title'),
+    ),
+    '#title_display' => 'invisible',
+  );
+
+  // Attach fields.
+  field_attach_form('thread', $thread, $form, $form_state);
+
+  // Options for administrators
+  /*$form['options'] = array(
+    '#type' => 'fieldset',
+    '#access' => user_access('administer forum content'),
+    '#title' => t('Thread options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('node-form-options'),
+    ),
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'node') . '/node.js'),
+    ),
+    '#weight' => 95,
+  );
+  $form['options']['status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Published'),
+    '#default_value' => $thread->status,
+  );
+  $form['options']['promote'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Promoted to front page'),
+    '#default_value' => $node->promote,
+  );
+  $form['options']['sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sticky at top of lists'),
+    '#default_value' => $node->sticky,
+  );*/
+
+  // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
+  //$first_post_lang = $form['field_first_post']['#language'];
+
+  // Remove the fielset.
+  //$form['field_first_post'][$first_post_lang]['#type'] = 'markup';
+
+  // Hide the post title field.
+  //_harmony_core_post_form_alter($form['field_first_post'][$first_post_lang]['form']);
+
+  // Hide the random node status field, we're not interested in that here.
+  //$form['field_first_post'][$first_post_lang]['form']['status']['#access'] = FALSE;
+
+  // Hide property-ish type fields that we don't want user 1 to see.
+  $form['field_last_user_to_post_a_reply']['#access'] = FALSE;
+  $form['field_post_time_first']['#access'] = FALSE;
+  $form['field_post_time_last']['#access'] = FALSE;
+  $form['field_post_count']['#access'] = FALSE;
+  $form['field_thread_continued_from']['#access'] = FALSE;
+
+  // Add the buttons.
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => $thread->is_new ? t('Create thread') : t('Save thread'),
+    '#weight' => 5,
+    '#submit' => array('harmony_core_thread_form_submit'),
+  );
+  if (!empty($thread->thread_id) && harmony_core_thread_access_callback('delete', $thread)) {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('harmony_core_thread_delete_submit'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Validation handler for harmony_core_thread_form.
+ * We pass things straight through to the Field API to handle validation
+ * of the attached fields.
+ */
+function harmony_core_thread_form_validate($form, &$form_state) {
+  field_attach_form_validate('thread', $form_state['values']['thread'], $form, $form_state);
+}
+
+/**
+ * Form submit handler for harmony_core_thread_form.
+ */
+function harmony_core_thread_form_submit($form, &$form_state) {
+  $thread = $form_state['values']['thread'];
+  $wrapper = entity_metadata_wrapper('thread', $thread);
+
+  $wrapper->title->set($form_state['values']['title']);
+
+  field_attach_submit('thread', $thread, $form, $form_state);
+
+  // If saving a new thread then set the first instance of
+  // the last user to update field.
+  if ($thread->is_new) {
+    $wrapper->field_last_user_to_post_a_reply->set($thread->uid);
+  }
+
+  $thread = harmony_core_thread_save($thread);
+  $form_state['redirect'] = "thread/$thread->thread_id";
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function harmony_core_form_node_form_alter(&$form, &$form_state, $form_id) {
+  // Post content type.
+  if ($form['#node']->type == 'post') {
+    // Hide the title field and make other changes.
+    _harmony_core_post_form_alter($form);
+
+    // Change the submit button text.
+    $form['submit']['#value'] = t('Post reply');
+  }
+}
+
+/**
+ * Helper function to hide the node form title.
+ */
+function _harmony_core_post_form_alter(&$form) {
+  // Make title not required as we'll update this with rules. We can't
+  // set this via the thread entity reference due to the first post case,
+  // where the thread entity isn't yet saved.
+  $form['title']['#type'] = 'value';
+  $form['title']['#required'] = FALSE;
+
+  // Hide the text label.
+  $post_text_lang = !empty($form['field_text']['#language']) ? $form['field_text']['#language'] : NULL;
+  if ($post_text_lang) {
+    $form['field_text'][$post_text_lang][0]['#title_display'] = 'invisible';
+  }
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function harmony_core_entity_view($entity, $type) {
+  if ($type == 'thread') {
+    dsm($entity);
+  }
+}
+
+/**
+ * Implements hook_thread_insert().
+ */
+function harmony_core_thread_insert($thread) {
+  list($thread_id) = entity_extract_ids('thread', $thread);
+  $wrapper = entity_metadata_wrapper('thread', $thread);
+
+  // Set the first posts title to be the same as the thread.
+  /*$thread->field_first_post->title->set($entity->title);
+  // Set the first posts thread entity ref to be this thread.
+  $thread->field_first_post->field_thread->set($thread_id);
+  // Save the first post.
+  $thread->field_first_post->save();*/
+
+  // @todo, checking around whether or not thread is published,
+  // if so increment things otherwise don't.
+
+  // Increment the category thread count.
+  harmony_core_update_meta_count(array('field_thread_count'), 'taxonomy_term', $wrapper->field_category->tid->value());
+
+  // Increment users thread & post count.
+  harmony_core_update_meta_count(array('field_thread_count', 'field_post_count'), 'user', $thread->uid);
+
+  // Update path alias.
+  module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
+  harmony_core_thread_update_alias($thread, 'insert');
+}
+
+/**
+ * Implements hook_thread_update().
+ */
+function harmony_core_thread_update($thread) {
+  list($thread_id) = entity_extract_ids('thread', $thread);
+  $wrapper = entity_metadata_wrapper('thread', $thread);
+
+  // @todo checking for publish/unpublish and adjust post count
+  // accordingly, use $entity->original.
+
+  // Update the title of posts in this thread if it's changed, we do
+  // this for administrative ease and because we use the title in places
+  // like when rendering a search result.
+  /*if ($wrapper->title->value() != $wrapper->field_first_post->title->value()) {
+    $title = $wrapper->title->value();
+
+    // Get a list of post nodes to update.
+    $posts = db_query("SELECT entity_id 
+      FROM {field_data_field_thread} 
+      WHERE entity_type = 'node' 
+      AND bundle = 'post' 
+      AND field_thread_target_id = :thread_id", 
+      array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
+
+    // We've got a list of nodes.
+    if (!empty($posts)) {
+      // As per node_mass_update() if the list is less than 10, 
+      // process now, else queue and update on Cron run.
+      $post_nids = array_keys($posts);
+
+      if (count($post_nids) <= 10) {
+        // Load the post nodes.
+        $posts = entity_load('node', $post_nids);
+
+        foreach ($posts as $post) {
+          $post->title = $title;
+          node_save($post);
+        }
+      }
+      else {
+        // Process these nodes in a queue.
+        $queue = DrupalQueue::get('update_post_title');
+
+        foreach ($post_nids as $nid) {
+          $item = array(
+            'nid' => $nid,
+            'title' => $title,
+          );
+
+          $queue->createItem($item);
+        }
+      }
+    }
+  }*/
+
+  // Update path alias.
+  module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
+  harmony_core_thread_update_alias($thread, 'update');
+}
+
+function harmony_core_thread_delete($thread) {
+  list($thread_id) = entity_extract_ids('thread', $thread);
+
+  // Remove all of the attached posts, first unpublish and orphan,
+  // then batch delete, this way on hook_node_delete the thread
+  // entity ref will be empty and no attempt will be made to update
+  // it's metadata. SOLR remove.
+
+  // Get a list of post nodes to delete.
+  /*$posts = db_query("SELECT entity_id 
+    FROM {field_data_field_thread} 
+    WHERE entity_type = 'node' 
+    AND bundle = 'post' 
+    AND field_thread_target_id = :thread_id", 
+    array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
+
+  // We've got a list of nodes.
+  if (!empty($posts)) {
+    // As per node_mass_update() if the list is less than 10, 
+    // process now, else queue and update on Cron run.
+    $post_nids = array_keys($posts);
+
+    if (count($post_nids) <= 10) {
+      // Load the post nodes.
+      node_delete_multiple($post_nids);
+    }
+    else {
+      // Process these nodes in a queue.
+      $queue = DrupalQueue::get('delete_posts');
+
+      foreach ($post_nids as $nid) {
+        $queue->createItem($nid);
+      }
+    }
+  }*/
+
+  pathauto_entity_path_delete_all('thread', $thread, "thread/{$thread->thread_id}");
+
+  entity_delete('thread', entity_id('thread' ,$thread));
+}
+
+/**
+ * Update a thread or post count value.
+ *
+ * @param array $fields
+ *   Fields to iterate over and set, could be one or multiple.
+ * @param string $entity_type
+ * @param integer $entity_id
+ * @param string $op
+ *   Operation string, will either be increment, decrement or set.
+ * @param integer $value
+ *   The value to increment, decrement or set the count value by/to.
+ *
+ */
+function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op = 'increment', $value = 1) {
+  if (empty($fields) || !is_numeric($value)) {
+    return;
+  }
+
+  // Reload the entity not from cache so that entity metadata
+  // wrapper is working from the latest data.
+  // Would use entity_load_single if it had the params we need.
+  $entities = entity_load($entity_type, array($entity_id), array(), TRUE);
+
+  if (empty($entities[$entity_id])) {
+    return;
+  }
+
+  // Create a wrapper.
+  $wrapper = entity_metadata_wrapper($entity_type, $entities[$entity_id]);
+
+  if (!$wrapper) {
+    return;
+  }
+
+  // Loop through the specified fields.
+  foreach ($fields as $field) {
+    switch ($op) {
+      case 'increment':
+        $count = $wrapper->{$field}->value() + $value;
+        $wrapper->{$field}->set($count);
+
+        break;
+      case 'decrement':
+        $count = $wrapper->{$field}->value() + $value;
+        $wrapper->{$field}->set($count);
+
+        break;
+
+      case 'set':
+        $wrapper->{$field}->set($value);
+
+        break;
+    }
+  }
+
+  // Save our changes.
+  $wrapper->save();
+}
+
+function harmony_core_update_post_title($item) {
+  $post = entity_load_single('post', $item['nid']);
+  $post->title = $item['title'];
+  node_save($post);
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function harmony_core_node_insert($node) {
+  if ($node->type == 'post') {
+    $post = entity_metadata_wrapper('node', $node);
+
+    // Get the thread id.
+    $thread_id = $post->field_thread->value();
+
+    // The thread id should be populated, if not then it's because
+    // it's the first post in a thread.
+    if ($thread_id) {
+      // Set the last time the thread was updated.
+      //$post->field_thread->field_last_post_time;
+      // Set the last user to update the thread field.
+      $post->field_thread->field_last_user_to_post_a_reply->set($node->uid);
+      // Save the thread.
+      $post->field_thread->save();
+
+      // Increment the thread post count.
+      harmony_core_update_meta_count(array('field_post_count'), 'thread', $thread_id);
+
+      // Increment users post count.
+      harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function harmony_core_node_update($node) {
+  if ($node->type == 'post') {
+    $post = entity_metadata_wrapper('node', $node);
+    $thread_id = $post->field_thread->value();
+
+    if ($thread_id) {
+      // @todo, check that this post is published.
+
+      // Update the thread's last active user if not current.
+      if ($post->field_thread->field_last_user_to_post_a_reply->value() != $node->uid) {
+        $post->field_thread->field_last_user_to_post_a_reply->set($node->uid);
+      }
+
+      // Update the thread's last updated time.
+      $post->field_thread->field_last_post_time->set(REQUEST_TIME);
+
+      // Save changes.
+      $post->field_thread->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function harmony_core_node_delete($node) {
+  if ($node->type == 'post') {
+    $post = entity_metadata_wrapper('node', $node);
+    $thread_id = $post->field_thread->value();
+
+    if ($thread_id) {
+      // Decrement the thread post count.
+      harmony_core_update_meta_count(array('field_post_count'), 'thread', $thread_id, 'decrement');
+    }
+
+    // Increment users post count.
+    harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
+  }
+}
+
+

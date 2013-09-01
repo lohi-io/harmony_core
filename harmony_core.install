@@ -1,0 +1,76 @@
+<?php
+/**
+ * @file
+ * Provides installation details for Harmony core.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function harmony_core_schema() {
+  $schema = array();
+
+  $schema['thread'] = array(
+    'description' => 'The base table for threads.',
+    'fields' => array(
+      'thread_id' => array(
+        'description' => 'The primary identifier for the thread.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'The title of the thread.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'uid' => array(
+        'description' => 'ID of Drupal user creator.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the thread is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'pinned' => array(
+        'description' => 'Boolean indicating whether the thread should be displayed at the top of lists in which it appears.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'locked' => array(
+        'description' => 'Boolean indicating whether the thread is locked from changes.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'status' => array('status'),
+      'pinned' => array('pinned'),
+      'locked' => array('locked'),
+      'uid' => array('uid'),
+    ),
+    'foreign keys' => array(
+      'thread_author' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('thread_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function harmony_core_install() {
+
+}
