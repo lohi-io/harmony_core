@@ -517,6 +517,177 @@ function harmony_core_thread_delete_multiple($thread_ids) {
 }
 
 /**
+ * Implements hook_action_info().
+ */
+function harmony_core_action_info() {
+  $actions = array(
+    'harmony_core_thread_publish_action' => array(
+      'type' => 'thread',
+      'label' => t('Publish thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_unpublish_action' => array(
+      'type' => 'thread',
+      'label' => t('Unpublish thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_make_pinned_action' => array(
+      'type' => 'thread',
+      'label' => t('Pin thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_make_unpinned_action' => array(
+      'type' => 'thread',
+      'label' => t('Unpin thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_locked_action' => array(
+      'type' => 'thread',
+      'label' => t('Lock thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_unlock_action' => array(
+      'type' => 'thread',
+      'label' => t('Unlock thread'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_save_action' => array(
+      'type' => 'thread',
+      'label' => t('Save thread'),
+      'configurable' => FALSE,
+      'triggers' => array(),
+    ),
+  );
+
+  // If pathauto is on, add in the update alias action
+  // which lives in includes/harmony_core.pathauto.inc.
+  if (module_exists('pathauto')) {
+    $actions['harmony_core_thread_update_alias_action'] = array(
+      'type' => 'thread',
+      'label' => t('Update thread path alias'),
+      'configurable' => FALSE,
+    );
+  }
+
+  return $actions;
+}
+
+/**
+ * Sets the status of a thread to 1 (published).
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_publish_action($thread, $context = array()) {
+  $thread->status = THREAD_PUBLISHED;
+  watchdog('action', 'Set thread %title to published.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the status of a thread to 0 (unpublished).
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_unpublish_action($thread, $context = array()) {
+  $thread->status = THREAD_NOT_PUBLISHED;
+  watchdog('action', 'Set thread %title to unpublished.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the pinned-at-top-of-list property of a thread to 1.
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_make_pinned_action($thread, $context = array()) {
+  $thread->pinned = THREAD_PINNED;
+  watchdog('action', 'Set thread %title to pinned.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the pinned-at-top-of-list property of a thread to 0.
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_make_unpinned_action($thread, $context = array()) {
+  $thread->pinned = THREAD_NOT_PINNED;
+  watchdog('action', 'Set thread %title to unpinned.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the locked property of a thread to 1.
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_locked_action($thread, $context = array()) {
+  $thread->locked = THREAD_LOCKED;
+  watchdog('action', 'Locked the thread %title.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the lock property of a thread to 0.
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_unlock_action($thread, $context = array()) {
+  $thread->locked = THREAD_NOT_LOCKED;
+  watchdog('action', 'Unlocked the thread %title .', array('%title' => $thread->title));
+}
+
+/**
+ * Saves a thread.
+ *
+ * @param $thread
+ *   The thread to be saved.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_save_action($thread) {
+  harmony_core_thread_save($thread);
+  watchdog('action', 'Saved thread %title', array('%title' => $thread->title));
+}
+
+/**
  * Implements hook_cron_queue_info().
  */
 function harmony_core_cron_queue_info() {
@@ -981,5 +1152,3 @@ function harmony_core_node_delete($node) {
     harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
   }
 }
-
-
