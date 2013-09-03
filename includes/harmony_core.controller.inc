@@ -71,6 +71,13 @@ class ThreadController extends EntityAPIController {
         $this->invoke('update', $entity);
 
         field_attach_update($this->entityType, $entity->original);
+
+        // Update thread access records.
+        if (module_exists('harmony_access')) {
+          // Update the thread access table for this thread.
+          // @see node_save().
+          //harmont_access_acquire_grants($thread, FALSE);
+        }
       }
 
       // Ignore slave server temporarily.
@@ -83,7 +90,7 @@ class ThreadController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception($this->entityType, $e);
+      watchdog_exception('thread', $e);
       throw $e;
     }
   }
