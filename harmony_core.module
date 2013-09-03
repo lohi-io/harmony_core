@@ -735,6 +735,11 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
     $thread->is_new = FALSE;
   }
 
+  // Prevent users from editing a locked thread.
+  if ($thread->locked && !user_access('administer forum content')) {
+    drupal_access_denied();
+  }
+
   // Basic thread information.
   // These elements are just values so they are not even sent to the client.
   foreach (array('thread_id', 'uid', 'is_new') as $key) {
@@ -759,18 +764,15 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   field_attach_form('thread', $thread, $form, $form_state);
 
   // Options for administrators
-  /*$form['options'] = array(
+  $form['options'] = array(
     '#type' => 'fieldset',
     '#access' => user_access('administer forum content'),
     '#title' => t('Thread options'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
     '#group' => 'additional_settings',
     '#attributes' => array(
-      'class' => array('node-form-options'),
-    ),
-    '#attached' => array(
-      'js' => array(drupal_get_path('module', 'node') . '/node.js'),
+      'class' => array('thread-form-options'),
     ),
     '#weight' => 95,
   );
@@ -779,16 +781,16 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
     '#title' => t('Published'),
     '#default_value' => $thread->status,
   );
-  $form['options']['promote'] = array(
+  $form['options']['pinned'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Promoted to front page'),
-    '#default_value' => $node->promote,
+    '#title' => t('Pin to the top of listings'),
+    '#default_value' => $thread->pinned,
   );
-  $form['options']['sticky'] = array(
+  $form['options']['locked'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Sticky at top of lists'),
-    '#default_value' => $node->sticky,
-  );*/
+    '#title' => t('Lock from replies'),
+    '#default_value' => $thread->locked,
+  );
 
   // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
   //$first_post_lang = $form['field_first_post']['#language'];
@@ -846,6 +848,10 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   $wrapper = entity_metadata_wrapper('thread', $thread);
 
   $wrapper->title->set($form_state['values']['title']);
+
+  $wrapper->status->set($form_state['values']['status']);
+  $wrapper->pinned->set($form_state['values']['pinned']);
+  $wrapper->locked->set($form_state['values']['locked']);
 
   field_attach_submit('thread', $thread, $form, $form_state);
 
