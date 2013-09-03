@@ -49,11 +49,18 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'views' => array(
+        'description' => 'Number of times the thread has been viewed.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'status' => array('status'),
       'pinned' => array('pinned'),
       'locked' => array('locked'),
+      'views' => array('views'),
       'uid' => array('uid'),
     ),
     'foreign keys' => array(

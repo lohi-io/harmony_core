@@ -175,6 +175,13 @@ function harmony_core_entity_property_info() {
     'schema field' => 'locked',
     'type' => 'boolean',
   );
+  $properties['views'] = array(
+    'label' => t('Views'),
+    'description' => t('Number of times the thread has been viewed.'),
+    'type' => 'integer',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'views',
+  );
 
   return $info;
 }
