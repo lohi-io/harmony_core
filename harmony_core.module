@@ -395,6 +395,11 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $ent
     return $rights[$account->uid][$cid][$op];
   }
 
+  // Don't allow anon to create content, putting here so it's very obvious!
+  if ($op == 'create' && !$account->uid) {
+    return FALSE;
+  }
+
   // Admin-ish access checks.
   if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
