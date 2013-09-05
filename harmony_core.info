@@ -33,5 +33,6 @@ dependencies[] = views
 dependencies[] = views_litepager
 dependencies[] = date_views
 dependencies[] = field_ui
+dependencies[] = pathauto
 
-;configure = admin/config/user-interface/coffee
+;configure = admin/config/harmony
