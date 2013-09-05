@@ -331,6 +331,15 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
+  // Thread views counter.
+  $items['thread/view/%'] = array(
+    'title' => 'Thread view count logger',
+    'page callback' => 'harmony_core_thread_log_view',
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -1169,4 +1178,89 @@ function harmony_core_node_delete($node) {
     // Increment users post count.
     harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
   }
+}
+
+/**
+ * Implements hook_page_alter().
+ *
+ * View tracking for threads and anonymous users.
+ */
+function harmony_core_page_alter(&$page) {
+  global $user;
+  global $_harmony;
+
+  // Only track thread pages, also check for a global do not track flag.  
+  if (!(arg(0) == 'thread' && is_numeric(arg(1)) && !arg(2)) || isset($_harmony['thread_do_not_track'])) {
+    return;
+  }
+
+  // Load the thread and check access.
+  $thread = harmony_core_thread_load(arg(1));
+  $can_access_thread = $thread && harmony_core_thread_access_callback('view', $thread);
+
+  if (!$can_access_thread) {
+    return;
+  }
+
+  // Track the thread view immediately for authenticated users.
+  if ($user->uid) {
+    harmony_core_thread_track_view($thread->thread_id);
+  }
+  // For anonymous use the tracking image method due to page caching.
+  else {
+    $page['page_bottom']['harmony_core']['thread_view']['#markup'] = '<div class="element-hidden"><img src="' . url('thread/view/' . arg(1)) . '" alt="" /></div>';
+  }
+}
+
+function harmony_core_thread_track_view($thread_id) {
+  if (!empty($thread_id) && is_numeric($thread_id) && $thread_id > 0) {
+    // Increment via db query.
+    $transaction = db_transaction();
+
+    try {
+      db_query('UPDATE {thread} SET views = views + 1 WHERE thread_id = :thread_id', array(':thread_id' => $thread_id));
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('harmony_core', $e);
+    }
+  }
+}
+
+/**
+ * Menu callback function.
+ *
+ * Increment the number of views counter property on a thread.
+ */
+function harmony_core_thread_log_view($thread_id) {
+  global $base_root;
+  $thread = NULL;
+
+  // Determine if the tracking request came from this site, or at least looks that way.
+  $valid_referer = !empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], $base_root) === 0;
+
+  // Check the id is numeric.
+  if ($valid_referer && !empty($thread_id) && is_numeric($thread_id) && $thread_id > 0) {
+    // Load the thread.
+    $thread = harmony_core_thread_load($thread_id);
+  }
+
+  // Check that the id is for a valid thread and that the user has access to it, then track.
+  if ($thread && harmony_core_thread_access_callback('view', $thread)) {
+    harmony_core_thread_track_view($thread->thread_id);
+  }
+
+  // Return a gif along with headers preventing caching.
+  header('Content-type: image/gif');
+  header('Expires: Sun, 19 Nov 1978 05:00:00 GMT');
+  header('Cache-Control: no-cache');
+  header('Cache-Control: no-store');
+  header('Cache-Control: must-revalidate');
+  header('Cache-Control: post-check=0');
+  header('Cache-Control: pre-check=0');
+  header('Content-Length: 0');
+  header('Connection: close');
+
+  // Bail out.
+  drupal_exit();
 }
