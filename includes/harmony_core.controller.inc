@@ -70,7 +70,7 @@ class ThreadController extends EntityAPIController {
         $this->resetCache(array($entity->{$this->idKey}));
         $this->invoke('update', $entity);
 
-        field_attach_update($this->entityType, $entity->original);
+        field_attach_update($this->entityType, $entity);
 
         // Update thread access records.
         if (module_exists('harmony_access')) {
