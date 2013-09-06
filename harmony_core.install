@@ -49,6 +49,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'likes' => array(
+        'description' => 'Number of times that posts within the thread have been liked.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'views' => array(
         'description' => 'Number of times the thread has been viewed.',
         'type' => 'int',
@@ -60,6 +66,7 @@ function harmony_core_schema() {
       'status' => array('status'),
       'pinned' => array('pinned'),
       'locked' => array('locked'),
+      'likes' => array('likes'),
       'views' => array('views'),
       'uid' => array('uid'),
     ),
