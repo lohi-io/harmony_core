@@ -105,6 +105,6 @@ class Thread extends Entity {
   }
 
   protected function defaultUri() {
-    return array('path' => 'task/' . $this->identifier());
+    return array('path' => 'thread/' . $this->identifier());
   }*/
 }

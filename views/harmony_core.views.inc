@@ -9,7 +9,8 @@
  * Implements hook_views_data_alter().
  */ 
  function harmony_core_views_data_alter(&$data) {
-  // Threads.
+
+  // Extra threads fields.
   $data['thread']['view_link'] = array(
     'field' => array(
       'title' => t('Link'),
@@ -31,4 +32,8 @@
       'handler' => 'harmony_core_views_handler_thread_field_link_delete',
     ),
   );
+
+  // Override the title field slightly to use our custom views field handler
+  // which has the "link to thread" functionality.
+  $data['thread']['title']['field']['handler'] = 'harmony_core_views_handler_thread_field';
 }
