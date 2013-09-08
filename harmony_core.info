@@ -7,7 +7,7 @@ files[] = includes/harmony_core.controller.inc
 files[] = includes/harmony_core.admin.inc
 files[] = includes/harmony_core.pages.inc
 files[] = includes/harmony_core.pathauto.inc
-files[] = includes/harmony_core.pathauto.inc
+files[] = includes/harmony_core.context.inc
 
 files[] = views/handlers/harmony_core_views_handler_thread_field.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link.inc
@@ -35,5 +35,10 @@ dependencies[] = views_litepager
 dependencies[] = date_views
 dependencies[] = field_ui
 dependencies[] = pathauto
+dependencies[] = taxonomy_display
+dependencies[] = context
+dependencies[] = views_load_more
+dependencies[] = flag
+dependencies[] = views_bulk_operations
 
 ;configure = admin/config/harmony
