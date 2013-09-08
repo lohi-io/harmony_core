@@ -896,6 +896,25 @@ function harmony_core_form_node_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Hide the thread count field.
+ */
+function harmony_core_form_taxonomy_form_term_alter(&$form, &$form_state, $form_id) {
+  $form['field_thread_count']['#access'] = FALSE;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Hides the thread and post count fields.
+ */
+function harmony_core_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  $form['field_thread_count']['#access'] = FALSE;
+  $form['field_post_count']['#access'] = FALSE;
+}
+
+/**
  * Helper function to hide the node form title.
  */
 function _harmony_core_post_form_alter(&$form) {
@@ -1109,6 +1128,9 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
   $wrapper->save();
 }
 
+/**
+ * Helper function to update a posts title.
+ */
 function harmony_core_update_post_title($item) {
   $post = entity_load_single('post', $item['nid']);
   $post->title = $item['title'];
@@ -1270,4 +1292,34 @@ function harmony_core_thread_log_view($thread_id) {
 
   // Bail out.
   drupal_exit();
+}
+
+/**
+ * Implements hook_context_plugins().
+ */
+function harmony_core_context_plugins() {
+  $plugins['harmony_core_context_condition_thread'] = array(
+    'handler' => array(
+      'path' => drupal_get_path('module', 'harmony_core') .'/includes',
+      'file' => 'harmony_core.context.inc',
+      'class' => 'harmony_core_context_condition_thread',
+      'parent' => 'context_condition',
+    ),
+  );
+
+  return $plugins;
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function harmony_core_context_registry() {
+  return array(
+    'conditions' => array(
+      'thread' => array(
+        'title' => t('Threads'),
+        'plugin' => 'harmony_core_context_condition_thread',
+      ),
+    ),
+  );
 }

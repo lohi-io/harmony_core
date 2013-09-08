@@ -26,6 +26,13 @@ function harmony_core_thread_add() {
 }
 
 function harmony_core_thread_view($thread, $view_mode = 'full') {
+  // Trigger context if viewing a thread page.
+  if ($view_mode == 'full') {
+    if ($plugin = context_get_plugin('condition', 'thread')) {
+      $plugin->execute($thread);
+    }
+  }
+
   return '';
 }
 
