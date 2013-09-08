@@ -121,8 +121,8 @@ function harmony_core_thread_update_alias_multiple(array $thread_ids, $op, array
 }
 
 /**
- * Update action wrapper for pathauto_node_update_alias().
+ * Update action wrapper for harmony_core_thread_update_alias_action().
  */
-/*function pathauto_node_update_action($node, $context = array()) {
-  pathauto_node_update_alias($node, 'bulkupdate', array('message' => TRUE));
-}*/
+function harmony_core_thread_update_alias_action($thread, $context = array()) {
+  harmony_core_thread_update_alias($thread, 'bulkupdate', array('message' => TRUE));
+}
