@@ -94,6 +94,57 @@ class ThreadController extends EntityAPIController {
       throw $e;
     }
   }
+
+    /**
+   * Implements EntityAPIControllerInterface.
+   *
+   * @param $transaction
+   *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
+   *   in their transaction object.
+   *
+   * @see node_delete_multiple()
+   */
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+    $entities = $ids ? $this->load($ids) : FALSE;
+    if (!$entities) {
+      // Do nothing, in case invalid or no ids have been passed.
+      return;
+    }
+    // This transaction causes troubles on MySQL, see
+    // http://drupal.org/node/1007830. So we deactivate this by default until
+    // is shipped in a point release.
+    // $transaction = isset($transaction) ? $transaction : db_transaction();
+
+    try {
+      $ids = array_keys($entities);
+
+      db_delete($this->entityInfo['base table'])
+        ->condition($this->idKey, $ids, 'IN')
+        ->execute();
+
+      if (isset($this->revisionTable)) {
+        db_delete($this->revisionTable)
+          ->condition($this->idKey, $ids, 'IN')
+          ->execute();
+      }
+      // Reset the cache as soon as the changes have been applied.
+      $this->resetCache($ids);
+
+      foreach ($entities as $id => $entity) {
+        $this->invoke('delete', $entity);
+        field_attach_delete($this->entityType, $entity);
+      }
+      // Ignore slave server temporarily.
+      db_ignore_slave();
+    }
+    catch (Exception $e) {
+      if (isset($transaction)) {
+        $transaction->rollback();
+      }
+      watchdog_exception($this->entityType, $e);
+      throw $e;
+    }
+  }
 }
 
 /**
