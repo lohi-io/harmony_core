@@ -159,6 +159,22 @@ function harmony_core_entity_property_info() {
     'setter permission' => 'administer forum content',
     'schema field' => 'status',
   );
+  $properties['created'] = array(
+    'label' => t('Date created'),
+    'type' => 'date',
+    'description' => t('The date the thread was created.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'created',
+  );
+  $properties['updated'] = array(
+    'label' => t("Date updated"),
+    'type' => 'date',
+    'description' => t('The date the thread was most recently updated.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'updated',
+  );
   $properties['pinned'] = array(
     'label' => t('Pinned'),
     'description' => t('Whether the thread should be displayed at the top of lists in which it appears.'),
@@ -822,8 +838,6 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
 
   // Hide property-ish type fields that we don't want user 1 to see.
   $form['field_last_user_to_post_a_reply']['#access'] = FALSE;
-  $form['field_post_time_first']['#access'] = FALSE;
-  $form['field_post_time_last']['#access'] = FALSE;
   $form['field_post_count']['#access'] = FALSE;
   $form['field_thread_continued_from']['#access'] = FALSE;
 
@@ -957,8 +971,10 @@ function harmony_core_thread_insert($thread) {
   // @todo, checking around whether or not thread is published,
   // if so increment things otherwise don't.
 
-  // Increment the category thread count.
-  harmony_core_update_meta_count(array('field_thread_count'), 'taxonomy_term', $wrapper->field_category->tid->value());
+  // Increment the category thread count if the thread has a category set.
+  if ($wrapper->field_category->value()) {
+    harmony_core_update_meta_count(array('field_thread_count'), 'taxonomy_term', $wrapper->field_category->tid->value());
+  }
 
   // Increment users thread & post count.
   harmony_core_update_meta_count(array('field_thread_count', 'field_post_count'), 'user', $thread->uid);
@@ -1151,7 +1167,7 @@ function harmony_core_node_insert($node) {
     // it's the first post in a thread.
     if ($thread_id) {
       // Set the last time the thread was updated.
-      //$post->field_thread->field_last_post_time;
+      $post->field_thread->updated->set(REQUEST_TIME);
       // Set the last user to update the thread field.
       $post->field_thread->field_last_user_to_post_a_reply->set($node->uid);
       // Save the thread.
@@ -1183,7 +1199,7 @@ function harmony_core_node_update($node) {
       }
 
       // Update the thread's last updated time.
-      $post->field_thread->field_last_post_time->set(REQUEST_TIME);
+      $post->field_thread->updated->set(REQUEST_TIME);
 
       // Save changes.
       $post->field_thread->save();

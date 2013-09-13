@@ -14,6 +14,8 @@ function harmony_core_thread_add() {
     'uid' => $user->uid,
     'language' => LANGUAGE_NONE,
     'status' => THREAD_PUBLISHED,
+    'created' => REQUEST_TIME,
+    'updated' => REQUEST_TIME,
     'pinned' => THREAD_NOT_PINNED,
     'locked' => THREAD_NOT_LOCKED,
     'is_new' => TRUE,

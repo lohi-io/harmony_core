@@ -55,7 +55,10 @@ class ThreadController extends EntityAPIController {
         // entity using the id key if it is available.
         $entity->original = entity_load_unchanged($this->entityType, $entity->{$this->idKey});
       }
+
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
+      $entity->updated = REQUEST_TIME;
+
       $this->invoke('presave', $entity);
 
       if ($entity->is_new) {

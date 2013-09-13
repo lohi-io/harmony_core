@@ -37,6 +37,18 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the thread was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the thread was most recently updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'pinned' => array(
         'description' => 'Boolean indicating whether the thread should be displayed at the top of lists in which it appears.',
         'type' => 'int',
@@ -64,6 +76,8 @@ function harmony_core_schema() {
     ),
     'indexes' => array(
       'status' => array('status'),
+      'created' => array('created'),
+      'updated' => array('updated'),
       'pinned' => array('pinned'),
       'locked' => array('locked'),
       'likes' => array('likes'),
@@ -77,6 +91,40 @@ function harmony_core_schema() {
       ),
     ),
     'primary key' => array('thread_id'),
+  );
+
+  $schema['thread_read_history'] = array(
+    'description' => 'A record of which {users} have read which {thread}s.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'The {users}.uid that read the {thread} thread_id.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'thread_id' => array(
+        'description' => 'The {thread}.thread_id that was read.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp at which the read occurred.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'thread_id' => array('thread_id'),
+    ),
+    'foreign keys' => array(
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('uid', 'thread_id'),
   );
 
   return $schema;
