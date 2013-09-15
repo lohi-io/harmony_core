@@ -367,6 +367,15 @@ function harmony_core_menu() {
 }
 
 /**
+ * Implements hook_cron().
+ */
+function harmony_core_cron() {
+  db_delete('thread_read_history')
+    ->condition('timestamp', harmony_core_thread_new_limit(), '<')
+    ->execute();
+}
+
+/**
  * Implements hook_views_api().
  */
 function harmony_core_views_api() {
@@ -377,10 +386,40 @@ function harmony_core_views_api() {
 }
 
 /**
+ * Implements hook_context_plugins().
+ */
+function harmony_core_context_plugins() {
+  $plugins['harmony_core_context_condition_thread'] = array(
+    'handler' => array(
+      'path' => drupal_get_path('module', 'harmony_core') .'/includes',
+      'file' => 'harmony_core.context.inc',
+      'class' => 'harmony_core_context_condition_thread',
+      'parent' => 'context_condition',
+    ),
+  );
+
+  return $plugins;
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function harmony_core_context_registry() {
+  return array(
+    'conditions' => array(
+      'thread' => array(
+        'title' => t('Threads'),
+        'plugin' => 'harmony_core_context_condition_thread',
+      ),
+    ),
+  );
+}
+
+/**
  * Determines whether the current user may perform the operation on the thread.
  *
  * @param $op
- *   The operation to be performed on the node. Possible values are:
+ *   The operation to be performed on the thread. Possible values are:
  *   - "view"
  *   - "update"
  *   - "delete"
@@ -445,11 +484,11 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $ent
     return TRUE;
   }
 
-  // We grant access to the node if both of the following conditions are met:
+  // We grant access to the thread if both of the following conditions are met:
   // - No modules say to deny access.
   // - At least one module says to grant access.
   // If no module specified either allow or deny, we fall back to the
-  // node_access table.
+  // thread_access table.
   $access = module_invoke_all('thread_access', $op, $entity, $account, $entity_type);
   if (in_array(THREAD_ACCESS_DENY, $access, TRUE)) {
     $rights[$account->uid][$cid][$op] = FALSE;
@@ -929,7 +968,7 @@ function harmony_core_form_user_profile_form_alter(&$form, &$form_state, $form_i
 }
 
 /**
- * Helper function to hide the node form title.
+ * Helper function to hide the title field.
  */
 function _harmony_core_post_form_alter(&$form) {
   // Make title not required as we'll update this with rules. We can't
@@ -942,15 +981,6 @@ function _harmony_core_post_form_alter(&$form) {
   $post_text_lang = !empty($form['field_text']['#language']) ? $form['field_text']['#language'] : NULL;
   if ($post_text_lang) {
     $form['field_text'][$post_text_lang][0]['#title_display'] = 'invisible';
-  }
-}
-
-/**
- * Implements hook_entity_view().
- */
-function harmony_core_entity_view($entity, $type) {
-  if ($type == 'thread') {
-    dsm($entity);
   }
 }
 
@@ -971,7 +1001,7 @@ function harmony_core_thread_insert($thread) {
   // @todo, checking around whether or not thread is published,
   // if so increment things otherwise don't.
 
-  // Increment the category thread count if the thread has a category set.
+  // Increment the category thread count if the thread belongs to a category.
   if ($wrapper->field_category->value()) {
     harmony_core_update_meta_count(array('field_thread_count'), 'taxonomy_term', $wrapper->field_category->tid->value());
   }
@@ -1226,6 +1256,282 @@ function harmony_core_node_delete($node) {
 }
 
 /**
+ * Threads changed before this time are always marked as read.
+ *
+ * Threads changed after this time may be marked new, updated, or read, depending
+ * on their state for the current user. Defaults to 30 days ago.
+ */
+function harmony_core_thread_new_limit() {
+  // As per node, default to 30 days.
+  return REQUEST_TIME - variable_get('harmony_core_thread_new_limit', 2592000);
+}
+
+/**
+ * Updates the 'last viewed' timestamp of the specified harmony_core_thread for current user.
+ *
+ * @param $thread
+ *   A harmony_core_thread object.
+ */
+function harmony_core_thread_last_read_set($thread) {
+  global $user;
+  if ($user->uid) {
+    db_merge('thread_read_history')
+      ->key(array(
+        'uid' => $user->uid,
+        'thread_id' => $thread->thread_id,
+      ))
+      ->fields(array('timestamp' => REQUEST_TIME))
+      ->execute();
+   }
+}
+
+/**
+ * Retrieves the timestamp for the current user's last view of a specified harmony_core_thread.
+ *
+ * @param $thread_id
+ *   A harmony_core_thread ID.
+ *
+ * @return
+ *   If a harmony_core_thread has been previously viewed by the user, the timestamp in seconds
+ *   of when the last view occurred; otherwise, zero.
+ */
+function harmony_core_thread_last_read($thread_id) {
+  global $user;
+  $history = &drupal_static(__FUNCTION__, array());
+
+  if (!isset($history[$thread_id])) {
+    $history[$thread_id] = db_query("SELECT timestamp FROM {thread_read_history} WHERE uid = :uid AND thread_id = :thread_id", array(':uid' => $user->uid, ':thread_id' => $thread_id))->fetchObject();
+  }
+
+  return (isset($history[$thread_id]->timestamp) ? $history[$thread_id]->timestamp : 0);
+}
+
+/**
+ * Finds the last time a thread was updated.
+ *
+ * @param $thread_id
+ *   The ID of a thread.
+ *
+ * @return
+ *   A unix timestamp indicating the last time the thread was updated.
+ */
+function harmony_core_thread_last_updated($thread_id) {
+  return db_query('SELECT updated FROM {thread} WHERE thread_id = :thread_id', array(':thread_id' => $thread_id))->fetch()->updated;
+}
+
+/**
+ * Determines the type of marker to be displayed for a given thread.
+ *
+ * @param $thread_id
+ *   Node ID whose history supplies the "last viewed" timestamp.
+ * @param $timestamp
+ *   Time which is compared against the thread's "last viewed" timestamp.
+ *
+ * @return
+ *   One of the MARK constants.
+ * @see
+ *   includes/theme.inc for the constants definitions.
+ */
+function harmony_core_thread_mark($thread_id, $timestamp) {
+  global $user;
+  $cache = &drupal_static(__FUNCTION__, array());
+  $new_limit = harmony_core_thread_new_limit();
+
+  if (!$user->uid) {
+    return MARK_READ;
+  }
+
+  if (!isset($cache[$thread_id])) {
+    $cache[$thread_id] = harmony_core_thread_last_read($thread_id);
+  }
+
+  if ($cache[$thread_id] == 0 && $timestamp > $new_limit) {
+    return MARK_NEW;
+  }
+  elseif ($timestamp > $cache[$thread_id] && $timestamp > $new_limit) {
+    return MARK_UPDATED;
+  }
+
+  return MARK_READ;
+}
+
+function harmony_core_mass_update($type, $entities, $op, $properties) {
+  if (count($entities) > 10) {
+    $batch = array(
+      'operations' => array(
+        array('_harmony_core_mass_update_batch_process', array($type, $entities, $op, $properties))
+      ),
+      'finished' => '_harmony_core_mass_update_batch_finished',
+      'title' => t('Processing'),
+      // We use a single multi-pass operation, so the default
+      // 'Remaining x of y operations' message will be confusing here.
+      'progress_message' => '',
+      'error_message' => t('The update has encountered an error.'),
+    );
+    batch_set($batch);
+  }
+  else {
+    foreach ($entities as $entity) {
+      list($entity_id) = entity_extract_ids($type, $entity);
+      _harmony_core_mass_update_small_set_process($type, $entity_id, $op, $properties);
+    }
+
+    drupal_set_message(t('The update has been performed.'));
+  }
+}
+
+function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
+  $load_function = "harmony_core_{$type}_load";
+  $entity = $load_function($entity_id, TRUE);
+
+  switch ($op) {
+    case 'update':
+      $entity->original = clone $entity;
+      foreach ($updates as $name => $value) {
+        $entity->$name = $value;
+      }
+      
+      $save_function = "harmony_core_{$type}_save";
+      save_function($entity);
+
+      break;
+
+    case 'delete':
+      $delete_function = "harmony_core_{$type}_delete";
+      $delete_function($entity);
+
+      break;
+  }
+
+  return $entity;
+}
+
+/**
+ * Executes a batch operation for harmony_core_mass_update().
+ *
+ * @param string $type
+ *   A string defining the type of entity being processed.
+ * @param array $entities
+ *   An array of entity IDs.
+ * @param array $updates
+ *   Associative array of updates.
+ * @param array $context
+ *   An array of contextual key/values.
+ */
+function _harmony_core_mass_update_batch_process($type, $entities, $op, $properties, &$context) {
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['max'] = count($entities);
+    $context['sandbox']['entities'] = $entities;
+  }
+
+  // Process nodes by groups of 5.
+  $count = min(5, count($context['sandbox']['entities']));
+  for ($i = 1; $i <= $count; $i++) {
+    $entity_id = array_shift($context['sandbox']['entities']);
+    $entity = _harmony_core_mass_update_helper($type, $entity_id, $op, $properties);
+
+    // Store result for post-processing in the finished callback.
+    $uri = entity_uri($type, $entity);
+    $context['results'][] = l($entity->title, $uri);
+
+    // Update our progress information.
+    $context['sandbox']['progress']++;
+  }
+
+  // Inform the batch engine that we are not finished,
+  // and provide an estimation of the completion level we reached.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+/**
+ * Menu callback: Reports the status of batch operation for harmony_core_mass_update().
+ *
+ * @param bool $success
+ *   A boolean indicating whether the batch mass update operation successfully
+ *   concluded.
+ * @param int $results
+ *   The number of nodes updated via the batch mode process.
+ * @param array $operations
+ *   An array of function calls (not used in this function).
+ */
+function _harmony_core_mass_update_batch_finished($success, $results, $operations) {
+  if ($success) {
+    drupal_set_message(t('The update has been performed.'));
+  }
+  else {
+    drupal_set_message(t('An error occurred and processing did not complete.'), 'error');
+    $message = format_plural(count($results), '1 item successfully processed:', '@count items successfully processed:');
+    $message .= theme('item_list', array('items' => $results));
+    drupal_set_message($message);
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function harmony_core_user_cancel($edit, $account, $method) {
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      // Unpublish/unapprove threads.
+      module_load_include('inc', 'node', 'node.admin');
+      $threads = db_select('thread', 't')
+        ->fields('t', array('thread_id'))
+        ->condition('uid', $account->uid)
+        ->execute()
+        ->fetchCol();
+      harmony_core_mass_update('thread', 'update', $threads, array('status' => 0));
+      break;
+
+    case 'user_cancel_reassign':
+      // Anonymize nodes (current revisions).
+      module_load_include('inc', 'node', 'node.admin');
+      $nodes = db_select('thread', 't')
+        ->fields('t', array('thread_id'))
+        ->condition('uid', $account->uid)
+        ->execute()
+        ->fetchCol();
+      node_mass_update($threads, array('uid' => 0));
+      // Anonymize old revisions.
+      /*db_update('thread_revision')
+        ->fields(array('uid' => 0))
+        ->condition('uid', $account->uid)
+        ->execute();*/
+      // Clean history.
+      db_delete('thread_read_history')
+        ->condition('uid', $account->uid)
+        ->execute();
+      break;
+  }
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function harmony_core_user_delete($account) {
+  // Delete threads.
+  $threads = db_select('thread', 't')
+    ->fields('t', array('thread_id'))
+    ->condition('uid', $account->uid)
+    ->execute()
+    ->fetchCol();
+  harmony_core_mass_update('thread', 'delete', $threads, array());
+
+  // Delete old revisions.
+  /*$revisions = db_query('SELECT vid FROM {thread_revision} WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
+  foreach ($revisions as $revision) {
+    node_revision_delete($revision);
+  }*/
+
+  // Clean history.
+  db_delete('thread_read_history')
+    ->condition('uid', $account->uid)
+    ->execute();
+}
+
+/**
  * Implements hook_page_alter().
  *
  * View tracking for threads and anonymous users.
@@ -1308,34 +1614,4 @@ function harmony_core_thread_log_view($thread_id) {
 
   // Bail out.
   drupal_exit();
-}
-
-/**
- * Implements hook_context_plugins().
- */
-function harmony_core_context_plugins() {
-  $plugins['harmony_core_context_condition_thread'] = array(
-    'handler' => array(
-      'path' => drupal_get_path('module', 'harmony_core') .'/includes',
-      'file' => 'harmony_core.context.inc',
-      'class' => 'harmony_core_context_condition_thread',
-      'parent' => 'context_condition',
-    ),
-  );
-
-  return $plugins;
-}
-
-/**
- * Implements hook_context_registry().
- */
-function harmony_core_context_registry() {
-  return array(
-    'conditions' => array(
-      'thread' => array(
-        'title' => t('Threads'),
-        'plugin' => 'harmony_core_context_condition_thread',
-      ),
-    ),
-  );
 }
