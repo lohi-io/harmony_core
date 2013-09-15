@@ -130,6 +130,12 @@ class ThreadController extends EntityAPIController {
           ->condition($this->idKey, $ids, 'IN')
           ->execute();
       }
+
+      // Remove thread read history.
+      db_delete('thread_read_history')
+        ->condition('thread_id', $ids, 'IN')
+        ->execute();
+
       // Reset the cache as soon as the changes have been applied.
       $this->resetCache($ids);
 
