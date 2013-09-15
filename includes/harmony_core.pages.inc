@@ -28,12 +28,23 @@ function harmony_core_thread_add() {
 }
 
 function harmony_core_thread_view($thread, $view_mode = 'full') {
+  $uri = entity_uri('thread', $thread);
+  // Set the node path as the canonical URL to prevent duplicate content.
+  drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
+  // Set the non-aliased path as a default shortlink.
+  drupal_add_html_head_link(array('rel' => 'shortlink', 'href' => url($uri['path'], array_merge($uri['options'], array('alias' => TRUE)))), TRUE);
+
   // Trigger context if viewing a thread page.
   if ($view_mode == 'full') {
     if ($plugin = context_get_plugin('condition', 'thread')) {
       $plugin->execute($thread);
     }
   }
+
+  // Update last read date for this thread and user.
+  harmony_core_thread_last_read_set($thread);
+
+  dsm($thread);
 
   return '';
 }
