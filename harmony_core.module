@@ -60,7 +60,7 @@ module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
  * Implements hook_entity_info().
  */
 function harmony_core_entity_info() {
-  $return['thread'] = array(
+  $entities['thread'] = array(
     'label' => t('Thread'),
     'plural label' => t('Threads'),
     'entity class' => 'Thread',
@@ -76,7 +76,7 @@ function harmony_core_entity_info() {
         'admin' => array(
           'path' => 'admin/structure/harmony/thread',
           'real path' => 'admin/structure/harmony/thread',
-          'access arguments' => array('administer thread type'),
+          'access arguments' => array('administer thread entity'),
         ),
       ),
     ),
@@ -93,34 +93,40 @@ function harmony_core_entity_info() {
     'access callback' => 'harmony_core_thread_access_callback',
   );
 
-  /*$return['post'] = array(
+  $entities['post'] = array(
     'label' => t('Post'),
+    'plural label' => t('Posts'),
     'entity class' => 'Post',
     'controller class' => 'PostController',
     'base table' => 'post',
     'fieldable' => TRUE,
     'entity keys' => array(
-      'id' => 'pid',
-      'bundle' => 'type',
+      'id' => 'post_id',
     ),
-    'bundle keys' => array(
-      'bundle' => 'type',
+    'bundles' => array(
+      'post' => array(
+        'label' => t('Post'),
+        'admin' => array(
+          'path' => 'admin/structure/harmony/post',
+          'real path' => 'admin/structure/harmony/post',
+          'access arguments' => array('administer post entity'),
+        ),
+      ),
     ),
-    'bundles' => array(),
-    'load hook' => 'post_load',
+    'load hook' => 'harmony_core_post_load',
     'view modes' => array(
       'full' => array(
         'label' => t('Default'),
         'custom settings' => FALSE,
       ),
     ),
-    'label callback' => 'entity_class_label',
-    'uri callback' => 'entity_class_uri',
+    'label callback' => 'harmony_core_post_label',
+    'uri callback' => 'harmony_core_post_uri',
     'module' => 'harmony_core',
-    'access callback' => 'post_access',
-  );*/
+    'access callback' => 'harmony_core_post_access_callback',
+  );
 
-  return $return;
+  return $entities;
 }
 
 /**
@@ -128,20 +134,20 @@ function harmony_core_entity_info() {
  */
 function harmony_core_entity_property_info() {
   $info = array();
-  $properties = &$info['thread']['properties'];
+  $thread_properties = &$info['thread']['properties'];
 
-  $properties['thread_id'] = array(
+  $thread_properties['thread_id'] = array(
     'label' => t('Thread ID'), 
     'type' => 'integer', 
     'description' => t('The unique thread ID.'),
   );
-  $properties['title'] = array(
+  $thread_properties['title'] = array(
     'label' => t('Title'),
     'description' => t('The title of the thread.'),
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'title',
   );
-  $properties['uid'] = array(
+  $thread_properties['uid'] = array(
     'label' => t('Author'),
     'type' => 'user',
     'description' => t('The author of the thread.'),
@@ -150,7 +156,7 @@ function harmony_core_entity_property_info() {
     'required' => TRUE,
     'schema field' => 'uid',
   );
-  $properties['status'] = array(
+  $thread_properties['status'] = array(
     'label' => t('Status'),
     'description' => t('Whether the thread is published or unpublished.'),
     'type' => 'integer',
@@ -159,7 +165,7 @@ function harmony_core_entity_property_info() {
     'setter permission' => 'administer forum content',
     'schema field' => 'status',
   );
-  $properties['created'] = array(
+  $thread_properties['created'] = array(
     'label' => t('Date created'),
     'type' => 'date',
     'description' => t('The date the thread was created.'),
@@ -167,7 +173,7 @@ function harmony_core_entity_property_info() {
     'setter permission' => 'administer forum content',
     'schema field' => 'created',
   );
-  $properties['updated'] = array(
+  $thread_properties['updated'] = array(
     'label' => t("Date updated"),
     'type' => 'date',
     'description' => t('The date the thread was most recently updated.'),
@@ -175,7 +181,7 @@ function harmony_core_entity_property_info() {
     'setter permission' => 'administer forum content',
     'schema field' => 'updated',
   );
-  $properties['pinned'] = array(
+  $thread_properties['pinned'] = array(
     'label' => t('Pinned'),
     'description' => t('Whether the thread should be displayed at the top of lists in which it appears.'),
     'setter callback' => 'entity_property_verbatim_set',
@@ -183,7 +189,7 @@ function harmony_core_entity_property_info() {
     'schema field' => 'pinned',
     'type' => 'boolean',
   );
-  $properties['locked'] = array(
+  $thread_properties['locked'] = array(
     'label' => t('Locked'),
     'description' => t('Whether the thread is locked from changes.'),
     'setter callback' => 'entity_property_verbatim_set',
@@ -191,21 +197,21 @@ function harmony_core_entity_property_info() {
     'schema field' => 'locked',
     'type' => 'boolean',
   );
-  $properties['favourites'] = array(
+  $thread_properties['favourites'] = array(
     'label' => t('Favourites'),
     'description' => t('Number of times that the thread has been favourited.'),
     'type' => 'integer',
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'favourites',
   );
-  $properties['likes'] = array(
+  $thread_properties['likes'] = array(
     'label' => t('Likes'),
     'description' => t('Number of times that posts within the thread have been liked.'),
     'type' => 'integer',
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'likes',
   );
-  $properties['views'] = array(
+  $thread_properties['views'] = array(
     'label' => t('Views'),
     'description' => t('Number of times the thread has been viewed.'),
     'type' => 'integer',
@@ -226,13 +232,13 @@ function harmony_core_permission() {
       'description' => t('Allows users to configure general settings for Harmony.'),
       'restrict access' => TRUE,
     ),
-    'administer thread type' => array(
-      'title' => t('Administer thread type'),
+    'administer thread entity' => array(
+      'title' => t('Administer thread entity'),
       'description' => t('Allows users to configure the thread entity type and its fields.'),
       'restrict access' => TRUE,
     ),
-    'administer post type' => array(
-      'title' => t('Administer post type'),
+    'administer post entity' => array(
+      'title' => t('Administer post entity'),
       'description' => t('Allows users to configure the post entity type and its fields.'),
       'restrict access' => TRUE,
     ),
