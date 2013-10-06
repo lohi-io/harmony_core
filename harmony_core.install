@@ -61,6 +61,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'favourites' => array(
+        'description' => 'Number of times that the thread has been favourited.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'likes' => array(
         'description' => 'Number of times that posts within the thread have been liked.',
         'type' => 'int',

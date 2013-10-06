@@ -191,6 +191,13 @@ function harmony_core_entity_property_info() {
     'schema field' => 'locked',
     'type' => 'boolean',
   );
+  $properties['favourites'] = array(
+    'label' => t('Favourites'),
+    'description' => t('Number of times that the thread has been favourited.'),
+    'type' => 'integer',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'favourites',
+  );
   $properties['likes'] = array(
     'label' => t('Likes'),
     'description' => t('Number of times that posts within the thread have been liked.'),
