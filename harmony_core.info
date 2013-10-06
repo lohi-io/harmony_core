@@ -9,6 +9,8 @@ files[] = includes/harmony_core.pages.inc
 files[] = includes/harmony_core.pathauto.inc
 files[] = includes/harmony_core.context.inc
 
+files[] = views/handlers/harmony_core_views_handler_field_thread_read_history_timestamp.inc
+files[] = views/handlers/harmony_core_views_handler_filter_thread_read_history_timestamp.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link_edit.inc

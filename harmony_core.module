@@ -243,6 +243,14 @@ function harmony_core_permission() {
       'title' => t('View threads'),
       'description' => t('Allows users to view threads.'),
     ),
+    'view unpublished threads' => array(
+      'title' => t('View unpublished threads'),
+      'description' => t('Allows users to view unpublished threads.'),
+    ),
+    'view own unpublished threads' => array(
+      'title' => t('View own unpublished threads'),
+      'description' => t('Allows users to view unpublished threads that they have created.'),
+    ),
     'create threads' => array(
       'title' => t('Create new threads'),
       'description' => t('Allows users to create threads.'),
@@ -1090,6 +1098,8 @@ function harmony_core_thread_delete($thread) {
     AND field_thread_target_id = :thread_id", 
     array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
 
+  // Delete post revisions too.
+
   // We've got a list of nodes.
   if (!empty($posts)) {
     // As per node_mass_update() if the list is less than 10, 
@@ -1267,7 +1277,7 @@ function harmony_core_thread_new_limit() {
 }
 
 /**
- * Updates the 'last viewed' timestamp of the specified harmony_core_thread for current user.
+ * Updates the 'last viewed' timestamp of the specified thread for current user.
  *
  * @param $thread
  *   A harmony_core_thread object.
@@ -1286,7 +1296,7 @@ function harmony_core_thread_last_read_set($thread) {
 }
 
 /**
- * Retrieves the timestamp for the current user's last view of a specified harmony_core_thread.
+ * Retrieves the timestamp for the current user's last view of a specified thread.
  *
  * @param $thread_id
  *   A harmony_core_thread ID.
