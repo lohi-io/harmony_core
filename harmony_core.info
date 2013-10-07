@@ -3,7 +3,7 @@ description = Provides core functionality for Harmony!
 core = 7.x
 package = Harmony
 
-files[] = includes/harmony_core.controller.inc
+files[] = includes/harmony_core.controllers.inc
 files[] = includes/harmony_core.admin.inc
 files[] = includes/harmony_core.pages.inc
 files[] = includes/harmony_core.pathauto.inc

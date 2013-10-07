@@ -56,7 +56,7 @@ define('HARMONY_ACCESS_IGNORE', NULL);
 /**
  * Load includes.
  */
-module_load_include('inc', 'harmony_core', 'includes/harmony_core.controller');
+module_load_include('inc', 'harmony_core', 'includes/harmony_core.controllers');
 module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
 
 /**
