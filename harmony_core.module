@@ -36,19 +36,22 @@ define('THREAD_NOT_LOCKED', 0);
 define('THREAD_LOCKED', 1);
 
 /**
- * Modules should return this value from hook_thread_access() to allow access to a thread.
+ * Modules should return this value from hook_thread_access() to allow access
+ * to a thread or post.
  */
-define('THREAD_ACCESS_ALLOW', 'allow');
+define('HARMONY_ACCESS_ALLOW', 'allow');
 
 /**
- * Modules should return this value from hook_thread_access() to deny access to a thread.
+ * Modules should return this value from hook_thread_access() to deny access
+ * to a thread or post.
  */
-define('THREAD_ACCESS_DENY', 'deny');
+define('HARMONY_ACCESS_DENY', 'deny');
 
 /**
- * Modules should return this value from hook_thread_access() to not affect access to a thread.
+ * Modules should return this value from hook_thread_access() to not affect
+ * access to a thread or post.
  */
-define('THREAD_ACCESS_IGNORE', NULL);
+define('HARMONY_ACCESS_IGNORE', NULL);
 
 /**
  * Load includes.
@@ -99,6 +102,7 @@ function harmony_core_entity_info() {
     'entity class' => 'Post',
     'controller class' => 'PostController',
     'base table' => 'post',
+    'revision table' => 'post_revision',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'post_id',
@@ -174,7 +178,7 @@ function harmony_core_entity_property_info() {
     'schema field' => 'created',
   );
   $thread_properties['updated'] = array(
-    'label' => t("Date updated"),
+    'label' => t('Date updated'),
     'type' => 'date',
     'description' => t('The date the thread was most recently updated.'),
     'setter callback' => 'entity_property_verbatim_set',
@@ -217,6 +221,61 @@ function harmony_core_entity_property_info() {
     'type' => 'integer',
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'views',
+  );
+
+  // Post entity properties.
+  $post_properties = &$info['post']['properties'];
+
+  $post_properties['post_id'] = array(
+    'label' => t('Post ID'), 
+    'type' => 'integer', 
+    'description' => t('The unique post ID.'),
+  );
+  $properties['vid'] = array(
+    'label' => t('Revision ID'),
+    'type' => 'integer',
+    'description' => t("The unique ID of the post's revision."),
+    'schema field' => 'vid',
+  );
+  $post_properties['title'] = array(
+    'label' => t('Title'),
+    'description' => t('The title of the thread.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'title',
+  );
+  $post_properties['uid'] = array(
+    'label' => t('Author'),
+    'type' => 'user',
+    'description' => t('The author of the post.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'required' => TRUE,
+    'schema field' => 'uid',
+  );
+  $post_properties['status'] = array(
+    'label' => t('Status'),
+    'description' => t('Whether the post is published or unpublished.'),
+    'type' => 'integer',
+    'options list' => 'entity_metadata_status_options_list',
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'status',
+  );
+  $post_properties['created'] = array(
+    'label' => t('Date created'),
+    'type' => 'date',
+    'description' => t('The date the post was created.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'created',
+  );
+  $post_properties['updated'] = array(
+    'label' => t('Date updated'),
+    'type' => 'date',
+    'description' => t('The date the post was most recently updated.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'updated',
   );
 
   return $info;
@@ -287,6 +346,41 @@ function harmony_core_permission() {
       'title' => t('Delete own threads'),
       'description' => t('Allows users to delete own threads.'),
     ),
+    'view posts' => array(
+      'title' => t('View posts'),
+      'description' => t('Allows users to view posts.'),
+    ),
+    'view unpublished posts' => array(
+      'title' => t('View unpublished posts'),
+      'description' => t('Allows users to view unpublished posts.'),
+    ),
+    'view own unpublished posts' => array(
+      'title' => t('View own unpublished posts'),
+      'description' => t('Allows users to view unpublished posts that they have created.'),
+    ),
+    'create posts' => array(
+      'title' => t('Create new posts'),
+      'description' => t('Allows users to create posts.'),
+    ),
+    'edit any post' => array(
+      'title' => t('Edit any post'),
+      'description' => t('Allows users to edit any post.'),
+      'restrict access' => TRUE,
+    ),
+    'edit own posts' => array(
+      'title' => t('Edit own posts'),
+      'description' => t('Allows users to edit their own posts.'),
+      'restrict access' => TRUE,
+    ),
+    'delete any post' => array(
+      'title' => t('Delete any post'),
+      'description' => t('Allows users to delete any posts.'),
+      'restrict access' => TRUE,
+    ),
+    'delete own posts' => array(
+      'title' => t('Delete own posts'),
+      'description' => t('Allows users to delete own posts.'),
+    ),
   );
 }
 
@@ -310,14 +404,29 @@ function harmony_core_menu() {
 
   $items['admin/structure/harmony/thread'] = array(
     'title' => 'Thread settings',
-    'access arguments' => array('administer thread type'),
+    'access arguments' => array('administer thread entity'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_thread_type_form'),
+    'page arguments' => array('harmony_core_thread_entity_form'),
     'file' => 'harmony_core.admin.inc',
     'file path' => $includes_dir,
   );
 
   $items['admin/structure/harmony/thread/edit'] = array(
+    'title' => 'Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['admin/structure/harmony/post'] = array(
+    'title' => 'Thread settings',
+    'access arguments' => array('administer post entity'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_post_entity_form'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['admin/structure/harmony/post/edit'] = array(
     'title' => 'Edit',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
@@ -367,6 +476,57 @@ function harmony_core_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_thread_delete_confirm', 1),
     'access callback' => 'harmony_core_thread_access_callback',
+    'access arguments' => array('delete', 1),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/add'] = array(
+    'title' => 'Create post',
+    'page callback' => 'harmony_core_post_add',
+    'access arguments' => array('create posts'),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_core_post'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('post', 1),
+    'page callback' => 'harmony_core_post_view',
+    'page arguments' => array(1),
+    'access callback' => 'harmony_core_post_access_callback',
+    'access arguments' => array('view', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_core_post/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['post/%harmony_core_post/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_post_form', 1),
+    'access callback' => 'harmony_core_post_access_callback',
+    'access arguments' => array('update', 1),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_core_post/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_post_delete_confirm', 1),
+    'access callback' => 'harmony_core_post_access_callback',
     'access arguments' => array('delete', 1),
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
@@ -450,13 +610,11 @@ function harmony_core_context_registry() {
  * @param $account
  *   Optional, a user object representing the user for whom the operation is to
  *   be performed. Determines access for a user other than the current user.
- * @param $entity_type
- *   Optional, the type of entity passed in.
  *
  * @return
  *   TRUE if the operation may be performed, FALSE otherwise.
  */
-function harmony_core_thread_access_callback($op, $entity, $account = NULL, $entity_type = NULL) {
+function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
   $rights = &drupal_static(__FUNCTION__, array());
 
   // Check that the operation is valid.
@@ -469,16 +627,11 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $ent
     $account = $GLOBALS['user'];
   }
 
-  if (!$entity_type) {
-    $entity_type = 'thread';
-  }
+  $entity_type = 'thread';
 
   // Use the best available identifier for the cache ID.
   if (is_object($entity)) {
-    list($cid) = entity_extract_ids($entity_type, $entity);
-  }
-  elseif ($entity_type) {
-    $cid = $entity_type;
+    $cid = $entity->thread_id;
   }
   elseif (is_string($entity)) {
     $cid = $entity;
@@ -511,14 +664,16 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $ent
   // If no module specified either allow or deny, we fall back to the
   // thread_access table.
   $access = module_invoke_all('thread_access', $op, $entity, $account, $entity_type);
-  if (in_array(THREAD_ACCESS_DENY, $access, TRUE)) {
+  if (in_array(HARMONY_ACCESS_DENY, $access, TRUE)) {
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
   }
-  elseif (in_array(THREAD_ACCESS_ALLOW, $access, TRUE)) {
+  elseif (in_array(HARMONY_ACCESS_ALLOW, $access, TRUE)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
+
+  /* @todo Can access own unpublished thread, as per node.module */
 
   /* @todo Implement thread access grants. */
   if (module_exists('harmony_access')) {
@@ -534,24 +689,115 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $ent
 function harmony_core_thread_access($op, $entity, $account, $entity_type) {
   switch ($op) {
     case 'view':
-      if (user_access('view threads', $account)) {
-        return THREAD_ACCESS_ALLOW;
+      if (user_access("view {$entity_type}s", $account)) {
+        return HARMONY_ACCESS_ALLOW;
       }
     case 'update':
-      if (user_access('edit any thread', $account) || $entity && $account->uid == $entity->uid && user_access('edit own threads', $account)) {
-        return THREAD_ACCESS_ALLOW;
+      if (user_access("edit any {$entity_type}", $account) || $entity && $account->uid == $entity->uid && user_access("edit own {$entity_type}s", $account)) {
+        return HARMONY_ACCESS_ALLOW;
       }
     case 'delete':
-      if (user_access('delete any thread', $account) || $entity && $account->uid == $entity->uid && user_access('delete own threads', $account)) {
-        return THREAD_ACCESS_ALLOW;
+      if (user_access("delete any {$entity_type}", $account) || $entity && $account->uid == $entity->uid && user_access("delete own {$entity_type}s", $account)) {
+        return HARMONY_ACCESS_ALLOW;
       }
     case 'create':
-      if (user_access('create threads', $account)) {
-        return THREAD_ACCESS_ALLOW;
+      if (user_access("create {$entity_type}s", $account)) {
+        return HARMONY_ACCESS_ALLOW;
       }
   }
 
-  return THREAD_ACCESS_IGNORE;
+  return HARMONY_ACCESS_IGNORE;
+}
+
+/**
+ * Determines whether the current user may perform the operation on the post.
+ *
+ * @param $op
+ *   The operation to be performed on the thread. Possible values are:
+ *   - "view"
+ *   - "update"
+ *   - "delete"
+ *   - "create"
+ * @param $entity
+ *   The thread object on which the operation is to be performed.
+ * @param $account
+ *   Optional, a user object representing the user for whom the operation is to
+ *   be performed. Determines access for a user other than the current user.
+ * @param $entity_type
+ *   Optional, the type of entity passed in.
+ *
+ * @return
+ *   TRUE if the operation may be performed, FALSE otherwise.
+ */
+function harmony_core_post_access_callback($op, $entity, $account = NULL) {
+  $rights = &drupal_static(__FUNCTION__, array());
+
+  // Check that the operation is valid.
+  if (!in_array($op, array('view', 'update', 'delete', 'create'), TRUE)) {
+    return FALSE;
+  }
+
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  $entity_type = 'post';
+
+  // Use the best available identifier for the cache ID.
+  if (is_object($entity)) {
+    $cid = $entity->post_id;
+  }
+  elseif (is_string($entity)) {
+    $cid = $entity;
+  }
+  else {
+    // Nothing to use, prevent caching.
+    $cid = '';
+    unset($rights[$account->uid][$cid][$op]);
+  }
+
+  // If we've already checked access for this entity, return from cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  // Don't allow anon to create content, putting here so it's very obvious!
+  if ($op == 'create' && !$account->uid) {
+    return FALSE;
+  }
+
+  // Admin-ish access checks.
+  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // Check the operation perms via this generic function, also used
+  // to check basic thread perms.
+  $access = harmony_core_thread_access($op, $entity, $account, $entity_type);
+
+  // The user must also have access to the thread they're trying to post in.
+  // How do we do this for the first post however? Hmmm.
+  if ($access == HARMONY_ACCESS_ALLOW) {
+    $thread = NULL;
+
+    if (!harmony_core_thread_access_callback('view', $thread, $account) == HARMONY_ACCESS_ALLOW) {
+      $access = HARMONY_ACCESS_DENY;
+    }
+  }
+
+  // The user should have access to view the thread.
+  if (in_array(HARMONY_ACCESS_DENY, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+  elseif (in_array(HARMONY_ACCESS_ALLOW, $access, TRUE)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 function harmony_core_thread_label($entity, $entity_type) {
@@ -562,33 +808,6 @@ function harmony_core_thread_uri($entity) {
   return array(
     'path' => 'thread/' . $entity->thread_id,
   );
-}
-
-/**
- * Access callback for post entity.
- */
-function harmony_core_post_access($op, $entity, $account = NULL, $entity_type = NULL) {
-  global $user;
-  
-  /* @todo Check that the user has access to the associated thread and also ability to post */
-
-  if (!isset($account)) {
-    $account = $user;
-  }
-  switch ($op) {
-    case 'create':
-      return user_access('administer example_task entities', $account)
-          || user_access('create example_task entities', $account);
-    case 'view':
-      return user_access('administer example_task entities', $account)
-          || user_access('view example_task entities', $account);
-    case 'edit':
-      return user_access('administer example_task entities')
-          || user_access('edit any example_task entities')
-          || (user_access('edit own example_task entities') && ($task->uid == $account->uid));
-    case 'delete':
-      return FALSE;
-  }
 }
 
 /**
@@ -614,10 +833,63 @@ function harmony_core_thread_save($thread) {
 }
 
 /**
+ * Delete a single thread.
+ */
+function harmony_core_thread_delete($thread_id) {
+  harmony_core_thread_delete_multiple(array($thread_id));
+}
+
+/**
  * Delete multiple threads.
  */
 function harmony_core_thread_delete_multiple($thread_ids) {
   entity_delete_multiple('thread', $thread_ids);
+}
+
+function harmony_core_post_label($entity, $entity_type) {
+  return empty($entity->title) ? t('Untitled post') : $entity->title;
+}
+
+function harmony_core_post_uri($entity) {
+  return array(
+    'path' => 'post/' . $entity->post_id,
+  );
+}
+
+/**
+ * Load a post.
+ */
+function harmony_core_post_load($post_id, $reset = FALSE) {
+  $posts = harmony_core_post_load_multiple(array($post_id), array(), $reset);
+  return reset($posts);
+}
+
+/**
+ * Load multiple posts based on certain conditions.
+ */
+function harmony_core_post_load_multiple($post_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('post', $post_ids, $conditions, $reset);
+}
+
+/**
+ * Save a post.
+ */
+function harmony_core_post_save($post) {
+  return entity_get_controller('post')->save($post);
+}
+
+/**
+ * Delete a single post.
+ */
+function harmony_core_post_delete($post_id) {
+  harmony_core_post_delete_multiple(array($post_id));
+}
+
+/**
+ * Delete multiple posts.
+ */
+function harmony_core_post_delete_multiple($post_ids) {
+  entity_delete_multiple('post', $post_ids);
 }
 
 /**
@@ -696,6 +968,7 @@ function harmony_core_action_info() {
 function harmony_core_thread_publish_action($thread, $context = array()) {
   $thread->status = THREAD_PUBLISHED;
   watchdog('action', 'Set thread %title to published.', array('%title' => $thread->title));
+  /* @todo queue unpublish of posts. */
 }
 
 /**
@@ -803,7 +1076,7 @@ function harmony_core_cron_queue_info() {
   );
 
   $queues['delete_posts'] = array(
-    'worker callback' => 'node_delete',
+    'worker callback' => 'harmony_core_post_delete',
     'time' => 120,
   );
 
