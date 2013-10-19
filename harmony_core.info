@@ -15,6 +15,10 @@ files[] = views/handlers/harmony_core_views_handler_thread_field.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link_edit.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link_delete.inc
+files[] = views/handlers/harmony_core_views_handler_post_field.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_link.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_link_edit.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_link_delete.inc
 
 dependencies[] = entity
 

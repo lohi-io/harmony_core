@@ -133,6 +133,163 @@ function harmony_core_schema() {
     'primary key' => array('uid', 'thread_id'),
   );
 
+  $schema['post'] = array(
+    'description' => 'The base table for posts.',
+    'fields' => array(
+      'post_id' => array(
+        'description' => 'The primary identifier for the post.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      // Defaults to NULL in order to avoid a brief period of potential
+      // deadlocks on the index.
+      'vid' => array(
+        'description' => 'The current {post_revision}.vid version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
+      'title' => array(
+        'description' => 'The title of the post.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'uid' => array(
+        'description' => 'ID of Drupal user creator.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the post is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the post was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the post was most recently updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'locked' => array(
+        'description' => 'Boolean indicating whether the post is locked from changes.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'status' => array('status'),
+      'created' => array('created'),
+      'updated' => array('updated'),
+      'locked' => array('locked'),
+      'uid' => array('uid'),
+    ),
+    'unique keys' => array(
+      'vid' => array('vid'),
+    ),
+    'foreign keys' => array(
+      'post_revision' => array(
+        'table' => 'post_revision',
+        'columns' => array('vid' => 'vid'),
+      ),
+      'post_author' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('post_id'),
+  );
+
+  $schema['post_revision'] = array(
+    'description' => 'Stores information about each saved version of a {post}.',
+    'fields' => array(
+      'post_id' => array(
+        'description' => 'The primary identifier for the post.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'vid' => array(
+        'description' => 'The primary identifier for this version.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'The title of the post.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'log' => array(
+        'description' => 'The log entry explaining the changes in this version.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+      ),
+      'uid' => array(
+        'description' => 'ID of Drupal user creator.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the post is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the post was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => 'The Unix timestamp when the post was most recently updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'locked' => array(
+        'description' => 'Boolean indicating whether the post is locked from changes.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'post_id' => array('post_id'),
+      'status' => array('status'),
+      'created' => array('created'),
+      'updated' => array('updated'),
+      'locked' => array('locked'),
+      'uid' => array('uid'),
+    ),
+    'foreign keys' => array(
+      'versioned_post' => array(
+        'table' => 'post',
+        'columns' => array('post_id' => 'post_id'),
+      ),
+      'version_author' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
   return $schema;
 }
 
@@ -140,5 +297,11 @@ function harmony_core_schema() {
  * Implements hook_install().
  */
 function harmony_core_install() {
+}
 
+/**
+ * Implements hook_uninstall().
+ */
+function harmony_core_uninstall() {
+  variable_del('harmony_core_thread_new_limit');
 }

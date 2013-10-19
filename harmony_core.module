@@ -8,12 +8,12 @@
 /**
  * Thread is not published.
  */
-define('THREAD_NOT_PUBLISHED', 0);
+define('HARMONY_NOT_PUBLISHED', 0);
 
 /**
  * Thread is published.
  */
-define('THREAD_PUBLISHED', 1);
+define('HARMONY_PUBLISHED', 1);
 
 /**
  * Thread is not pinned.
@@ -28,12 +28,12 @@ define('THREAD_PINNED', 1);
 /**
  * Thread is not locked.
  */
-define('THREAD_NOT_LOCKED', 0);
+define('HARMONY_NOT_LOCKED', 0);
 
 /**
  * Thread is locked and cannot be posted on.
  */
-define('THREAD_LOCKED', 1);
+define('HARMONY_LOCKED', 1);
 
 /**
  * Modules should return this value from hook_thread_access() to allow access
@@ -133,6 +133,10 @@ function harmony_core_entity_info() {
   return $entities;
 }
 
+function harmony_core_post_revision_access($op, $name, $entity = NULL, $account = NULL) {
+  return $op == 'view' ? user_access('view post revisions', $account) : user_access('administer forum content', $account);
+}
+
 /**
  * Implements hook_entity_property_info().
  */
@@ -141,8 +145,8 @@ function harmony_core_entity_property_info() {
   $thread_properties = &$info['thread']['properties'];
 
   $thread_properties['thread_id'] = array(
-    'label' => t('Thread ID'), 
-    'type' => 'integer', 
+    'label' => t('Thread ID'),
+    'type' => 'integer',
     'description' => t('The unique thread ID.'),
   );
   $thread_properties['title'] = array(
@@ -277,6 +281,28 @@ function harmony_core_entity_property_info() {
     'setter permission' => 'administer forum content',
     'schema field' => 'updated',
   );
+  $post_properties['locked'] = array(
+    'label' => t('Locked'),
+    'description' => t('Whether the post is locked from changes.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'locked',
+    'type' => 'boolean',
+  );
+  $post_properties['log'] = array(
+    'label' => t('Revision log message'),
+    'type' => 'text',
+    'description' => t('In case a new revision is to be saved, the log entry explaining the changes for this version.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'access callback' => 'harmony_core_post_revision_access',
+  );
+  $post_properties['revision'] = array(
+    'label' => t('Creates revision'),
+    'type' => 'boolean',
+    'description' => t('Whether saving this post creates a new revision.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'access callback' => 'harmony_core_post_revision_access',
+  );
 
   return $info;
 }
@@ -358,6 +384,10 @@ function harmony_core_permission() {
       'title' => t('View own unpublished posts'),
       'description' => t('Allows users to view unpublished posts that they have created.'),
     ),
+    'view post revisions' => array(
+      'title' => t('View post revisions'),
+      'description' => t('Allows users to view a posts revisions.'),
+    ),
     'create posts' => array(
       'title' => t('Create new posts'),
       'description' => t('Allows users to create posts.'),
@@ -409,6 +439,7 @@ function harmony_core_menu() {
     'page arguments' => array('harmony_core_thread_entity_form'),
     'file' => 'harmony_core.admin.inc',
     'file path' => $includes_dir,
+    'weight' => 0,
   );
 
   $items['admin/structure/harmony/thread/edit'] = array(
@@ -418,12 +449,13 @@ function harmony_core_menu() {
   );
 
   $items['admin/structure/harmony/post'] = array(
-    'title' => 'Thread settings',
+    'title' => 'Post settings',
     'access arguments' => array('administer post entity'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_post_entity_form'),
     'file' => 'harmony_core.admin.inc',
     'file path' => $includes_dir,
+    'weight' => 1,
   );
 
   $items['admin/structure/harmony/post/edit'] = array(
@@ -939,7 +971,21 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'triggers' => array(),
     ),
+    'harmony_core_post_publish_action' => array(
+      'type' => 'post',
+      'label' => t('Publish post'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_post_unpublish_action' => array(
+      'type' => 'post',
+      'label' => t('Unpublish post'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
   );
+
+  // @todo "delete" actions.
 
   // If pathauto is on, add in the update alias action
   // which lives in includes/harmony_core.pathauto.inc.
@@ -966,7 +1012,7 @@ function harmony_core_action_info() {
  * @ingroup actions
  */
 function harmony_core_thread_publish_action($thread, $context = array()) {
-  $thread->status = THREAD_PUBLISHED;
+  $thread->status = HARMONY_PUBLISHED;
   watchdog('action', 'Set thread %title to published.', array('%title' => $thread->title));
   /* @todo queue unpublish of posts. */
 }
@@ -983,7 +1029,7 @@ function harmony_core_thread_publish_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_unpublish_action($thread, $context = array()) {
-  $thread->status = THREAD_NOT_PUBLISHED;
+  $thread->status = HARMONY_NOT_PUBLISHED;
   watchdog('action', 'Set thread %title to unpublished.', array('%title' => $thread->title));
 }
 
@@ -1031,7 +1077,7 @@ function harmony_core_thread_make_unpinned_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_locked_action($thread, $context = array()) {
-  $thread->locked = THREAD_LOCKED;
+  $thread->locked = HARMONY_LOCKED;
   watchdog('action', 'Locked the thread %title.', array('%title' => $thread->title));
 }
 
@@ -1047,7 +1093,7 @@ function harmony_core_thread_locked_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_unlock_action($thread, $context = array()) {
-  $thread->locked = THREAD_NOT_LOCKED;
+  $thread->locked = HARMONY_NOT_LOCKED;
   watchdog('action', 'Unlocked the thread %title .', array('%title' => $thread->title));
 }
 
@@ -1062,6 +1108,39 @@ function harmony_core_thread_unlock_action($thread, $context = array()) {
 function harmony_core_thread_save_action($thread) {
   harmony_core_thread_save($thread);
   watchdog('action', 'Saved thread %title', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the status of a post to 1 (published).
+ *
+ * @param $post
+ *   A post object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_post_publish_action($post, $context = array()) {
+  $post->status = HARMONY_PUBLISHED;
+  watchdog('action', 'Set post %title to published.', array('%title' => $post->title));
+  /* @todo queue unpublish of posts. */
+}
+
+/**
+ * Sets the status of a post to 0 (unpublished).
+ *
+ * @param $post
+ *   A post object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_post_unpublish_action($post, $context = array()) {
+  $post->status = HARMONY_NOT_PUBLISHED;
+  watchdog('action', 'Set post %title to unpublished.', array('%title' => $post->title));
 }
 
 /**
@@ -1229,6 +1308,117 @@ function harmony_core_thread_form_submit($form, &$form_state) {
 }
 
 /**
+ * Post add/edit form callback.
+ */
+function harmony_core_post_form($form, &$form_state, $post) {
+  $form = array();
+
+  $form['post'] = array(
+    '#type' => 'value',
+    '#value' => $post,
+  );
+  $form['#post_edit_form'] = TRUE;
+  $form['#attributes']['class'][] = 'post-form';
+
+  if (empty($post->is_new)) {
+    $post->is_new = FALSE;
+  }
+
+  // Prevent users from editing a locked post.
+  if ($post->locked && !user_access('administer forum content')) {
+    drupal_access_denied();
+  }
+
+  // Basic post information.
+  // These elements are just values so they are not even sent to the client.
+  foreach (array('post_id', 'uid', 'is_new') as $key) {
+    $form[$key] = array(
+      '#type' => 'value',
+      '#value' => isset($post->$key) ? $post->$key : NULL,
+    );
+  }
+
+  $form['title'] = array(
+    '#type' => 'value',
+    '#title' => t('Post title'),
+    '#default_value' => $post->title,
+  );
+
+  // Attach fields.
+  field_attach_form('post', $post, $form, $form_state);
+
+  // Options for administrators
+  $form['options'] = array(
+    '#type' => 'fieldset',
+    '#access' => user_access('administer forum content'),
+    '#title' => t('Post options'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('post-form-options'),
+    ),
+    '#weight' => 95,
+  );
+  $form['options']['status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Published'),
+    '#default_value' => $post->status,
+  );
+  $form['options']['locked'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Lock from replies'),
+    '#default_value' => $post->locked,
+  );
+
+  // Add the buttons.
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => $post->is_new ? t('Reply') : t('Save post'),
+    '#weight' => 5,
+    '#submit' => array('harmony_core_post_form_submit'),
+  );
+  if (!empty($post->post_id) && harmony_core_post_access_callback('delete', $post)) {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('harmony_core_post_delete_submit'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Validation handler for harmony_core_post_form.
+ * We pass things straight through to the Field API to handle validation
+ * of the attached fields.
+ */
+function harmony_core_post_form_validate($form, &$form_state) {
+  field_attach_form_validate('post', $form_state['values']['post'], $form, $form_state);
+}
+
+/**
+ * Form submit handler for harmony_core_post_form.
+ */
+function harmony_core_post_form_submit($form, &$form_state) {
+  $post = $form_state['values']['post'];
+  $wrapper = entity_metadata_wrapper('post', $post);
+
+  //$wrapper->title->set($form_state['values']['title']);
+
+  $wrapper->status->set($form_state['values']['status']);
+  $wrapper->locked->set($form_state['values']['locked']);
+
+  field_attach_submit('post', $post, $form, $form_state);
+
+  $post = harmony_core_post_save($post);
+  //$form_state['redirect'] = "post/$post->post_id";
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  */
 function harmony_core_form_node_form_alter(&$form, &$form_state, $form_id) {
@@ -1294,6 +1484,7 @@ function harmony_core_thread_insert($thread) {
 
   // @todo, checking around whether or not thread is published,
   // if so increment things otherwise don't.
+  // Move to controller!
 
   // Increment the category thread count if the thread belongs to a category.
   if ($wrapper->field_category->value()) {
@@ -1368,8 +1559,10 @@ function harmony_core_thread_update($thread) {
   harmony_core_thread_update_alias($thread, 'update');
 }
 
-function harmony_core_thread_delete($thread) {
+function harmony_core_thread_on_delete($thread) {
   list($thread_id) = entity_extract_ids('thread', $thread);
+
+  // @todo this needs to live in the entity controller.
 
   // Remove all of the attached posts, first unpublish and orphan,
   // then batch delete, this way on hook_node_delete the thread
@@ -1474,7 +1667,7 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
  * Helper function to update a posts title.
  */
 function harmony_core_update_post_title($item) {
-  $post = entity_load_single('post', $item['nid']);
+  $post = entity_load_single('post', $item['post_id']);
   $post->title = $item['title'];
   node_save($post);
 }

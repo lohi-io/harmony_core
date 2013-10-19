@@ -18,12 +18,12 @@ class harmony_core_context_condition_thread extends context_condition {
       'status_true' => array(
         'title' => t('Published threads'),
         'property' => 'status',
-        'value' => THREAD_PUBLISHED,
+        'value' => HARMONY_PUBLISHED,
       ),
       'status_false' => array(
         'title' => t('Unpublished threads'),
         'property' => 'status',
-        'value' => THREAD_NOT_PUBLISHED,
+        'value' => HARMONY_NOT_PUBLISHED,
       ),
       'pinned_true' => array(
         'title' => t('Pinned threads'),
@@ -38,12 +38,12 @@ class harmony_core_context_condition_thread extends context_condition {
       'locked_true' => array(
         'title' => t('Locked threads'),
         'property' => 'locked',
-        'value' => THREAD_LOCKED,
+        'value' => HARMONY_LOCKED,
       ),
       'locked_false' => array(
         'title' => t('Not locked threads'),
         'property' => 'locked',
-        'value' => THREAD_NOT_LOCKED,
+        'value' => HARMONY_NOT_LOCKED,
       ),
     );
   }

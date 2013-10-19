@@ -12,7 +12,7 @@
  * entity API already provides data for our custom entity type.
  */ 
  function harmony_core_views_data_alter(&$data) {
-  // Extra threads fields.
+  // Extra Threads fields.
   $data['thread']['view_link'] = array(
     'field' => array(
       'title' => t('Link'),
@@ -72,4 +72,31 @@
       'handler' => 'harmony_core_views_handler_filter_thread_read_history_timestamp',
     ),
   );
+
+  // Extra Post entity fields.
+  $data['post']['view_link'] = array(
+    'field' => array(
+      'title' => t('Link'),
+      'help' => t('Provide a simple link to the post.'),
+      'handler' => 'harmony_core_views_handler_post_field_link',
+    ),
+  );  
+  $data['post']['edit_link'] = array(
+    'field' => array(
+      'title' => t('Edit link'),
+      'help' => t('Provide a simple link to edit the post.'),
+      'handler' => 'harmony_core_views_handler_post_field_link_edit',
+    ),
+  );
+  $data['post']['delete_link'] = array(
+    'field' => array(
+      'title' => t('Delete link'),
+      'help' => t('Provide a simple link to delete the post.'),
+      'handler' => 'harmony_core_views_handler_post_field_link_delete',
+    ),
+  );
+
+  // Override the title field slightly to use our custom views field handler
+  // which has the "link to post" functionality.
+  $data['post']['title']['field']['handler'] = 'harmony_core_views_handler_post_field';
 }
