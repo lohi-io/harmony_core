@@ -53,6 +53,7 @@ class ThreadController extends EntityAPIController {
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
+
     try {
       // Load the stored entity, if any.
       if (!empty($entity->{$this->idKey}) && !isset($entity->original)) {
@@ -178,6 +179,7 @@ class PostController extends EntityAPIController {
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
+
     try {
       // Load the stored entity, if any.
       if (!empty($entity->{$this->idKey}) && !isset($entity->original)) {
@@ -188,6 +190,9 @@ class PostController extends EntityAPIController {
 
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
       $entity->updated = REQUEST_TIME;
+      if (empty($entity->log)) {
+        $entity->log = '';
+      }
 
       $this->invoke('presave', $entity);
 
@@ -203,6 +208,9 @@ class PostController extends EntityAPIController {
       else {
         // Update the base table if the entity doesn't have revisions or
         // we are updating the default revision.
+        $entity->is_new_revision = TRUE;
+        $entity->default_revision = TRUE;
+
         if (!$this->revisionKey || !empty($entity->{$this->defaultRevisionKey})) {
           $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
         }
@@ -214,7 +222,7 @@ class PostController extends EntityAPIController {
         $this->invoke('update', $entity);
 
         //field_attach_update($this->entityType, $entity);
-        
+
         // Field API always saves as default revision, so if the revision saved
         // is not default we have to restore the field values of the default
         // revision now by invoking field_attach_update() once again.

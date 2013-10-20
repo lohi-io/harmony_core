@@ -56,7 +56,7 @@ function harmony_core_thread_view($thread, $view_mode = 'full') {
  *
  * @see harmony_core_thread_form()
  */
-function harmony_core_thread_delete_submit($form, &$form_state) {
+function harmony_core_delete_thread_submit($form, &$form_state) {
   $destination = array();
   if (isset($_GET['destination'])) {
     $destination = drupal_get_destination();
@@ -66,7 +66,7 @@ function harmony_core_thread_delete_submit($form, &$form_state) {
   $form_state['redirect'] = array('thread/' . $thread->thread_id . '/delete', array('query' => $destination));
 }
 
-function harmony_core_thread_delete_confirm($form, &$form_state, $thread) {
+function harmony_core_delete_thread_confirm($form, &$form_state, $thread) {
   $form['#thread'] = $thread;
 
   // Always provide entity id in the same form key as in the entity edit form.
@@ -84,12 +84,12 @@ function harmony_core_thread_delete_confirm($form, &$form_state, $thread) {
 /**
  * Executes thread deletion.
  *
- * @see harmony_core_thread_delete_confirm()
+ * @see harmony_core_delete_thread_confirm()
  */
-function harmony_core_thread_delete_confirm_submit($form, &$form_state) {
+function harmony_core_delete_thread_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $thread = harmony_core_thread_load($form_state['values']['thread_id']);
-    harmony_core_thread_delete($thread);
+    harmony_core_delete_thread($thread->thread_id);
 
     watchdog('harmony', 'Thread: deleted %title.', array('%title' => $thread->title));
     drupal_set_message(t('The thread %title has been deleted.', array('%title' => $thread->title)));
@@ -131,7 +131,7 @@ function harmony_core_post_view($post, $view_mode = 'full') {
  *
  * @see harmony_core_post_form()
  */
-function harmony_core_post_delete_submit($form, &$form_state) {
+function harmony_core_delete_post_submit($form, &$form_state) {
   $destination = array();
   if (isset($_GET['destination'])) {
     $destination = drupal_get_destination();
@@ -141,7 +141,7 @@ function harmony_core_post_delete_submit($form, &$form_state) {
   $form_state['redirect'] = array('post/' . $post->post_id . '/delete', array('query' => $destination));
 }
 
-function harmony_core_post_delete_confirm($form, &$form_state, $post) {
+function harmony_core_delete_post_confirm($form, &$form_state, $post) {
   $form['#post'] = $post;
 
   // Always provide entity id in the same form key as in the entity edit form.
@@ -159,12 +159,12 @@ function harmony_core_post_delete_confirm($form, &$form_state, $post) {
 /**
  * Executes post deletion.
  *
- * @see harmony_core_post_delete_confirm()
+ * @see harmony_core_delete_post_confirm()
  */
-function harmony_core_post_delete_confirm_submit($form, &$form_state) {
+function harmony_core_delete_post_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $post = harmony_core_post_load($form_state['values']['post_id']);
-    harmony_core_post_delete($post);
+    harmony_core_delete_post($post->post_id);
 
     watchdog('harmony', 'Post: deleted %title.', array('%title' => $post->title));
     drupal_set_message(t('The post %title has been deleted.', array('%title' => $post->title)));

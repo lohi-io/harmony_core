@@ -106,6 +106,7 @@ function harmony_core_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'post_id',
+      'revision' => 'vid',
     ),
     'bundles' => array(
       'post' => array(
@@ -506,7 +507,7 @@ function harmony_core_menu() {
   $items['thread/%harmony_core_thread/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_thread_delete_confirm', 1),
+    'page arguments' => array('harmony_core_delete_thread_confirm', 1),
     'access callback' => 'harmony_core_thread_access_callback',
     'access arguments' => array('delete', 1),
     'weight' => 1,
@@ -557,7 +558,7 @@ function harmony_core_menu() {
   $items['post/%harmony_core_post/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_post_delete_confirm', 1),
+    'page arguments' => array('harmony_core_delete_post_confirm', 1),
     'access callback' => 'harmony_core_post_access_callback',
     'access arguments' => array('delete', 1),
     'weight' => 1,
@@ -867,14 +868,14 @@ function harmony_core_thread_save($thread) {
 /**
  * Delete a single thread.
  */
-function harmony_core_thread_delete($thread_id) {
-  harmony_core_thread_delete_multiple(array($thread_id));
+function harmony_core_delete_thread($thread_id) {
+  harmony_core_delete_thread_multiple(array($thread_id));
 }
 
 /**
  * Delete multiple threads.
  */
-function harmony_core_thread_delete_multiple($thread_ids) {
+function harmony_core_delete_thread_multiple($thread_ids) {
   entity_delete_multiple('thread', $thread_ids);
 }
 
@@ -891,8 +892,9 @@ function harmony_core_post_uri($entity) {
 /**
  * Load a post.
  */
-function harmony_core_post_load($post_id, $reset = FALSE) {
-  $posts = harmony_core_post_load_multiple(array($post_id), array(), $reset);
+function harmony_core_post_load($post_id, $vid = NULL, $reset = FALSE) {
+  $conditions = !empty($vid) ? array('vid' => $vid) : array();
+  $posts = harmony_core_post_load_multiple(array($post_id), $conditions, $reset);
   return reset($posts);
 }
 
@@ -913,14 +915,14 @@ function harmony_core_post_save($post) {
 /**
  * Delete a single post.
  */
-function harmony_core_post_delete($post_id) {
-  harmony_core_post_delete_multiple(array($post_id));
+function harmony_core_delete_post($post_id) {
+  harmony_core_delete_post_multiple(array($post_id));
 }
 
 /**
  * Delete multiple posts.
  */
-function harmony_core_post_delete_multiple($post_ids) {
+function harmony_core_delete_post_multiple($post_ids) {
   entity_delete_multiple('post', $post_ids);
 }
 
@@ -1155,7 +1157,7 @@ function harmony_core_cron_queue_info() {
   );
 
   $queues['delete_posts'] = array(
-    'worker callback' => 'harmony_core_post_delete',
+    'worker callback' => 'harmony_core_delete_post',
     'time' => 120,
   );
 
@@ -1266,7 +1268,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
       '#type' => 'submit',
       '#value' => t('Delete'),
       '#weight' => 15,
-      '#submit' => array('harmony_core_thread_delete_submit'),
+      '#submit' => array('harmony_core_delete_thread_submit'),
     );
   }
 
@@ -1367,9 +1369,24 @@ function harmony_core_post_form($form, &$form_state, $post) {
   );
   $form['options']['locked'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Lock from replies'),
+    '#title' => t('Lock from edits'),
     '#default_value' => $post->locked,
   );
+
+  // Add in the log for revisions, if not new.
+  if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
+    $form['options']['log'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Reason for edit'),
+      '#rows' => 4,
+    );
+  }
+  else {
+    $form['options']['log'] = array(
+      '#type' => 'value',
+      '#value' => NULL,
+    );
+  }
 
   // Add the buttons.
   $form['actions'] = array('#type' => 'actions');
@@ -1384,7 +1401,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
       '#type' => 'submit',
       '#value' => t('Delete'),
       '#weight' => 15,
-      '#submit' => array('harmony_core_post_delete_submit'),
+      '#submit' => array('harmony_core_delete_post_submit'),
     );
   }
 
@@ -1411,6 +1428,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
 
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->locked->set($form_state['values']['locked']);
+  $wrapper->log->set($form_state['values']['log']);
 
   field_attach_submit('post', $post, $form, $form_state);
 
