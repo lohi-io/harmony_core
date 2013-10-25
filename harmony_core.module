@@ -56,6 +56,7 @@ define('HARMONY_ACCESS_IGNORE', NULL);
 /**
  * Load includes.
  */
+include_once 'harmony_core.features.inc';
 module_load_include('inc', 'harmony_core', 'includes/harmony_core.controllers');
 module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
 
@@ -587,16 +588,6 @@ function harmony_core_cron() {
   db_delete('thread_read_history')
     ->condition('timestamp', harmony_core_thread_new_limit(), '<')
     ->execute();
-}
-
-/**
- * Implements hook_views_api().
- */
-function harmony_core_views_api() {
-  return array(
-    'api'   => '3',
-    'path'  => drupal_get_path('module', 'harmony_core') . '/views',
-  );
 }
 
 /**
