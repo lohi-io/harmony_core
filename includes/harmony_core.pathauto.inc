@@ -110,7 +110,7 @@ function harmony_core_thread_update_alias($thread, $op, array $options = array()
 function harmony_core_thread_update_alias_multiple(array $thread_ids, $op, array $options = array()) {
   $options += array('message' => FALSE);
 
-  $threads = harmony_core_thread_load_multiple($thread_ids);
+  $threads = harmony_thread_load_multiple($thread_ids);
   foreach ($threads as $thread) {
     harmony_core_thread_update_alias($thread, $op, $options);
   }

@@ -10,6 +10,7 @@ files[] = includes/harmony_core.pages.inc
 files[] = includes/harmony_core.pathauto.inc
 files[] = includes/harmony_core.context.inc
 
+files[] = views/handlers/harmony_core_views_handler_field_reverse_counter.inc
 files[] = views/handlers/harmony_core_views_handler_field_thread_read_history_timestamp.inc
 files[] = views/handlers/harmony_core_views_handler_filter_thread_read_history_timestamp.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field.inc
@@ -20,6 +21,10 @@ files[] = views/handlers/harmony_core_views_handler_post_field.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_link.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_link_edit.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_link_delete.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_view_revision.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_delete_revision.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_is_current.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_make_current.inc
 
 dependencies[] = entity
 
@@ -75,6 +80,7 @@ features[taxonomy_display][] = category
 features[views_view][] = administration_posts
 features[views_view][] = administration_threads
 features[views_view][] = category_sub_category_listing
+features[views_view][] = post_revisions
 features[views_view][] = thread_listing
 features_exclude[dependencies][ctools] = ctools
 features_exclude[dependencies][entityreference] = entityreference

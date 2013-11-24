@@ -84,7 +84,7 @@ function harmony_core_entity_info() {
         ),
       ),
     ),
-    'load hook' => 'harmony_core_thread_load',
+    'load hook' => 'harmony_thread_load',
     'view modes' => array(
       'full' => array(
         'label' => t('Default'),
@@ -119,7 +119,7 @@ function harmony_core_entity_info() {
         ),
       ),
     ),
-    'load hook' => 'harmony_core_post_load',
+    'load hook' => 'harmony_post_load',
     'view modes' => array(
       'full' => array(
         'label' => t('Default'),
@@ -390,6 +390,26 @@ function harmony_core_permission() {
       'title' => t('View post revisions'),
       'description' => t('Allows users to view a posts revisions.'),
     ),
+    'revert any post revisions' => array(
+      'title' => t('Revert any post revisions'),
+      'description' => t('Allows users to revert any post revisions.'),
+    ),
+    'delete any post revisions' => array(
+      'title' => t('Delete any post revisions'),
+      'description' => t('Allows users to delete any post revisions.'),
+    ),
+    'view own post revisions' => array(
+      'title' => t('View own post revisions'),
+      'description' => t('Allows users to view their own posts revisions.'),
+    ),
+    'revert own post revisions' => array(
+      'title' => t('Revert own post revisions'),
+      'description' => t('Allows users to revert their own post revisions.'),
+    ),
+    'delete own post revisions' => array(
+      'title' => t('Delete own post revisions'),
+      'description' => t('Allows users to delete their own post revisions.'),
+    ),
     'create posts' => array(
       'title' => t('Create new posts'),
       'description' => t('Allows users to create posts.'),
@@ -475,7 +495,7 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['thread/%harmony_core_thread'] = array(
+  $items['thread/%harmony_thread'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('thread', 1),
     'page callback' => 'harmony_core_thread_view',
@@ -486,13 +506,13 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['thread/%harmony_core_thread/view'] = array(
+  $items['thread/%harmony_thread/view'] = array(
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
 
-  $items['thread/%harmony_core_thread/edit'] = array(
+  $items['thread/%harmony_thread/edit'] = array(
     'title' => 'Edit',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_thread_form', 1),
@@ -505,10 +525,10 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['thread/%harmony_core_thread/delete'] = array(
+  $items['thread/%harmony_thread/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_delete_thread_confirm', 1),
+    'page arguments' => array('harmony_thread_delete_confirm', 1),
     'access callback' => 'harmony_core_thread_access_callback',
     'access arguments' => array('delete', 1),
     'weight' => 1,
@@ -526,7 +546,7 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['post/%harmony_core_post'] = array(
+  $items['post/%harmony_post'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('post', 1),
     'page callback' => 'harmony_core_post_view',
@@ -537,34 +557,79 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['post/%harmony_core_post/view'] = array(
+  $items['post/%harmony_post/view'] = array(
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
 
-  $items['post/%harmony_core_post/edit'] = array(
+  $items['post/%harmony_post/edit'] = array(
     'title' => 'Edit',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_post_form', 1),
     'access callback' => 'harmony_core_post_access_callback',
     'access arguments' => array('update', 1),
-    'weight' => 0,
+    'weight' => 1,
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );
 
-  $items['post/%harmony_core_post/delete'] = array(
+  $items['post/%harmony_post/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_delete_post_confirm', 1),
+    'page arguments' => array('harmony_post_delete_confirm', 1),
     'access callback' => 'harmony_core_post_access_callback',
     'access arguments' => array('delete', 1),
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_post/revisions'] = array(
+    'title' => 'Revisions',
+    'page callback' => 'harmony_core_post_revisions_view',
+    'page arguments' => array(1),
+    'access callback' => 'harmony_core_post_revision_access_callback',
+    'access arguments' => array('view', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+    'weight' => 2,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['post/%harmony_post/revisions/%'] = array(
+    'title' => 'View revision',
+    'load arguments' => array(3),
+    'page callback' => 'harmony_core_post_revision_view',
+    'page arguments' => array(1),
+    'access callback' => 'harmony_core_post_revision_access_callback',
+    'access arguments' => array('update', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_post/revisions/%/revert'] = array(
+    'title' => 'Revert to earlier revision',
+    'load arguments' => array(3),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_post_revision_revert_confirm', 1),
+    'access callback' => 'harmony_core_post_revision_access_callback',
+    'access arguments' => array('update', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['post/%harmony_post/revisions/%/delete'] = array(
+    'title' => 'Delete earlier revision',
+    'load arguments' => array(3),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_post_revision_delete_confirm', 1),
+    'access callback' => 'harmony_core_post_revision_access_callback',
+    'access arguments' => array('delete', 1),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );
@@ -671,7 +736,7 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
     return $rights[$account->uid][$cid][$op];
   }
 
-  // Don't allow anon to create content, putting here so it's very obvious!
+  // Don't allow anon to create content, putting here so it's very obvious! @todo
   if ($op == 'create' && !$account->uid) {
     return FALSE;
   }
@@ -697,8 +762,6 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
     return TRUE;
   }
 
-  /* @todo Can access own unpublished thread, as per node.module */
-
   /* @todo Implement thread access grants. */
   if (module_exists('harmony_access')) {
 
@@ -711,9 +774,17 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
  * Implements hook_thread_access().
  */
 function harmony_core_thread_access($op, $entity, $account, $entity_type) {
+  return harmony_core_entity_access_check($op, $entity, $account, $entity_type);
+}
+
+/**
+ * A way for us to check access to an entity. Avoid the name
+ * hook_entity_access in case a module like that comes along one day.
+ */
+function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
   switch ($op) {
     case 'view':
-      if (user_access("view {$entity_type}s", $account)) {
+      if ($entity->status && user_access("view {$entity_type}s", $account) || !$entity->status && user_access("view unpublished {$entity_type}s", $account) || !$entity->status && $account->uid == $entity->uid && user_access("view own unpublished {$entity_type}s", $account)) {
         return HARMONY_ACCESS_ALLOW;
       }
     case 'update':
@@ -799,24 +870,119 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
 
   // Check the operation perms via this generic function, also used
   // to check basic thread perms.
-  $access = harmony_core_thread_access($op, $entity, $account, $entity_type);
+  $access = harmony_core_entity_access_check($op, $entity, $account, $entity_type);
 
-  // The user must also have access to the thread they're trying to post in.
-  // How do we do this for the first post however? Hmmm.
+  // The user must also have access to the thread they're trying to post in,
+  // if the post is attached to a thread.
   if ($access == HARMONY_ACCESS_ALLOW) {
-    $thread = NULL;
+    $wrapper = entity_metadata_wrapper('post', $entity);
 
-    if (!harmony_core_thread_access_callback('view', $thread, $account) == HARMONY_ACCESS_ALLOW) {
-      $access = HARMONY_ACCESS_DENY;
+    if ($wrapper->field_thread->value()) {
+      $thread = harmony_thread_load($wrapper->field_thread->value());
+
+      if (harmony_core_thread_access_callback('view', $thread, $account) != HARMONY_ACCESS_ALLOW) {
+        $access = HARMONY_ACCESS_DENY;
+      }
     }
   }
 
   // The user should have access to view the thread.
-  if (in_array(HARMONY_ACCESS_DENY, $access, TRUE)) {
+  if ($access === HARMONY_ACCESS_DENY) {
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
   }
-  elseif (in_array(HARMONY_ACCESS_ALLOW, $access, TRUE)) {
+
+  // Allow custom access rules to jump in.
+  /* @todo Implement post access grants. */
+  if (module_exists('harmony_access')) {
+
+  }
+
+  return FALSE;
+}
+
+function harmony_core_post_revision_access_callback($op, $post, $account = NULL) {
+  $rights = &drupal_static(__FUNCTION__, array());
+
+  $map = array(
+    'view' => 'view post revisions',
+    'update' => 'revert any post revisions',
+    'delete' => 'delete any post revisions',
+  );
+
+  if (!$post || !isset($map[$op])) {
+    // If there was no post to check against, or the $op was not one of the
+    // supported ones, we return access denied.
+    return FALSE;
+  }
+
+  // If no user object is supplied, the access check is for the current user.
+  if (empty($account)) {
+    $account = $GLOBALS['user'];
+  }
+
+  $cid = $post->vid;
+
+  // If we've already checked access for this entity, return from cache.
+  if (isset($rights[$account->uid][$cid][$op])) {
+    return $rights[$account->uid][$cid][$op];
+  }
+
+  $post_current_revision = harmony_post_load($post->post_id);
+  $is_current_revision = $post_current_revision->vid == $post->vid;
+
+  // Prevent deletion of the current revision.
+  if ($is_current_revision && $op == 'delete') {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+
+  // Prevent reverting the current revision.
+  if ($is_current_revision && $op == 'update') {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+
+  /* @todo, lots! this needs thinking and fleshing out from a UI POV. */
+
+  // If updating/reverting, then we need more than one revision.
+  if ($op == 'update') {
+    $revision_count = db_query('SELECT COUNT(vid) FROM {post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
+
+    if ($revision_count < 2) {
+      $rights[$account->uid][$cid][$op] = FALSE;
+      return FALSE;
+    }
+  }
+
+  // Admin-ish access checks.
+  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // Check that the specified user has access to the post, and in turn
+  // view the thread.
+  $post_access = harmony_core_post_access_callback($op, $post, $account);
+  if ($post_access !== HARMONY_ACCESS_ALLOW) {
+    $rights[$account->uid][$cid][$op] = FALSE;
+    return FALSE;
+  }
+
+  // Global revision permissions.
+  if (user_access($map[$op], $account) && $post_access === HARMONY_ACCESS_ALLOW) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // We're on to the path of $op "own", or more custom access control.
+  $own_map = array(
+    'view' => 'view own post revisions',
+    'update' => 'revert own post revisions',
+    'delete' => 'delete own post revisions',
+  );
+
+  if (user_access($own_map[$op], $account) && $post->uid === $account->uid) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
@@ -837,36 +1003,36 @@ function harmony_core_thread_uri($entity) {
 /**
  * Load a thread.
  */
-function harmony_core_thread_load($thread_id, $reset = FALSE) {
-  $threads = harmony_core_thread_load_multiple(array($thread_id), array(), $reset);
+function harmony_thread_load($thread_id, $reset = FALSE) {
+  $threads = harmony_thread_load_multiple(array($thread_id), array(), $reset);
   return reset($threads);
 }
 
 /**
  * Load multiple threads based on certain conditions.
  */
-function harmony_core_thread_load_multiple($thread_ids = array(), $conditions = array(), $reset = FALSE) {
+function harmony_thread_load_multiple($thread_ids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('thread', $thread_ids, $conditions, $reset);
 }
 
 /**
  * Save a thread.
  */
-function harmony_core_thread_save($thread) {
+function harmony_thread_save($thread) {
   return entity_get_controller('thread')->save($thread);
 }
 
 /**
  * Delete a single thread.
  */
-function harmony_core_delete_thread($thread_id) {
-  harmony_core_delete_thread_multiple(array($thread_id));
+function harmony_thread_delete($thread_id) {
+  harmony_thread_delete_multiple(array($thread_id));
 }
 
 /**
  * Delete multiple threads.
  */
-function harmony_core_delete_thread_multiple($thread_ids) {
+function harmony_thread_delete_multiple($thread_ids) {
   entity_delete_multiple('thread', $thread_ids);
 }
 
@@ -883,38 +1049,45 @@ function harmony_core_post_uri($entity) {
 /**
  * Load a post.
  */
-function harmony_core_post_load($post_id, $vid = NULL, $reset = FALSE) {
+function harmony_post_load($post_id, $vid = NULL, $reset = FALSE) {
   $conditions = !empty($vid) ? array('vid' => $vid) : array();
-  $posts = harmony_core_post_load_multiple(array($post_id), $conditions, $reset);
+  $posts = harmony_post_load_multiple(array($post_id), $conditions, $reset);
   return reset($posts);
 }
 
 /**
  * Load multiple posts based on certain conditions.
  */
-function harmony_core_post_load_multiple($post_ids = array(), $conditions = array(), $reset = FALSE) {
+function harmony_post_load_multiple($post_ids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('post', $post_ids, $conditions, $reset);
 }
 
 /**
  * Save a post.
  */
-function harmony_core_post_save($post) {
+function harmony_post_save($post) {
   return entity_get_controller('post')->save($post);
 }
 
 /**
  * Delete a single post.
  */
-function harmony_core_delete_post($post_id) {
-  harmony_core_delete_post_multiple(array($post_id));
+function harmony_post_delete($post_id) {
+  harmony_post_delete_multiple(array($post_id));
 }
 
 /**
  * Delete multiple posts.
  */
-function harmony_core_delete_post_multiple($post_ids) {
+function harmony_post_delete_multiple($post_ids) {
   entity_delete_multiple('post', $post_ids);
+}
+
+/**
+ * Delete a post revision.
+ */
+function harmony_post_revision_delete($revision_id) {
+  return entity_get_controller('post')->deleteRevision($revision_id);
 }
 
 /**
@@ -1099,7 +1272,7 @@ function harmony_core_thread_unlock_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_save_action($thread) {
-  harmony_core_thread_save($thread);
+  harmony_thread_save($thread);
   watchdog('action', 'Saved thread %title', array('%title' => $thread->title));
 }
 
@@ -1148,7 +1321,7 @@ function harmony_core_cron_queue_info() {
   );
 
   $queues['delete_posts'] = array(
-    'worker callback' => 'harmony_core_delete_post',
+    'worker callback' => 'harmony_post_delete',
     'time' => 120,
   );
 
@@ -1259,7 +1432,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
       '#type' => 'submit',
       '#value' => t('Delete'),
       '#weight' => 15,
-      '#submit' => array('harmony_core_delete_thread_submit'),
+      '#submit' => array('harmony_thread_delete_submit'),
     );
   }
 
@@ -1296,7 +1469,7 @@ function harmony_core_thread_form_submit($form, &$form_state) {
     $wrapper->field_last_user_to_post_a_reply->set($thread->uid);
   }
 
-  $thread = harmony_core_thread_save($thread);
+  $thread = harmony_thread_save($thread);
   $form_state['redirect'] = "thread/$thread->thread_id";
 }
 
@@ -1392,7 +1565,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
       '#type' => 'submit',
       '#value' => t('Delete'),
       '#weight' => 15,
-      '#submit' => array('harmony_core_delete_post_submit'),
+      '#submit' => array('harmony_post_delete_submit'),
     );
   }
 
@@ -1423,8 +1596,8 @@ function harmony_core_post_form_submit($form, &$form_state) {
 
   field_attach_submit('post', $post, $form, $form_state);
 
-  $post = harmony_core_post_save($post);
-  //$form_state['redirect'] = "post/$post->post_id";
+  $post = harmony_post_save($post);
+  $form_state['redirect'] = "post/$post->post_id";
 }
 
 /**
@@ -1895,7 +2068,7 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
       break;
 
     case 'delete':
-      $delete_function = "harmony_core_{$type}_delete";
+      $delete_function = "harmony_core_delete_{$type}";
       $delete_function($entity);
 
       break;
@@ -2044,7 +2217,7 @@ function harmony_core_page_alter(&$page) {
   }
 
   // Load the thread and check access.
-  $thread = harmony_core_thread_load(arg(1));
+  $thread = harmony_thread_load(arg(1));
   $can_access_thread = $thread && harmony_core_thread_access_callback('view', $thread);
 
   if (!$can_access_thread) {
@@ -2091,7 +2264,7 @@ function harmony_core_thread_log_view($thread_id) {
   // Check the id is numeric.
   if ($valid_referer && !empty($thread_id) && is_numeric($thread_id) && $thread_id > 0) {
     // Load the thread.
-    $thread = harmony_core_thread_load($thread_id);
+    $thread = harmony_thread_load($thread_id);
   }
 
   // Check that the id is for a valid thread and that the user has access to it, then track.

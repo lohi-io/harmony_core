@@ -56,7 +56,7 @@ function harmony_core_thread_view($thread, $view_mode = 'full') {
  *
  * @see harmony_core_thread_form()
  */
-function harmony_core_delete_thread_submit($form, &$form_state) {
+function harmony_thread_delete_submit($form, &$form_state) {
   $destination = array();
   if (isset($_GET['destination'])) {
     $destination = drupal_get_destination();
@@ -66,7 +66,7 @@ function harmony_core_delete_thread_submit($form, &$form_state) {
   $form_state['redirect'] = array('thread/' . $thread->thread_id . '/delete', array('query' => $destination));
 }
 
-function harmony_core_delete_thread_confirm($form, &$form_state, $thread) {
+function harmony_thread_delete_confirm($form, &$form_state, $thread) {
   $form['#thread'] = $thread;
 
   // Always provide entity id in the same form key as in the entity edit form.
@@ -84,12 +84,12 @@ function harmony_core_delete_thread_confirm($form, &$form_state, $thread) {
 /**
  * Executes thread deletion.
  *
- * @see harmony_core_delete_thread_confirm()
+ * @see harmony_thread_delete_confirm()
  */
-function harmony_core_delete_thread_confirm_submit($form, &$form_state) {
+function harmony_thread_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
-    $thread = harmony_core_thread_load($form_state['values']['thread_id']);
-    harmony_core_delete_thread($thread->thread_id);
+    $thread = harmony_thread_load($form_state['values']['thread_id']);
+    harmony_thread_delete($thread->thread_id);
 
     watchdog('harmony', 'Thread: deleted %title.', array('%title' => $thread->title));
     drupal_set_message(t('The thread %title has been deleted.', array('%title' => $thread->title)));
@@ -131,7 +131,7 @@ function harmony_core_post_view($post, $view_mode = 'full') {
  *
  * @see harmony_core_post_form()
  */
-function harmony_core_delete_post_submit($form, &$form_state) {
+function harmony_post_delete_submit($form, &$form_state) {
   $destination = array();
   if (isset($_GET['destination'])) {
     $destination = drupal_get_destination();
@@ -141,7 +141,7 @@ function harmony_core_delete_post_submit($form, &$form_state) {
   $form_state['redirect'] = array('post/' . $post->post_id . '/delete', array('query' => $destination));
 }
 
-function harmony_core_delete_post_confirm($form, &$form_state, $post) {
+function harmony_post_delete_confirm($form, &$form_state, $post) {
   $form['#post'] = $post;
 
   // Always provide entity id in the same form key as in the entity edit form.
@@ -159,16 +159,99 @@ function harmony_core_delete_post_confirm($form, &$form_state, $post) {
 /**
  * Executes post deletion.
  *
- * @see harmony_core_delete_post_confirm()
+ * @see harmony_post_delete_confirm()
  */
-function harmony_core_delete_post_confirm_submit($form, &$form_state) {
+function harmony_post_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
-    $post = harmony_core_post_load($form_state['values']['post_id']);
-    harmony_core_delete_post($post->post_id);
+    $post = harmony_post_load($form_state['values']['post_id']);
+    harmony_post_delete($post->post_id);
 
     watchdog('harmony', 'Post: deleted %title.', array('%title' => $post->title));
     drupal_set_message(t('The post %title has been deleted.', array('%title' => $post->title)));
   }
 
   $form_state['redirect'] = '<front>';
+}
+
+function harmony_core_post_revisions_view($post, $view_mode = 'full') {
+  return views_embed_view(variable_get('harmony_core_post_revisions_view', 'post_revisions'), 'default', $post->post_id);
+}
+
+function harmony_core_post_revision_view($post, $view_mode = 'full') {
+  dsm($post);
+
+  return '';
+}
+
+/**
+ * Asks for confirmation of the reversion to prevent against CSRF attacks.
+ *
+ * @param int $post_revision
+ *   The post revision ID.
+ *
+ * @return array
+ *   An array as expected by drupal_render().
+ *
+ * @see harmony_core_menu()
+ * @see post_revision_revert_confirm_submit()
+ * @ingroup forms
+ */
+function harmony_core_post_revision_revert_confirm($form, $form_state, $post_revision) {
+  $form['#post_revision'] = $post_revision;
+  return confirm_form($form, t('Are you sure you want to revert to the revision from %revision-date?', array('%revision-date' => format_date($post_revision->timestamp))), 'post/' . $post_revision->post_id . '/revisions', '', t('Revert'), t('Cancel'));
+}
+
+/**
+ * Form submission handler for harmony_core_post_revision_revert_confirm().
+ */
+function harmony_core_post_revision_revert_confirm_submit($form, &$form_state) {
+  $post_revision = $form['#post_revision'];
+  $post_revision->revision = 1;
+  $post_revision->log = t('Copy of the revision from %date.', array('%date' => format_date($post_revision->timestamp)));
+
+  harmony_post_save($post_revision);
+
+  watchdog('harmony', 'Post: reverted %title revision %revision.', array('%title' => $post_revision->title, '%revision' => $post_revision->vid));
+  drupal_set_message(t('Post %title has been reverted back to the revision from %revision-date.', array('%title' => $post_revision->title, '%revision-date' => format_date($post_revision->timestamp))));
+  $form_state['redirect'] = 'post/' . $post_revision->post_id . '/revisions';
+}
+
+/**
+ * Form constructor for the revision deletion confirmation form.
+ *
+ * This form prevents against CSRF attacks.
+ *
+ * @param $post_revision
+ *   The post revision ID.
+ *
+ * @return
+ *   An array as expected by drupal_render().
+ *
+ * @see harmony_core_menu()
+ * @see harmony_core_post_revision_delete_confirm_submit()
+ * @ingroup forms
+ */
+function harmony_core_post_revision_delete_confirm($form, $form_state, $post_revision) {
+  $form['#post_revision'] = $post_revision;
+  return confirm_form($form, t('Are you sure you want to delete the revision from %revision-date?', array('%revision-date' => format_date($post_revision->timestamp))), 'post/' . $post_revision->post_id . '/revisions', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
+}
+
+/**
+ * Form submission handler for harmony_core_post_revision_delete_confirm().
+ */
+function harmony_core_post_revision_delete_confirm_submit($form, &$form_state) {
+  $post_revision = $form['#post_revision'];
+  $result = harmony_post_revision_delete($post_revision->vid);
+
+  if ($result) {
+    watchdog('harmony', 'Deleted %title revision %revision.', array('%title' => $post_revision->title, '%revision' => $post_revision->vid));
+    drupal_set_message(t('Revision from %revision-date %title has been deleted.', array('%revision-date' => format_date($post_revision->timestamp), '%title' => $post_revision->title)));
+    $form_state['redirect'] = 'post/' . $post_revision->post_id;
+    if (db_query('SELECT COUNT(vid) FROM {post_revision} WHERE post_id = :post_id', array(':post_id' => $post_revision->post_id))->fetchField() > 1) {
+      $form_state['redirect'] .= '/revisions';
+    }
+  }
+  else {
+    drupal_set_message(t('Failed to delete revision.'), 'error');
+  }
 }

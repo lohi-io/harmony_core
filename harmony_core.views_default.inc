@@ -536,6 +536,144 @@ function harmony_core_views_default_views() {
   $export['category_sub_category_listing'] = $view;
 
   $view = new view();
+  $view->name = 'post_revisions';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'post_revision';
+  $view->human_name = 'Post revisions';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Revisions';
+  $handler->display->display_options['use_ajax'] = TRUE;
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'none';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'reverse_counter' => 'reverse_counter',
+    'name' => 'name',
+    'timestamp' => 'timestamp',
+    'log' => 'log',
+    'is_current' => 'delete_revision',
+    'delete_revision' => 'delete_revision',
+    'make_current' => 'delete_revision',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'reverse_counter' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'timestamp' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'log' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'is_current' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'delete_revision' => array(
+      'align' => 'views-align-center',
+      'separator' => ' | ',
+      'empty_column' => 0,
+    ),
+    'make_current' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  /* Relationship: Post (historical data): Author */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'post_revision';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  /* Field: Harmony: View result reverse counter */
+  $handler->display->display_options['fields']['reverse_counter']['id'] = 'reverse_counter';
+  $handler->display->display_options['fields']['reverse_counter']['table'] = 'views';
+  $handler->display->display_options['fields']['reverse_counter']['field'] = 'reverse_counter';
+  $handler->display->display_options['fields']['reverse_counter']['label'] = '';
+  $handler->display->display_options['fields']['reverse_counter']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['reverse_counter']['prepend'] = 'v';
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['name']['exclude'] = TRUE;
+  /* Field: Post (historical data): Created date */
+  $handler->display->display_options['fields']['timestamp']['id'] = 'timestamp';
+  $handler->display->display_options['fields']['timestamp']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['timestamp']['field'] = 'timestamp';
+  $handler->display->display_options['fields']['timestamp']['label'] = 'Edited';
+  $handler->display->display_options['fields']['timestamp']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['timestamp']['alter']['text'] = '[timestamp] by [name]';
+  $handler->display->display_options['fields']['timestamp']['date_format'] = 'long';
+  /* Field: Post (historical data): Log message */
+  $handler->display->display_options['fields']['log']['id'] = 'log';
+  $handler->display->display_options['fields']['log']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['log']['field'] = 'log';
+  /* Field: Post (historical data): Is current */
+  $handler->display->display_options['fields']['is_current']['id'] = 'is_current';
+  $handler->display->display_options['fields']['is_current']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['is_current']['field'] = 'is_current';
+  $handler->display->display_options['fields']['is_current']['label'] = '';
+  $handler->display->display_options['fields']['is_current']['element_label_colon'] = FALSE;
+  /* Field: Post (historical data): Administrative delete link */
+  $handler->display->display_options['fields']['delete_revision']['id'] = 'delete_revision';
+  $handler->display->display_options['fields']['delete_revision']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['delete_revision']['field'] = 'delete_revision';
+  $handler->display->display_options['fields']['delete_revision']['label'] = '';
+  $handler->display->display_options['fields']['delete_revision']['element_label_colon'] = FALSE;
+  /* Field: Post (historical data): Administrative set current revision link */
+  $handler->display->display_options['fields']['make_current']['id'] = 'make_current';
+  $handler->display->display_options['fields']['make_current']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['make_current']['field'] = 'make_current';
+  $handler->display->display_options['fields']['make_current']['label'] = '';
+  $handler->display->display_options['fields']['make_current']['element_label_colon'] = FALSE;
+  /* Sort criterion: Post (historical data): Created date */
+  $handler->display->display_options['sorts']['timestamp']['id'] = 'timestamp';
+  $handler->display->display_options['sorts']['timestamp']['table'] = 'post_revision';
+  $handler->display->display_options['sorts']['timestamp']['field'] = 'timestamp';
+  $handler->display->display_options['sorts']['timestamp']['order'] = 'DESC';
+  /* Contextual filter: Post (historical data): Post ID */
+  $handler->display->display_options['arguments']['post_id']['id'] = 'post_id';
+  $handler->display->display_options['arguments']['post_id']['table'] = 'post_revision';
+  $handler->display->display_options['arguments']['post_id']['field'] = 'post_id';
+  $handler->display->display_options['arguments']['post_id']['default_action'] = 'not found';
+  $handler->display->display_options['arguments']['post_id']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['post_id']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['post_id']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['post_id']['summary_options']['items_per_page'] = '25';
+  $export['post_revisions'] = $view;
+
+  $view = new view();
   $view->name = 'thread_listing';
   $view->description = 'Listing of threads belonging to a category,';
   $view->tag = 'default';

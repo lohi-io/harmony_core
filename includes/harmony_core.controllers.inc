@@ -189,6 +189,7 @@ class PostController extends EntityAPIController {
       }
 
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
+      $entity->timestamp = REQUEST_TIME;
       $entity->updated = REQUEST_TIME;
       if (empty($entity->log)) {
         $entity->log = '';
@@ -253,7 +254,16 @@ class PostController extends EntityAPIController {
     }
   }
 
-    /**
+  public function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
+    // Add an alias to this query to ensure that we can tell if this is
+    // the current revision or not.
+    $query = parent::buildQuery($ids, $conditions, $revision_id);
+    $query->addField('base', 'vid', 'current_vid');
+
+    return $query;
+  }
+
+   /**
    * Implements EntityAPIControllerInterface.
    *
    * @param $transaction
@@ -303,6 +313,47 @@ class PostController extends EntityAPIController {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
+  }
+
+  public function deleteRevision($revision_id, DatabaseTransaction $transaction = NULL) {
+    $revision = reset(harmony_post_load_multiple(array(), array('vid' => $revision_id)));
+
+    if (!$revision) {
+      // Do nothing, in case invalid or no id has been passed.
+      return FALSE;
+    }
+
+    try {
+      // Prevent deleting the current revision.
+      $post = harmony_post_load($revision->post_id);
+      if ($revision_id == $post->vid) {
+        return FALSE;
+      }
+
+      db_delete($this->revisionTable)
+        ->condition($this->idKey, $revision->post_id)
+        ->condition('vid', $revision->vid)
+        ->execute();
+      module_invoke_all('harmony_post_revision_delete', $revision);
+      field_attach_delete_revision($this->entityType, $revision);
+
+      // Reset the cache as soon as the changes have been applied.
+      $this->resetCache(array($revision->post_id));
+
+      // Ignore slave server temporarily.
+      db_ignore_slave();
+
+      return TRUE;
+    }
+    catch (Exception $e) {
+      if (isset($transaction)) {
+        $transaction->rollback();
+      }
+      watchdog_exception($this->entityType, $e);
+      throw $e;
+    }
+
+    return FALSE;
   }
 }
 

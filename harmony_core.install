@@ -250,14 +250,8 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the post was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'updated' => array(
-        'description' => 'The Unix timestamp when the post was most recently updated.',
+      'timestamp' => array(
+        'description' => 'The Unix timestamp when the revision was created.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -272,8 +266,7 @@ function harmony_core_schema() {
     'indexes' => array(
       'post_id' => array('post_id'),
       'status' => array('status'),
-      'created' => array('created'),
-      'updated' => array('updated'),
+      'timestamp' => array('timestamp'),
       'locked' => array('locked'),
       'uid' => array('uid'),
     ),
@@ -304,4 +297,5 @@ function harmony_core_install() {
  */
 function harmony_core_uninstall() {
   variable_del('harmony_core_thread_new_limit');
+  variable_del('harmony_core_post_revisions_view');
 }

@@ -12,6 +12,16 @@
  * entity API already provides data for our custom entity type.
  */ 
  function harmony_core_views_data_alter(&$data) {
+  // General fields.
+  $data['views']['reverse_counter'] = array(
+    'title' => t('View result reverse counter'),
+    'group' => t('Harmony'),
+    'help' => t('Displays the actual position of the view result, reversed.'),
+    'field' => array(
+      'handler' => 'harmony_core_views_handler_field_reverse_counter',
+    ),
+  );
+
   // Extra Threads fields.
   $data['thread']['view_link'] = array(
     'field' => array(
@@ -73,6 +83,32 @@
     ),
   );
 
+  // Add in post vid.
+  $data['post']['vid'] = array(
+    'title' => t('Current revision ID'),
+    'help' => t('The internal ID of the post.'),
+    'relationship' => array(
+      'title' => t('Current revision'),
+      'base' => 'post_revision',
+      'field' => 'vid',
+      'label' => t('revision'),
+    ),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
   // Extra Post entity fields.
   $data['post']['view_link'] = array(
     'field' => array(
@@ -99,4 +135,158 @@
   // Override the title field slightly to use our custom views field handler
   // which has the "link to post" functionality.
   $data['post']['title']['field']['handler'] = 'harmony_core_views_handler_post_field';
+
+  // Define the post revision table, relationship and fields.
+  $data['post_revision'] = array(
+    'table' => array(
+      'base' => array(
+        'field' => 'vid',
+        'title' => t('Post entity revisions'),
+        'help' => t('Revisions for post entities.'),
+      ),
+      'group' => t('Post (historical data)'),
+      'entity type' => 'post',
+    ),
+    'post_id' => array(
+      'title' => t('Post ID'),
+      'help' => t('The post entity this is a revision for.'),
+      'relationship' => array(
+        'title' => t('Post entity'),
+        'base' => 'post',
+        'field' => 'post_id',
+        'label' => t('post'),
+      ),
+      'field' => array(
+        'handler' => 'views_handler_field_numeric',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_numeric',
+        'allow empty' => TRUE,
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_numeric',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    ),
+    'vid' => array(
+      'title' => t('Revision ID'),
+      'help' => t('The internal ID of the revision.'),
+      'field' => array(
+        'handler' => 'views_handler_field_numeric',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_numeric',
+        'allow empty' => TRUE,
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_numeric',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    ),
+    'title' => array(
+      'title' => t('Title'),
+      'help' => t('The content title of the this revision of the entity.'),
+      'field' => array(
+        'handler' => 'views_handler_field',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+        'allow empty' => TRUE,
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    ),
+    'timestamp' => array(
+      'title' => t('Created date'),
+      'help' => t('The date the entity was created.'),
+      'field' => array(
+        'handler' => 'views_handler_field_date',
+        'click sortable' => TRUE,
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort_date',
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_date',
+      ),
+    ),
+    'log' => array(
+      'title' => t('Log message'),
+      'help' => t('The message provided for the revision.'),
+      'field' => array(
+        'handler' => 'views_handler_field_xss',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+        'allow empty' => TRUE,
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    ),
+    'uid' => array(
+      'title' => t('Author UID'),
+      'help' => t('The user authoring the revision. If you need more fields from the author, add the Author relationship.'),
+      'relationship' => array(
+        'title' => t('Author'),
+        'help' => t('Relate the revision to the user who created it.'),
+        'handler' => 'views_handler_relationship',
+        'base' => 'users',
+        'field' => 'uid',
+        'label' => t('author'),
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_user_name',
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_numeric',
+      ),
+      'field' => array(
+        'handler' => 'views_handler_field_user',
+      ),
+    ),
+    'view_revision' => array(
+      'field' => array(
+        'title' => t('Administrative link'),
+        'help' => t('Provide a simple link for administrators to view the content.'),
+        'handler' => 'harmony_core_views_handler_post_field_view_revision',
+      ),
+    ),
+    'delete_revision' => array(
+      'field' => array(
+        'title' => t('Administrative delete link'),
+        'help' => t('Provide a simple link for administrators to delete the content.'),
+        'handler' => 'harmony_core_views_handler_post_field_delete_revision',
+      ),
+    ),
+    'is_current' => array(
+      'field' => array(
+        'title' => t('Is current'),
+        'help' => t('Determine if this is the current revision for the entity.'),
+        'handler' => 'harmony_core_views_handler_post_field_is_current',
+      ),
+    ),
+    'make_current' => array(
+      'field' => array(
+        'title' => t('Administrative set current revision link'),
+        'help' => t('Provide a simple link for administrators to delete the content.'),
+        'handler' => 'harmony_core_views_handler_post_field_make_current',
+      ),
+    ),
+  );
 }
