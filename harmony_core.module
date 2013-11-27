@@ -601,13 +601,13 @@ function harmony_core_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['post/%harmony_post/revisions/%'] = array(
+  $items['post/%harmony_post/revisions/%/%ctools_js'] = array(
     'title' => 'View revision',
     'load arguments' => array(3),
     'page callback' => 'harmony_core_post_revision_view',
-    'page arguments' => array(1),
+    'page arguments' => array(1, 3, 4),
     'access callback' => 'harmony_core_post_revision_access_callback',
-    'access arguments' => array('update', 1),
+    'access arguments' => array('view', 1),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );
@@ -928,8 +928,7 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
     return $rights[$account->uid][$cid][$op];
   }
 
-  $post_current_revision = harmony_post_load($post->post_id);
-  $is_current_revision = $post_current_revision->vid == $post->vid;
+  $is_current_revision = $post->vid === $post->current_vid;
 
   // Prevent deletion of the current revision.
   if ($is_current_revision && $op == 'delete') {
@@ -942,8 +941,6 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
   }
-
-  /* @todo, lots! this needs thinking and fleshing out from a UI POV. */
 
   // If updating/reverting, then we need more than one revision.
   if ($op == 'update') {

@@ -177,10 +177,24 @@ function harmony_core_post_revisions_view($post, $view_mode = 'full') {
   return views_embed_view(variable_get('harmony_core_post_revisions_view', 'post_revisions'), 'default', $post->post_id);
 }
 
-function harmony_core_post_revision_view($post, $view_mode = 'full') {
-  dsm($post);
+/**
+ * Page or ctools AJAX  callback, returns post diff output.
+ */
+function harmony_core_post_revision_view($post, $vid, $js = NULL, $view_mode = 'full') {
+  $output = 'moo';
 
-  return '';
+  if ($js) {
+    ctools_include('ajax');
+
+    $commands = array();
+    $commands[] = ajax_command_replace("#post-revision-{$vid}", render($output));
+
+    print ajax_render($commands);
+    drupal_exit();
+  }
+  else {
+    return $output;
+  }
 }
 
 /**

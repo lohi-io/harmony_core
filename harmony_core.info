@@ -25,6 +25,7 @@ files[] = views/handlers/harmony_core_views_handler_post_field_view_revision.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_delete_revision.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_is_current.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_make_current.inc
+files[] = views/handlers/harmony_core_views_handler_post_field_view_diff.inc
 
 dependencies[] = entity
 

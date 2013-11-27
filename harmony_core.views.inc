@@ -288,5 +288,12 @@
         'handler' => 'harmony_core_views_handler_post_field_make_current',
       ),
     ),
+    'view_diff' => array(
+      'field' => array(
+        'title' => t('Link to view or AJAX load the post differences'),
+        'help' => t('Provide a link for users who have permission, to view a diff of a revision.'),
+        'handler' => 'harmony_core_views_handler_post_field_view_diff',
+      ),
+    ),
   );
 }
