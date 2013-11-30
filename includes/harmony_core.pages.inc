@@ -180,9 +180,62 @@ function harmony_core_post_revisions_view($post, $view_mode = 'full') {
 /**
  * Page or ctools AJAX  callback, returns post diff output.
  */
-function harmony_core_post_revision_view($post, $vid, $js = NULL, $view_mode = 'full') {
-  $output = 'moo';
+function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode = 'full') {
+  // Figure out the previous revision.
+  $previous_vid = db_query_range('SELECT vid FROM {post_revision} WHERE post_id = :post_id AND vid < :vid ORDER BY vid DESC', 0, 1, array(':post_id' => $new_post->post_id, ':vid' => $vid))->fetchField();
 
+  if ($previous_vid) {
+    $diff_theme = variable_get('diff_theme', 'default');
+    drupal_add_css(drupal_get_path('module', 'diff') . "/css/diff.{$diff_theme}.css");
+
+    // Generate the diff.
+    $old_post = harmony_post_load($new_post->post_id, $previous_vid);
+    $old_post_wrapper = entity_metadata_wrapper('post', $old_post);
+    $new_post_wrapper = entity_metadata_wrapper('post', $new_post);
+
+    // drupal alter this stuff, let people change what we diff.
+    $stuff_to_diff = array(
+      'title' => array(
+        'title' => t('Post title'),
+        'theme_function' => '',
+        'property' => 'title',
+      ),
+      'post_text' => array(
+        'title' => t('Post text'),
+        'theme_function' => '',
+        'property' => 'field_text',
+      ),
+    );
+
+    drupal_alter('harmony_post_diff_properties', $stuff_to_diff);
+
+    $output = NULL;
+    foreach ($stuff_to_diff as $thing) {
+      $old_value = $old_post_wrapper->{$thing['property']}->value(array('sanitize' => TRUE));
+      if (!empty($old_value['safe_value'])) {
+        $old_value = $old_value['safe_value'];
+      }
+      else {
+        $old_value = '';
+      }
+
+      $new_value = $new_post_wrapper->{$thing['property']}->value(array('sanitize' => TRUE));
+      if (!empty($new_value['safe_value'])) {
+        $new_value = $new_value['safe_value'];
+      }
+      else {
+        $new_value = '';
+      }
+
+      /* @todo implement and make proper use of theme functions here.  */
+      $output .= diff_get_inline($old_value, $new_value);
+    }
+  }
+  else {
+    $output = t('No previous revisions were found.');
+  }
+
+  // Return in the method you are accustomed to.
   if ($js) {
     ctools_include('ajax');
 

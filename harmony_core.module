@@ -2154,7 +2154,8 @@ function harmony_core_user_cancel($edit, $account, $method) {
       break;
 
     case 'user_cancel_reassign':
-      // Anonymize nodes (current revisions).
+      /* @todo, you've left node business all in here! */
+      // Anonymize threads.
       module_load_include('inc', 'node', 'node.admin');
       $nodes = db_select('thread', 't')
         ->fields('t', array('thread_id'))

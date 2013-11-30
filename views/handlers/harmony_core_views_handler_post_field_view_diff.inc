@@ -24,6 +24,8 @@ class harmony_core_views_handler_post_field_view_diff extends views_handler_fiel
 
     if (!empty($values)) {
       ctools_include('ajax');
+      $diff_theme = variable_get('diff_theme', 'default');
+      drupal_add_css(drupal_get_path('module', 'diff') . "/css/diff.{$diff_theme}.css");
 
       foreach ($values as $row_index => $value) {
         if (!empty($value->{$this->field_alias}) && !empty($value->{$this->aliases['vid']})) {
