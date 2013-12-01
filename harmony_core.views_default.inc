@@ -657,6 +657,12 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['make_current']['field'] = 'make_current';
   $handler->display->display_options['fields']['make_current']['label'] = '';
   $handler->display->display_options['fields']['make_current']['element_label_colon'] = FALSE;
+  /* Field: Post (historical data): Link to view or AJAX load the post differences */
+  $handler->display->display_options['fields']['view_diff']['id'] = 'view_diff';
+  $handler->display->display_options['fields']['view_diff']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['view_diff']['field'] = 'view_diff';
+  $handler->display->display_options['fields']['view_diff']['label'] = '';
+  $handler->display->display_options['fields']['view_diff']['element_label_colon'] = FALSE;
   /* Sort criterion: Post (historical data): Created date */
   $handler->display->display_options['sorts']['timestamp']['id'] = 'timestamp';
   $handler->display->display_options['sorts']['timestamp']['table'] = 'post_revision';
