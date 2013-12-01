@@ -70,7 +70,7 @@ class harmony_core_views_handler_post_field_view_diff extends views_handler_fiel
         $text = check_plain($this->options['text']);
         $diff_url = "post/{$entity->post_id}/revisions/{$entity->vid}/nojs";
 
-        return '<div id="post-revision-' . $entity->vid . '">' . ctools_modal_text_button($text, $diff_url) . '</div>';
+        return '<div id="post-revision-' . $entity->vid . '">' . ctools_modal_text_button($text, $diff_url, '') . '</div>';
       }
     }
   }
