@@ -55,7 +55,7 @@ dependencies[] = views_load_more
 dependencies[] = flag
 dependencies[] = views_bulk_operations
 dependencies[] = features
-
+dependencies[] = diff
 
 ;configure = admin/config/harmony
 

@@ -173,6 +173,14 @@ function harmony_post_delete_confirm_submit($form, &$form_state) {
   $form_state['redirect'] = '<front>';
 }
 
+/**
+ * Page title callback for post revision page.
+ */
+function harmony_core_post_revision_title($post) {
+  $author = user_load($post->uid);
+  return t('Revision from @date by @author', array('@date' => format_date($post->timestamp), '@author' => $author->name));
+}
+
 function harmony_core_post_revisions_view($post, $view_mode = 'full') {
   return views_embed_view(variable_get('harmony_core_post_revisions_view', 'post_revisions'), 'default', $post->post_id);
 }
@@ -209,7 +217,9 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
 
     drupal_alter('harmony_post_diff_properties', $stuff_to_diff);
 
-    $output = NULL;
+    // Add the diff header.
+    $output = theme('harmony_post_diff_inline_metadata', array('post' => $new_post));
+
     foreach ($stuff_to_diff as $thing) {
       $old_value = $old_post_wrapper->{$thing['property']}->value(array('sanitize' => TRUE));
       if (!empty($old_value['safe_value'])) {
@@ -238,11 +248,11 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
   // Return in the method you are accustomed to.
   if ($js) {
     ctools_include('ajax');
+    ctools_include('modal');
 
-    $commands = array();
-    $commands[] = ajax_command_replace("#post-revision-{$vid}", render($output));
+    $title = harmony_core_post_revision_title($new_post);
+    print ctools_modal_render($title, $output);
 
-    print ajax_render($commands);
     drupal_exit();
   }
   else {

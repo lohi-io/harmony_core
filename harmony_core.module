@@ -602,7 +602,8 @@ function harmony_core_menu() {
   );
 
   $items['post/%harmony_post/revisions/%/%ctools_js'] = array(
-    'title' => 'View revision',
+    'title callback' => 'harmony_core_post_revision_title',
+    'title arguments' => array(1),
     'load arguments' => array(3),
     'page callback' => 'harmony_core_post_revision_view',
     'page arguments' => array(1, 3, 4),
@@ -644,6 +645,23 @@ function harmony_core_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function harmony_core_theme($existing, $type, $theme, $path) {
+  $includes_dir = drupal_get_path('module', 'harmony_core') . '/includes';
+
+  return array(
+    'harmony_post_diff_inline_metadata' => array(
+      'arguments' => array(
+        'post' => NULL,
+      ),
+      'file' => 'harmony_core.theme.inc',
+      'path' => $includes_dir,
+    ),
+  );
 }
 
 /**
