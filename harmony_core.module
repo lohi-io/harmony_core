@@ -549,7 +549,7 @@ function harmony_core_menu() {
   $items['post/%harmony_post'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('post', 1),
-    'page callback' => 'harmony_core_post_view',
+    'page callback' => 'harmony_core_post_view_page',
     'page arguments' => array(1),
     'access callback' => 'harmony_core_post_access_callback',
     'access arguments' => array('view', 1),
@@ -651,15 +651,20 @@ function harmony_core_menu() {
  * Implements hook_theme().
  */
 function harmony_core_theme($existing, $type, $theme, $path) {
-  $includes_dir = drupal_get_path('module', 'harmony_core') . '/includes';
+  $module_dir = drupal_get_path('module', 'harmony_core');
 
   return array(
+    'post' => array(
+      'render element' => 'elements',
+      'template' => 'post',
+      'path' => $module_dir . '/theme',
+    ),
     'harmony_post_diff_inline_metadata' => array(
       'arguments' => array(
         'post' => NULL,
       ),
       'file' => 'harmony_core.theme.inc',
-      'path' => $includes_dir,
+      'path' => $module_dir . '/includes',
     ),
   );
 }

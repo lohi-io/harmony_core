@@ -118,10 +118,102 @@ function harmony_core_post_add() {
   return $output;
 }
 
-function harmony_core_post_view($post, $view_mode = 'full') {
-  dsm($post);
+function harmony_core_post_view_page($post, $view_mode = 'full', $langcode = NULL) {
+  return harmony_core_post_view_multiple(array($post->post_id => $post), $view_mode, $langcode);
+}
 
-  return '';
+function harmony_core_post_view_multiple($posts, $view_mode = 'full', $langcode = NULL) {
+  field_attach_prepare_view('post', $posts, $view_mode, $langcode);
+  entity_prepare_view('post', $posts, $langcode);
+
+  $build = array();
+  foreach ($posts as $post) {
+    $build['posts'][$post->post_id] = harmony_core_post_view($post, $view_mode, $langcode);
+  }
+
+  return $build;
+}
+
+function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
+  // Populate $post->content with a render() array.
+  harmony_core_post_build_content($post, $view_mode, $langcode);
+
+  $build = $post->content;
+  // We don't need duplicate rendering info in post->content.
+  unset($post->content);
+
+  $build += array(
+    '#theme' => 'post',
+    '#post' => $post,
+    '#view_mode' => $view_mode,
+    '#language' => $langcode,
+  );
+
+  // Allow modules to modify the structured post.
+  $type = 'post';
+  drupal_alter(array('harmony_post_view', 'entity_view'), $build, $type);
+
+  return $build;
+}
+
+function harmony_core_post_build_content($post, $view_mode = 'full', $langcode = NULL) {
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
+  // Remove previously built content, if exists.
+  $post->content = array();
+
+  // Allow modules to change the view mode.
+  $context = array(
+    'entity_type' => 'post',
+    'entity' => $post,
+    'langcode' => $langcode,
+  );
+  drupal_alter('entity_view_mode', $view_mode, $context);
+
+  // Build fields content.
+  // In case of a multiple view, harmony_core_post_view_multiple() already ran the
+  // 'prepare_view' step. An internal flag prevents the operation from running
+  // twice.
+  field_attach_prepare_view('post', array($post->post_id => $post), $view_mode, $langcode);
+  entity_prepare_view('post', array($post->post_id => $post), $langcode);
+  $post->content += field_attach_view('post', $post, $view_mode, $langcode);
+
+  // Always display a read more link on teasers because we have no way to know
+  // when a teaser view is different than a full view.
+  /*$links = array();
+  $node->content['links'] = array(
+    '#theme' => 'links__node',
+    '#pre_render' => array('drupal_pre_render_links'),
+    '#attributes' => array('class' => array('links', 'inline')),
+  );
+  if ($view_mode == 'teaser') {
+    $node_title_stripped = strip_tags($node->title);
+    $links['node-readmore'] = array(
+      'title' => t('Read more<span class="element-invisible"> about @title</span>', array('@title' => $node_title_stripped)),
+      'href' => 'node/' . $node->nid,
+      'html' => TRUE,
+      'attributes' => array('rel' => 'tag', 'title' => $node_title_stripped),
+    );
+  }
+  $node->content['links']['node'] = array(
+    '#theme' => 'links__node__node',
+    '#links' => $links,
+    '#attributes' => array('class' => array('links', 'inline')),
+  );*/
+
+  // Allow modules to make their own additions to the post.
+  module_invoke_all('harmony_post_view', $post, $view_mode, $langcode);
+  module_invoke_all('entity_view', $post, 'post', $view_mode, $langcode);
+
+  // Make sure the current view mode is stored if no module has already
+  // populated the related key.
+  $post->content += array('#view_mode' => $view_mode);
 }
 
 /**
