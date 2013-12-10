@@ -125,6 +125,11 @@ function harmony_core_entity_info() {
         'label' => t('Default'),
         'custom settings' => FALSE,
       ),
+      // Used when showing an inline reply to a post.
+      'inline_reply' => array(
+        'label' => t('Inline Reply'),
+        'custom settings' => FALSE,
+      ),
     ),
     'label callback' => 'harmony_core_post_label',
     'uri callback' => 'harmony_core_post_uri',
