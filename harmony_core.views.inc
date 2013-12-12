@@ -23,21 +23,21 @@
   );
 
   // Extra Threads fields.
-  $data['thread']['view_link'] = array(
+  $data['harmony_thread']['view_link'] = array(
     'field' => array(
       'title' => t('Link'),
       'help' => t('Provide a simple link to the thread.'),
       'handler' => 'harmony_core_views_handler_thread_field_link',
     ),
   );  
-  $data['thread']['edit_link'] = array(
+  $data['harmony_thread']['edit_link'] = array(
     'field' => array(
       'title' => t('Edit link'),
       'help' => t('Provide a simple link to edit the thread.'),
       'handler' => 'harmony_core_views_handler_thread_field_link_edit',
     ),
   );
-  $data['thread']['delete_link'] = array(
+  $data['harmony_thread']['delete_link'] = array(
     'field' => array(
       'title' => t('Delete link'),
       'help' => t('Provide a simple link to delete the thread.'),
@@ -47,7 +47,7 @@
 
   // Override the title field slightly to use our custom views field handler
   // which has the "link to thread" functionality.
-  $data['thread']['title']['field']['handler'] = 'harmony_core_views_handler_thread_field';
+  $data['harmony_thread']['title']['field']['handler'] = 'harmony_core_views_handler_thread_field';
 
   // ----------------------------------------------------------------------
   // History table
@@ -55,14 +55,14 @@
   // We're actually defining a specific instance of the table, so let's
   // alias it so that we can later add the real table for other purposes if we
   // need it.
-  $data['thread_read_history_user']['moved to'] = 'thread_read_history';
-  $data['thread_read_history']['table']['group']  = t('Thread');
+  $data['harmony_thread_read_history_user']['moved to'] = 'harmony_thread_read_history';
+  $data['harmony_thread_read_history']['table']['group']  = t('Thread');
 
   // Explain how this table joins to others.
-  $data['thread_read_history']['table']['join'] = array(
+  $data['harmony_thread_read_history']['table']['join'] = array(
      // Directly links to node table.
-    'thread' => array(
-      'table' => 'thread_read_history',
+    'harmony_thread' => array(
+      'table' => 'harmony_thread_read_history',
       'left_field' => 'thread_id',
       'field' => 'thread_id',
       'extra' => array(
@@ -71,7 +71,7 @@
     ),
   );
 
-  $data['thread_read_history']['timestamp'] = array(
+  $data['harmony_thread_read_history']['timestamp'] = array(
     'title' => t('Thread new/updated'),
     'field' => array(
       'help' => t('Show a marker if the content is new or updated.'),
@@ -84,12 +84,12 @@
   );
 
   // Add in post vid.
-  $data['post']['vid'] = array(
+  $data['harmony_post']['vid'] = array(
     'title' => t('Current revision ID'),
     'help' => t('The internal ID of the post.'),
     'relationship' => array(
       'title' => t('Current revision'),
-      'base' => 'post_revision',
+      'base' => 'harmony_post_revision',
       'field' => 'vid',
       'label' => t('revision'),
     ),
@@ -110,21 +110,21 @@
   );
 
   // Extra Post entity fields.
-  $data['post']['view_link'] = array(
+  $data['harmony_post']['view_link'] = array(
     'field' => array(
       'title' => t('Link'),
       'help' => t('Provide a simple link to the post.'),
       'handler' => 'harmony_core_views_handler_post_field_link',
     ),
   );  
-  $data['post']['edit_link'] = array(
+  $data['harmony_post']['edit_link'] = array(
     'field' => array(
       'title' => t('Edit link'),
       'help' => t('Provide a simple link to edit the post.'),
       'handler' => 'harmony_core_views_handler_post_field_link_edit',
     ),
   );
-  $data['post']['delete_link'] = array(
+  $data['harmony_post']['delete_link'] = array(
     'field' => array(
       'title' => t('Delete link'),
       'help' => t('Provide a simple link to delete the post.'),
@@ -134,10 +134,10 @@
 
   // Override the title field slightly to use our custom views field handler
   // which has the "link to post" functionality.
-  $data['post']['title']['field']['handler'] = 'harmony_core_views_handler_post_field';
+  $data['harmony_post']['title']['field']['handler'] = 'harmony_core_views_handler_post_field';
 
   // Define the post revision table, relationship and fields.
-  $data['post_revision'] = array(
+  $data['harmony_post_revision'] = array(
     'table' => array(
       'base' => array(
         'field' => 'vid',
@@ -145,14 +145,14 @@
         'help' => t('Revisions for post entities.'),
       ),
       'group' => t('Post (historical data)'),
-      'entity type' => 'post',
+      'entity type' => 'harmony_post',
     ),
     'post_id' => array(
       'title' => t('Post ID'),
       'help' => t('The post entity this is a revision for.'),
       'relationship' => array(
         'title' => t('Post entity'),
-        'base' => 'post',
+        'base' => 'harmony_post',
         'field' => 'post_id',
         'label' => t('post'),
       ),

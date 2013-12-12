@@ -64,18 +64,18 @@ module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
  * Implements hook_entity_info().
  */
 function harmony_core_entity_info() {
-  $entities['thread'] = array(
+  $entities['harmony_thread'] = array(
     'label' => t('Thread'),
     'plural label' => t('Threads'),
-    'entity class' => 'Thread',
-    'controller class' => 'ThreadController',
-    'base table' => 'thread',
+    'entity class' => 'HarmonyThread',
+    'controller class' => 'HarmonyThreadController',
+    'base table' => 'harmony_thread',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'thread_id',
     ),
     'bundles' => array(
-      'thread' => array(
+      'harmony_thread' => array(
         'label' => t('Thread'),
         'admin' => array(
           'path' => 'admin/structure/harmony/thread',
@@ -97,20 +97,20 @@ function harmony_core_entity_info() {
     'access callback' => 'harmony_core_thread_access_callback',
   );
 
-  $entities['post'] = array(
+  $entities['harmony_post'] = array(
     'label' => t('Post'),
     'plural label' => t('Posts'),
-    'entity class' => 'Post',
-    'controller class' => 'PostController',
-    'base table' => 'post',
-    'revision table' => 'post_revision',
+    'entity class' => 'HarmonyPost',
+    'controller class' => 'HarmonyPostController',
+    'base table' => 'harmony_post',
+    'revision table' => 'harmony_post_revision',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'post_id',
       'revision' => 'vid',
     ),
     'bundles' => array(
-      'post' => array(
+      'harmony_post' => array(
         'label' => t('Post'),
         'admin' => array(
           'path' => 'admin/structure/harmony/post',
@@ -149,7 +149,7 @@ function harmony_core_post_revision_access($op, $name, $entity = NULL, $account 
  */
 function harmony_core_entity_property_info() {
   $info = array();
-  $thread_properties = &$info['thread']['properties'];
+  $thread_properties = &$info['harmony_thread']['properties'];
 
   $thread_properties['thread_id'] = array(
     'label' => t('Thread ID'),
@@ -235,7 +235,7 @@ function harmony_core_entity_property_info() {
   );
 
   // Post entity properties.
-  $post_properties = &$info['post']['properties'];
+  $post_properties = &$info['harmony_post']['properties'];
 
   $post_properties['post_id'] = array(
     'label' => t('Post ID'), 
@@ -659,9 +659,9 @@ function harmony_core_theme($existing, $type, $theme, $path) {
   $module_dir = drupal_get_path('module', 'harmony_core');
 
   return array(
-    'post' => array(
+    'harmony_post' => array(
       'render element' => 'elements',
-      'template' => 'post',
+      'template' => 'harmony-post',
       'path' => $module_dir . '/theme',
     ),
     'harmony_post_diff_inline_metadata' => array(
@@ -669,7 +669,7 @@ function harmony_core_theme($existing, $type, $theme, $path) {
         'post' => NULL,
       ),
       'file' => 'harmony_core.theme.inc',
-      'path' => $module_dir . '/includes',
+      'path' => $module_dir . '/theme',
     ),
   );
 }
@@ -678,7 +678,7 @@ function harmony_core_theme($existing, $type, $theme, $path) {
  * Implements hook_cron().
  */
 function harmony_core_cron() {
-  db_delete('thread_read_history')
+  db_delete('harmony_thread_read_history')
     ->condition('timestamp', harmony_core_thread_new_limit(), '<')
     ->execute();
 }
@@ -705,7 +705,7 @@ function harmony_core_context_plugins() {
 function harmony_core_context_registry() {
   return array(
     'conditions' => array(
-      'thread' => array(
+      'harmony_thread' => array(
         'title' => t('Threads'),
         'plugin' => 'harmony_core_context_condition_thread',
       ),
@@ -744,7 +744,7 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
     $account = $GLOBALS['user'];
   }
 
-  $entity_type = 'thread';
+  $entity_type = 'harmony_thread';
 
   // Use the best available identifier for the cache ID.
   if (is_object($entity)) {
@@ -780,7 +780,7 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
   // - At least one module says to grant access.
   // If no module specified either allow or deny, we fall back to the
   // thread_access table.
-  $access = module_invoke_all('thread_access', $op, $entity, $account, $entity_type);
+  $access = module_invoke_all('harmony_thread_access', $op, $entity, $account, $entity_type);
   if (in_array(HARMONY_ACCESS_DENY, $access, TRUE)) {
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
@@ -799,9 +799,9 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
 }
 
 /**
- * Implements hook_thread_access().
+ * Implements hook_harmony_thread_access().
  */
-function harmony_core_thread_access($op, $entity, $account, $entity_type) {
+function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type) {
   return harmony_core_entity_access_check($op, $entity, $account, $entity_type);
 }
 
@@ -865,7 +865,7 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
     $account = $GLOBALS['user'];
   }
 
-  $entity_type = 'post';
+  $entity_type = 'harmony_post';
 
   // Use the best available identifier for the cache ID.
   if (is_object($entity)) {
@@ -903,10 +903,10 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
   // The user must also have access to the thread they're trying to post in,
   // if the post is attached to a thread.
   if ($access == HARMONY_ACCESS_ALLOW) {
-    $wrapper = entity_metadata_wrapper('post', $entity);
+    $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
-    if ($wrapper->field_thread->value()) {
-      $thread = harmony_thread_load($wrapper->field_thread->value());
+    if ($wrapper->field_harmony_thread->value()) {
+      $thread = harmony_thread_load($wrapper->field_harmony_thread->value());
 
       if (harmony_core_thread_access_callback('view', $thread, $account) != HARMONY_ACCESS_ALLOW) {
         $access = HARMONY_ACCESS_DENY;
@@ -972,7 +972,7 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
 
   // If updating/reverting, then we need more than one revision.
   if ($op == 'update') {
-    $revision_count = db_query('SELECT COUNT(vid) FROM {post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
+    $revision_count = db_query('SELECT COUNT(vid) FROM {harmony_post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
 
     if ($revision_count < 2) {
       $rights[$account->uid][$cid][$op] = FALSE;
@@ -1037,14 +1037,14 @@ function harmony_thread_load($thread_id, $reset = FALSE) {
  * Load multiple threads based on certain conditions.
  */
 function harmony_thread_load_multiple($thread_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('thread', $thread_ids, $conditions, $reset);
+  return entity_load('harmony_thread', $thread_ids, $conditions, $reset);
 }
 
 /**
  * Save a thread.
  */
 function harmony_thread_save($thread) {
-  return entity_get_controller('thread')->save($thread);
+  return entity_get_controller('harmony_thread')->save($thread);
 }
 
 /**
@@ -1058,7 +1058,7 @@ function harmony_thread_delete($thread_id) {
  * Delete multiple threads.
  */
 function harmony_thread_delete_multiple($thread_ids) {
-  entity_delete_multiple('thread', $thread_ids);
+  entity_delete_multiple('harmony_thread', $thread_ids);
 }
 
 function harmony_core_post_label($entity, $entity_type) {
@@ -1084,14 +1084,14 @@ function harmony_post_load($post_id, $vid = NULL, $reset = FALSE) {
  * Load multiple posts based on certain conditions.
  */
 function harmony_post_load_multiple($post_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('post', $post_ids, $conditions, $reset);
+  return entity_load('harmony_post', $post_ids, $conditions, $reset);
 }
 
 /**
  * Save a post.
  */
 function harmony_post_save($post) {
-  return entity_get_controller('post')->save($post);
+  return entity_get_controller('harmony_post')->save($post);
 }
 
 /**
@@ -1105,14 +1105,14 @@ function harmony_post_delete($post_id) {
  * Delete multiple posts.
  */
 function harmony_post_delete_multiple($post_ids) {
-  entity_delete_multiple('post', $post_ids);
+  entity_delete_multiple('harmony_post', $post_ids);
 }
 
 /**
  * Delete a post revision.
  */
 function harmony_post_revision_delete($revision_id) {
-  return entity_get_controller('post')->deleteRevision($revision_id);
+  return entity_get_controller('harmony_post')->deleteRevision($revision_id);
 }
 
 /**
@@ -1121,55 +1121,55 @@ function harmony_post_revision_delete($revision_id) {
 function harmony_core_action_info() {
   $actions = array(
     'harmony_core_thread_publish_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Publish thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_unpublish_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Unpublish thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_make_pinned_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Pin thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_make_unpinned_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Unpin thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_locked_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Lock thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_unlock_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Unlock thread'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_save_action' => array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Save thread'),
       'configurable' => FALSE,
       'triggers' => array(),
     ),
     'harmony_core_post_publish_action' => array(
-      'type' => 'post',
+      'type' => 'harmony_post',
       'label' => t('Publish post'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_post_unpublish_action' => array(
-      'type' => 'post',
+      'type' => 'harmony_post',
       'label' => t('Unpublish post'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
@@ -1182,7 +1182,7 @@ function harmony_core_action_info() {
   // which lives in includes/harmony_core.pathauto.inc.
   if (module_exists('pathauto')) {
     $actions['harmony_core_thread_update_alias_action'] = array(
-      'type' => 'thread',
+      'type' => 'harmony_thread',
       'label' => t('Update thread path alias'),
       'configurable' => FALSE,
     );
@@ -1396,7 +1396,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   );
 
   // Attach fields.
-  field_attach_form('thread', $thread, $form, $form_state);
+  field_attach_form('harmony_thread', $thread, $form, $form_state);
 
   // Options for administrators
   $form['options'] = array(
@@ -1428,21 +1428,21 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   );
 
   // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
-  //$first_post_lang = $form['field_first_post']['#language'];
+  //$first_post_lang = $form['field_harmony_first_post']['#language'];
 
   // Remove the fielset.
-  //$form['field_first_post'][$first_post_lang]['#type'] = 'markup';
+  //$form['field_harmony_first_post'][$first_post_lang]['#type'] = 'markup';
 
   // Hide the post title field.
-  //_harmony_core_post_form_alter($form['field_first_post'][$first_post_lang]['form']);
+  //_harmony_core_post_form_alter($form['field_harmony_first_post'][$first_post_lang]['form']);
 
   // Hide the random node status field, we're not interested in that here.
-  //$form['field_first_post'][$first_post_lang]['form']['status']['#access'] = FALSE;
+  //$form['field_harmony_first_post'][$first_post_lang]['form']['status']['#access'] = FALSE;
 
   // Hide property-ish type fields that we don't want user 1 to see.
-  $form['field_last_user_to_post_a_reply']['#access'] = FALSE;
-  $form['field_post_count']['#access'] = FALSE;
-  $form['field_thread_continued_from']['#access'] = FALSE;
+  $form['field_harmony_last_user_to_post_a_reply']['#access'] = FALSE;
+  $form['field_harmony_post_count']['#access'] = FALSE;
+  $form['field_harmony_thread_continued_from']['#access'] = FALSE;
 
   // Add the buttons.
   $form['actions'] = array('#type' => 'actions');
@@ -1470,7 +1470,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
  * of the attached fields.
  */
 function harmony_core_thread_form_validate($form, &$form_state) {
-  field_attach_form_validate('thread', $form_state['values']['thread'], $form, $form_state);
+  field_attach_form_validate('harmony_thread', $form_state['values']['thread'], $form, $form_state);
 }
 
 /**
@@ -1478,7 +1478,7 @@ function harmony_core_thread_form_validate($form, &$form_state) {
  */
 function harmony_core_thread_form_submit($form, &$form_state) {
   $thread = $form_state['values']['thread'];
-  $wrapper = entity_metadata_wrapper('thread', $thread);
+  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
   $wrapper->title->set($form_state['values']['title']);
 
@@ -1486,12 +1486,12 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   $wrapper->pinned->set($form_state['values']['pinned']);
   $wrapper->locked->set($form_state['values']['locked']);
 
-  field_attach_submit('thread', $thread, $form, $form_state);
+  field_attach_submit('harmony_thread', $thread, $form, $form_state);
 
   // If saving a new thread then set the first instance of
   // the last user to update field.
   if ($thread->is_new) {
-    $wrapper->field_last_user_to_post_a_reply->set($thread->uid);
+    $wrapper->field_harmony_last_user_to_post_a_reply->set($thread->uid);
   }
 
   $thread = harmony_thread_save($thread);
@@ -1536,7 +1536,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
   );
 
   // Attach fields.
-  field_attach_form('post', $post, $form, $form_state);
+  field_attach_form('harmony_post', $post, $form, $form_state);
 
   // Options for administrators
   $form['options'] = array(
@@ -1603,7 +1603,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
  * of the attached fields.
  */
 function harmony_core_post_form_validate($form, &$form_state) {
-  field_attach_form_validate('post', $form_state['values']['post'], $form, $form_state);
+  field_attach_form_validate('harmony_post', $form_state['values']['post'], $form, $form_state);
 }
 
 /**
@@ -1611,7 +1611,7 @@ function harmony_core_post_form_validate($form, &$form_state) {
  */
 function harmony_core_post_form_submit($form, &$form_state) {
   $post = $form_state['values']['post'];
-  $wrapper = entity_metadata_wrapper('post', $post);
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
   //$wrapper->title->set($form_state['values']['title']);
 
@@ -1619,7 +1619,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->log->set($form_state['values']['log']);
 
-  field_attach_submit('post', $post, $form, $form_state);
+  field_attach_submit('harmony_post', $post, $form, $form_state);
 
   $post = harmony_post_save($post);
   $form_state['redirect'] = "post/$post->post_id";
@@ -1645,7 +1645,8 @@ function harmony_core_form_node_form_alter(&$form, &$form_state, $form_id) {
  * Hide the thread count field.
  */
 function harmony_core_form_taxonomy_form_term_alter(&$form, &$form_state, $form_id) {
-  $form['field_thread_count']['#access'] = FALSE;
+  // @todo restrict to only harmony_category vocab, duh.
+  $form['field_harmony_thread_count']['#access'] = FALSE;
 }
 
 /**
@@ -1654,8 +1655,8 @@ function harmony_core_form_taxonomy_form_term_alter(&$form, &$form_state, $form_
  * Hides the thread and post count fields.
  */
 function harmony_core_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
-  $form['field_thread_count']['#access'] = FALSE;
-  $form['field_post_count']['#access'] = FALSE;
+  $form['field_harmony_thread_count']['#access'] = FALSE;
+  $form['field_harmony_post_count']['#access'] = FALSE;
 }
 
 /**
@@ -1669,9 +1670,9 @@ function _harmony_core_post_form_alter(&$form) {
   $form['title']['#required'] = FALSE;
 
   // Hide the text label.
-  $post_text_lang = !empty($form['field_text']['#language']) ? $form['field_text']['#language'] : NULL;
+  $post_text_lang = !empty($form['field_harmony_text']['#language']) ? $form['field_harmony_text']['#language'] : NULL;
   if ($post_text_lang) {
-    $form['field_text'][$post_text_lang][0]['#title_display'] = 'invisible';
+    $form['field_harmony_text'][$post_text_lang][0]['#title_display'] = 'invisible';
   }
 }
 
@@ -1679,27 +1680,27 @@ function _harmony_core_post_form_alter(&$form) {
  * Implements hook_thread_insert().
  */
 function harmony_core_thread_insert($thread) {
-  list($thread_id) = entity_extract_ids('thread', $thread);
-  $wrapper = entity_metadata_wrapper('thread', $thread);
+  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
+  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
   // Set the first posts title to be the same as the thread.
-  /*$thread->field_first_post->title->set($entity->title);
+  /*$thread->field_harmony_first_post->title->set($entity->title);
   // Set the first posts thread entity ref to be this thread.
-  $thread->field_first_post->field_thread->set($thread_id);
+  $thread->field_harmony_first_post->field_thread->set($thread_id);
   // Save the first post.
-  $thread->field_first_post->save();*/
+  $thread->field_harmony_first_post->save();*/
 
   // @todo, checking around whether or not thread is published,
   // if so increment things otherwise don't.
   // Move to controller!
 
   // Increment the category thread count if the thread belongs to a category.
-  if ($wrapper->field_category->value()) {
-    harmony_core_update_meta_count(array('field_thread_count'), 'taxonomy_term', $wrapper->field_category->tid->value());
+  if ($wrapper->field_harmony_category->value()) {
+    harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value());
   }
 
   // Increment users thread & post count.
-  harmony_core_update_meta_count(array('field_thread_count', 'field_post_count'), 'user', $thread->uid);
+  harmony_core_update_meta_count(array('field_harmony_thread_count', 'field_harmony_post_count'), 'user', $thread->uid);
 
   // Update path alias.
   module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
@@ -1710,8 +1711,8 @@ function harmony_core_thread_insert($thread) {
  * Implements hook_thread_update().
  */
 function harmony_core_thread_update($thread) {
-  list($thread_id) = entity_extract_ids('thread', $thread);
-  $wrapper = entity_metadata_wrapper('thread', $thread);
+  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
+  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
   // @todo checking for publish/unpublish and adjust post count
   // accordingly, use $entity->original.
@@ -1719,15 +1720,15 @@ function harmony_core_thread_update($thread) {
   // Update the title of posts in this thread if it's changed, we do
   // this for administrative ease and because we use the title in places
   // like when rendering a search result.
-  /*if ($wrapper->title->value() != $wrapper->field_first_post->title->value()) {
+  /*if ($wrapper->title->value() != $wrapper->field_harmony_first_post->title->value()) {
     $title = $wrapper->title->value();
 
     // Get a list of post nodes to update.
     $posts = db_query("SELECT entity_id 
-      FROM {field_data_field_thread} 
+      FROM {field_harmony_data_field_thread} 
       WHERE entity_type = 'node' 
-      AND bundle = 'post' 
-      AND field_thread_target_id = :thread_id", 
+      AND bundle = 'harmony_post' 
+      AND field_harmony_thread_target_id = :thread_id", 
       array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
 
     // We've got a list of nodes.
@@ -1767,7 +1768,7 @@ function harmony_core_thread_update($thread) {
 }
 
 function harmony_core_thread_on_delete($thread) {
-  list($thread_id) = entity_extract_ids('thread', $thread);
+  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
 
   // @todo this needs to live in the entity controller.
 
@@ -1778,7 +1779,7 @@ function harmony_core_thread_on_delete($thread) {
 
   // Get a list of post nodes to delete.
   /*$posts = db_query("SELECT entity_id 
-    FROM {field_data_field_thread} 
+    FROM {field_harmony_data_field_thread} 
     WHERE entity_type = 'node' 
     AND bundle = 'post' 
     AND field_thread_target_id = :thread_id", 
@@ -1806,9 +1807,9 @@ function harmony_core_thread_on_delete($thread) {
     }
   }*/
 
-  pathauto_entity_path_delete_all('thread', $thread, "thread/{$thread->thread_id}");
+  pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
 
-  entity_delete('thread', entity_id('thread' ,$thread));
+  entity_delete('harmony_thread', entity_id('harmony_thread' ,$thread));
 }
 
 /**
@@ -1874,7 +1875,7 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
  * Helper function to update a posts title.
  */
 function harmony_core_update_post_title($item) {
-  $post = entity_load_single('post', $item['post_id']);
+  $post = entity_load_single('harmony_post', $item['post_id']);
   $post->title = $item['title'];
   node_save($post);
 }
@@ -1883,7 +1884,7 @@ function harmony_core_update_post_title($item) {
  * Implements hook_node_insert().
  */
 function harmony_core_node_insert($node) {
-  if ($node->type == 'post') {
+  if ($node->type == 'harmony_post') {
     $post = entity_metadata_wrapper('node', $node);
 
     // Get the thread id.
@@ -1893,17 +1894,17 @@ function harmony_core_node_insert($node) {
     // it's the first post in a thread.
     if ($thread_id) {
       // Set the last time the thread was updated.
-      $post->field_thread->updated->set(REQUEST_TIME);
+      $post->field_harmony_thread->updated->set(REQUEST_TIME);
       // Set the last user to update the thread field.
-      $post->field_thread->field_last_user_to_post_a_reply->set($node->uid);
+      $post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->set($node->uid);
       // Save the thread.
-      $post->field_thread->save();
+      $post->field_harmony_thread->save();
 
       // Increment the thread post count.
-      harmony_core_update_meta_count(array('field_post_count'), 'thread', $thread_id);
+      harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
 
       // Increment users post count.
-      harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
+      harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $node->uid);
     }
   }
 }
@@ -1912,23 +1913,23 @@ function harmony_core_node_insert($node) {
  * Implements hook_node_update().
  */
 function harmony_core_node_update($node) {
-  if ($node->type == 'post') {
+  if ($node->type == 'harmony_post') {
     $post = entity_metadata_wrapper('node', $node);
-    $thread_id = $post->field_thread->value();
+    $thread_id = $post->field_harmony_thread->value();
 
     if ($thread_id) {
       // @todo, check that this post is published.
 
       // Update the thread's last active user if not current.
-      if ($post->field_thread->field_last_user_to_post_a_reply->value() != $node->uid) {
-        $post->field_thread->field_last_user_to_post_a_reply->set($node->uid);
+      if ($post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->value() != $node->uid) {
+        $post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->set($node->uid);
       }
 
       // Update the thread's last updated time.
-      $post->field_thread->updated->set(REQUEST_TIME);
+      $post->field_harmony_thread->updated->set(REQUEST_TIME);
 
       // Save changes.
-      $post->field_thread->save();
+      $post->field_harmony_thread->save();
     }
   }
 }
@@ -1937,17 +1938,17 @@ function harmony_core_node_update($node) {
  * Implements hook_node_delete().
  */
 function harmony_core_node_delete($node) {
-  if ($node->type == 'post') {
+  if ($node->type == 'harmony_post') {
     $post = entity_metadata_wrapper('node', $node);
-    $thread_id = $post->field_thread->value();
+    $thread_id = $post->field_harmony_thread->value();
 
     if ($thread_id) {
       // Decrement the thread post count.
-      harmony_core_update_meta_count(array('field_post_count'), 'thread', $thread_id, 'decrement');
+      harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
     }
 
     // Increment users post count.
-    harmony_core_update_meta_count(array('field_post_count'), 'user', $node->uid);
+    harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $node->uid);
   }
 }
 
@@ -1971,7 +1972,7 @@ function harmony_core_thread_new_limit() {
 function harmony_core_thread_last_read_set($thread) {
   global $user;
   if ($user->uid) {
-    db_merge('thread_read_history')
+    db_merge('harmony_thread_read_history')
       ->key(array(
         'uid' => $user->uid,
         'thread_id' => $thread->thread_id,
@@ -1996,7 +1997,7 @@ function harmony_core_thread_last_read($thread_id) {
   $history = &drupal_static(__FUNCTION__, array());
 
   if (!isset($history[$thread_id])) {
-    $history[$thread_id] = db_query("SELECT timestamp FROM {thread_read_history} WHERE uid = :uid AND thread_id = :thread_id", array(':uid' => $user->uid, ':thread_id' => $thread_id))->fetchObject();
+    $history[$thread_id] = db_query("SELECT timestamp FROM {harmony_thread_read_history} WHERE uid = :uid AND thread_id = :thread_id", array(':uid' => $user->uid, ':thread_id' => $thread_id))->fetchObject();
   }
 
   return (isset($history[$thread_id]->timestamp) ? $history[$thread_id]->timestamp : 0);
@@ -2012,7 +2013,7 @@ function harmony_core_thread_last_read($thread_id) {
  *   A unix timestamp indicating the last time the thread was updated.
  */
 function harmony_core_thread_last_updated($thread_id) {
-  return db_query('SELECT updated FROM {thread} WHERE thread_id = :thread_id', array(':thread_id' => $thread_id))->fetch()->updated;
+  return db_query('SELECT updated FROM {harmony_thread} WHERE thread_id = :thread_id', array(':thread_id' => $thread_id))->fetch()->updated;
 }
 
 /**
@@ -2077,7 +2078,7 @@ function harmony_core_mass_update($type, $entities, $op, $properties) {
 }
 
 function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
-  $load_function = "harmony_core_{$type}_load";
+  $load_function = "{$type}_load";
   $entity = $load_function($entity_id, TRUE);
 
   switch ($op) {
@@ -2087,13 +2088,13 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
         $entity->$name = $value;
       }
       
-      $save_function = "harmony_core_{$type}_save";
+      $save_function = "{$type}_save";
       save_function($entity);
 
       break;
 
     case 'delete':
-      $delete_function = "harmony_core_delete_{$type}";
+      $delete_function = "{$type}_delete";
       $delete_function($entity);
 
       break;
@@ -2169,23 +2170,24 @@ function _harmony_core_mass_update_batch_finished($success, $results, $operation
  * Implements hook_user_cancel().
  */
 function harmony_core_user_cancel($edit, $account, $method) {
+  // @todo - this function.
   switch ($method) {
     case 'user_cancel_block_unpublish':
       // Unpublish/unapprove threads.
       module_load_include('inc', 'node', 'node.admin');
-      $threads = db_select('thread', 't')
+      $threads = db_select('harmony_thread', 't')
         ->fields('t', array('thread_id'))
         ->condition('uid', $account->uid)
         ->execute()
         ->fetchCol();
-      harmony_core_mass_update('thread', 'update', $threads, array('status' => 0));
+      harmony_core_mass_update('harmony_thread', 'update', $threads, array('status' => 0));
       break;
 
     case 'user_cancel_reassign':
       /* @todo, you've left node business all in here! */
       // Anonymize threads.
       module_load_include('inc', 'node', 'node.admin');
-      $nodes = db_select('thread', 't')
+      $nodes = db_select('harmony_thread', 't')
         ->fields('t', array('thread_id'))
         ->condition('uid', $account->uid)
         ->execute()
@@ -2197,7 +2199,7 @@ function harmony_core_user_cancel($edit, $account, $method) {
         ->condition('uid', $account->uid)
         ->execute();*/
       // Clean history.
-      db_delete('thread_read_history')
+      db_delete('harmony_thread_read_history')
         ->condition('uid', $account->uid)
         ->execute();
       break;
@@ -2209,12 +2211,12 @@ function harmony_core_user_cancel($edit, $account, $method) {
  */
 function harmony_core_user_delete($account) {
   // Delete threads.
-  $threads = db_select('thread', 't')
+  $threads = db_select('harmony_thread', 't')
     ->fields('t', array('thread_id'))
     ->condition('uid', $account->uid)
     ->execute()
     ->fetchCol();
-  harmony_core_mass_update('thread', 'delete', $threads, array());
+  harmony_core_mass_update('harmony_thread', 'delete', $threads, array());
 
   // Delete old revisions.
   /*$revisions = db_query('SELECT vid FROM {thread_revision} WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
@@ -2223,7 +2225,7 @@ function harmony_core_user_delete($account) {
   }*/
 
   // Clean history.
-  db_delete('thread_read_history')
+  db_delete('harmony_thread_read_history')
     ->condition('uid', $account->uid)
     ->execute();
 }
@@ -2266,7 +2268,7 @@ function harmony_core_thread_track_view($thread_id) {
     $transaction = db_transaction();
 
     try {
-      db_query('UPDATE {thread} SET views = views + 1 WHERE thread_id = :thread_id', array(':thread_id' => $thread_id));
+      db_query('UPDATE {harmony_thread} SET views = views + 1 WHERE thread_id = :thread_id', array(':thread_id' => $thread_id));
     }
     catch (Exception $e) {
       $transaction->rollback();

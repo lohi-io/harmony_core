@@ -18,8 +18,8 @@ class harmony_core_views_handler_field_thread_read_history_timestamp extends har
     parent::init($view, $options);
     global $user;
     if ($user->uid) {
-      $this->additional_fields['created'] = array('table' => 'thread', 'field' => 'created');
-      $this->additional_fields['updated'] = array('table' => 'thread', 'field' => 'updated');
+      $this->additional_fields['created'] = array('table' => 'harmony_thread', 'field' => 'created');
+      $this->additional_fields['updated'] = array('table' => 'harmony_thread', 'field' => 'updated');
     }
   }
 

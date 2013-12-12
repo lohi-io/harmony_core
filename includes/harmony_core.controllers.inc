@@ -5,7 +5,7 @@
  * Class definitions for the Thread and Post entity.
  */
 
-class ThreadController extends EntityAPIController {
+class HarmonyThreadController extends EntityAPIController {
 
   /*public function create(array $values = array()) {
     global $user;
@@ -99,7 +99,7 @@ class ThreadController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('thread', $e);
+      watchdog_exception('harmony_thread', $e);
       throw $e;
     }
   }
@@ -132,7 +132,7 @@ class ThreadController extends EntityAPIController {
         ->execute();
 
       // Remove thread read history.
-      db_delete('thread_read_history')
+      db_delete('harmony_thread_read_history')
         ->condition('thread_id', $ids, 'IN')
         ->execute();
 
@@ -159,7 +159,7 @@ class ThreadController extends EntityAPIController {
 /**
  * Thread class.
  */
-class Thread extends Entity {
+class HarmonyThread extends Entity {
   /*protected function defaultLabel() {
     return $this->title;
   }
@@ -169,7 +169,7 @@ class Thread extends Entity {
   }*/
 }
 
-class PostController extends EntityAPIController {
+class HarmonyPostController extends EntityAPIController {
   /**
    * Implements EntityAPIControllerInterface.
    *
@@ -249,7 +249,7 @@ class PostController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('post', $e);
+      watchdog_exception('harmony_post', $e);
       throw $e;
     }
   }
@@ -360,5 +360,5 @@ class PostController extends EntityAPIController {
 /**
  * Post class.
  */
-class Post extends Entity {
+class HarmonyPost extends Entity {
 }

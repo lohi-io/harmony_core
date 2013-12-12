@@ -13,13 +13,13 @@ function harmony_core_context_default_contexts() {
   $context = new stdClass();
   $context->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
   $context->api_version = 3;
-  $context->name = 'category_page';
+  $context->name = 'harmony_category_page';
   $context->description = 'Is active on category term pages.';
   $context->tag = 'harmony';
   $context->conditions = array(
     'taxonomy_term' => array(
       'values' => array(
-        'category' => 'category',
+        'harmony_category' => 'harmony_category',
       ),
       'options' => array(
         'term_form' => '0',

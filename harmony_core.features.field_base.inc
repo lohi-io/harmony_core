@@ -10,13 +10,13 @@
 function harmony_core_field_default_field_bases() {
   $field_bases = array();
 
-  // Exported field_base: 'field_colour'
-  $field_bases['field_colour'] = array(
+  // Exported field_base: 'field_harmony_colour'
+  $field_bases['field_harmony_colour'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_colour',
+    'field_name' => 'field_harmony_colour',
     'field_permissions' => array(
       'type' => 0,
     ),
@@ -42,13 +42,13 @@ function harmony_core_field_default_field_bases() {
     'type' => 'text',
   );
 
-  // Exported field_base: 'field_thread_count'
-  $field_bases['field_thread_count'] = array(
+  // Exported field_base: 'field_harmony_thread_count'
+  $field_bases['field_harmony_thread_count'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_thread_count',
+    'field_name' => 'field_harmony_thread_count',
     'field_permissions' => array(
       'type' => 2,
     ),

@@ -28,7 +28,7 @@ function harmony_core_thread_add() {
 }
 
 function harmony_core_thread_view($thread, $view_mode = 'full') {
-  $uri = entity_uri('thread', $thread);
+  $uri = entity_uri('harmony_thread', $thread);
   // Set the thread path as the canonical URL to prevent duplicate content.
   drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
   // Set the non-aliased path as a default shortlink.
@@ -36,7 +36,7 @@ function harmony_core_thread_view($thread, $view_mode = 'full') {
 
   // Trigger context if viewing a thread page.
   if ($view_mode == 'full') {
-    if ($plugin = context_get_plugin('condition', 'thread')) {
+    if ($plugin = context_get_plugin('condition', 'harmony_thread')) {
       $plugin->execute($thread);
     }
   }
@@ -123,8 +123,8 @@ function harmony_core_post_view_page($post, $view_mode = 'full', $langcode = NUL
 }
 
 function harmony_core_post_view_multiple($posts, $view_mode = 'full', $langcode = NULL) {
-  field_attach_prepare_view('post', $posts, $view_mode, $langcode);
-  entity_prepare_view('post', $posts, $langcode);
+  field_attach_prepare_view('harmony_post', $posts, $view_mode, $langcode);
+  entity_prepare_view('harmony_post', $posts, $langcode);
 
   $build = array();
   foreach ($posts as $post) {
@@ -147,14 +147,14 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   unset($post->content);
 
   $build += array(
-    '#theme' => 'post',
+    '#theme' => 'harmony_post',
     '#post' => $post,
     '#view_mode' => $view_mode,
     '#language' => $langcode,
   );
 
   // Allow modules to modify the structured post.
-  $type = 'post';
+  $type = 'harmony_post';
   drupal_alter(array('harmony_post_view', 'entity_view'), $build, $type);
 
   return $build;
@@ -170,7 +170,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
   // Allow modules to change the view mode.
   $context = array(
-    'entity_type' => 'post',
+    'entity_type' => 'harmony_post',
     'entity' => $post,
     'langcode' => $langcode,
   );
@@ -180,9 +180,9 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   // In case of a multiple view, harmony_core_post_view_multiple() already ran the
   // 'prepare_view' step. An internal flag prevents the operation from running
   // twice.
-  field_attach_prepare_view('post', array($post->post_id => $post), $view_mode, $langcode);
-  entity_prepare_view('post', array($post->post_id => $post), $langcode);
-  $post->content += field_attach_view('post', $post, $view_mode, $langcode);
+  field_attach_prepare_view('harmony_post', array($post->post_id => $post), $view_mode, $langcode);
+  entity_prepare_view('harmony_post', array($post->post_id => $post), $langcode);
+  $post->content += field_attach_view('harmony_post', $post, $view_mode, $langcode);
 
   // Always display a read more link on teasers because we have no way to know
   // when a teaser view is different than a full view.
@@ -209,7 +209,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
   // Allow modules to make their own additions to the post.
   module_invoke_all('harmony_post_view', $post, $view_mode, $langcode);
-  module_invoke_all('entity_view', $post, 'post', $view_mode, $langcode);
+  module_invoke_all('entity_view', $post, 'harmony_post', $view_mode, $langcode);
 
   // Make sure the current view mode is stored if no module has already
   // populated the related key.
@@ -274,7 +274,7 @@ function harmony_core_post_revision_title($post) {
 }
 
 function harmony_core_post_revisions_view($post, $view_mode = 'full') {
-  return views_embed_view(variable_get('harmony_core_post_revisions_view', 'post_revisions'), 'default', $post->post_id);
+  return views_embed_view(variable_get('harmony_core_post_revisions_view', 'harmony_post_revisions'), 'default', $post->post_id);
 }
 
 /**
@@ -282,7 +282,7 @@ function harmony_core_post_revisions_view($post, $view_mode = 'full') {
  */
 function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode = 'full') {
   // Figure out the previous revision.
-  $previous_vid = db_query_range('SELECT vid FROM {post_revision} WHERE post_id = :post_id AND vid < :vid ORDER BY vid DESC', 0, 1, array(':post_id' => $new_post->post_id, ':vid' => $vid))->fetchField();
+  $previous_vid = db_query_range('SELECT vid FROM {harmony_post_revision} WHERE post_id = :post_id AND vid < :vid ORDER BY vid DESC', 0, 1, array(':post_id' => $new_post->post_id, ':vid' => $vid))->fetchField();
 
   if ($previous_vid) {
     $diff_theme = variable_get('diff_theme', 'default');
@@ -290,8 +290,8 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
 
     // Generate the diff.
     $old_post = harmony_post_load($new_post->post_id, $previous_vid);
-    $old_post_wrapper = entity_metadata_wrapper('post', $old_post);
-    $new_post_wrapper = entity_metadata_wrapper('post', $new_post);
+    $old_post_wrapper = entity_metadata_wrapper('harmony_post', $old_post);
+    $new_post_wrapper = entity_metadata_wrapper('harmony_post', $new_post);
 
     // drupal alter this stuff, let people change what we diff.
     $stuff_to_diff = array(
@@ -303,7 +303,7 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
       'post_text' => array(
         'title' => t('Post text'),
         'theme_function' => '',
-        'property' => 'field_text',
+        'property' => 'field_harmony_text',
       ),
     );
 

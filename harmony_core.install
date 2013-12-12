@@ -10,7 +10,7 @@
 function harmony_core_schema() {
   $schema = array();
 
-  $schema['thread'] = array(
+  $schema['harmony_thread'] = array(
     'description' => 'The base table for threads.',
     'fields' => array(
       'thread_id' => array(
@@ -99,17 +99,17 @@ function harmony_core_schema() {
     'primary key' => array('thread_id'),
   );
 
-  $schema['thread_read_history'] = array(
-    'description' => 'A record of which {users} have read which {thread}s.',
+  $schema['harmony_thread_read_history'] = array(
+    'description' => 'A record of which {users} have read which {harmony_thread}s.',
     'fields' => array(
       'uid' => array(
-        'description' => 'The {users}.uid that read the {thread} thread_id.',
+        'description' => 'The {users}.uid that read the {harmony_thread} thread_id.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'thread_id' => array(
-        'description' => 'The {thread}.thread_id that was read.',
+        'description' => 'The {harmony_thread}.thread_id that was read.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -133,7 +133,7 @@ function harmony_core_schema() {
     'primary key' => array('uid', 'thread_id'),
   );
 
-  $schema['post'] = array(
+  $schema['harmony_post'] = array(
     'description' => 'The base table for posts.',
     'fields' => array(
       'post_id' => array(
@@ -199,8 +199,8 @@ function harmony_core_schema() {
       'vid' => array('vid'),
     ),
     'foreign keys' => array(
-      'post_revision' => array(
-        'table' => 'post_revision',
+      'harmony_post_revision' => array(
+        'table' => 'harmony_post_revision',
         'columns' => array('vid' => 'vid'),
       ),
       'post_author' => array(
@@ -211,8 +211,8 @@ function harmony_core_schema() {
     'primary key' => array('post_id'),
   );
 
-  $schema['post_revision'] = array(
-    'description' => 'Stores information about each saved version of a {post}.',
+  $schema['harmony_post_revision'] = array(
+    'description' => 'Stores information about each saved version of a {harmony_post}.',
     'fields' => array(
       'post_id' => array(
         'description' => 'The primary identifier for the post.',
@@ -271,8 +271,8 @@ function harmony_core_schema() {
       'uid' => array('uid'),
     ),
     'foreign keys' => array(
-      'versioned_post' => array(
-        'table' => 'post',
+      'harmony_versioned_post' => array(
+        'table' => 'harmony_post',
         'columns' => array('post_id' => 'post_id'),
       ),
       'version_author' => array(

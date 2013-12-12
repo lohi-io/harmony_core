@@ -11,10 +11,10 @@ function harmony_core_views_default_views() {
   $export = array();
 
   $view = new view();
-  $view->name = 'administration_posts';
+  $view->name = 'harmony_administration_posts';
   $view->description = '';
   $view->tag = 'default';
-  $view->base_table = 'post';
+  $view->base_table = 'harmony_post';
   $view->human_name = 'Administration: Posts';
   $view->core = 7;
   $view->api_version = '3.0';
@@ -66,18 +66,18 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['empty']['area']['format'] = 'plain_text';
   /* Field: Post: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'post';
+  $handler->display->display_options['fields']['title']['table'] = 'harmony_post';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   /* Field: Post: Edit link */
   $handler->display->display_options['fields']['edit_link']['id'] = 'edit_link';
-  $handler->display->display_options['fields']['edit_link']['table'] = 'post';
+  $handler->display->display_options['fields']['edit_link']['table'] = 'harmony_post';
   $handler->display->display_options['fields']['edit_link']['field'] = 'edit_link';
   $handler->display->display_options['fields']['edit_link']['label'] = '';
   $handler->display->display_options['fields']['edit_link']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['edit_link']['text'] = 'edit';
   /* Field: Post: Delete link */
   $handler->display->display_options['fields']['delete_link']['id'] = 'delete_link';
-  $handler->display->display_options['fields']['delete_link']['table'] = 'post';
+  $handler->display->display_options['fields']['delete_link']['table'] = 'harmony_post';
   $handler->display->display_options['fields']['delete_link']['field'] = 'delete_link';
   $handler->display->display_options['fields']['delete_link']['label'] = 'Operations';
   $handler->display->display_options['fields']['delete_link']['text'] = 'delete';
@@ -90,13 +90,13 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '1';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
-  $export['administration_posts'] = $view;
+  $export['harmony_administration_posts'] = $view;
 
   $view = new view();
-  $view->name = 'administration_threads';
+  $view->name = 'harmony_administration_threads';
   $view->description = 'List and manage threads.';
   $view->tag = 'default';
-  $view->base_table = 'thread';
+  $view->base_table = 'harmony_thread';
   $view->human_name = 'Administration: Threads';
   $view->core = 7;
   $view->api_version = '3.0';
@@ -118,8 +118,8 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
     'title' => 'title',
-    'field_category' => 'field_category',
-    'field_post_count' => 'field_post_count',
+    'field_harmony_category' => 'field_harmony_category',
+    'field_harmony_post_count' => 'field_harmony_post_count',
     'status' => 'status',
     'created' => 'created',
     'updated' => 'updated',
@@ -142,7 +142,7 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'field_category' => array(
+    'field_harmony_category' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => 'views-align-center',
@@ -211,11 +211,11 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['empty']['area']['format'] = 'plain_text';
   /* Relationship: Thread: Author */
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
-  $handler->display->display_options['relationships']['uid']['table'] = 'thread';
+  $handler->display->display_options['relationships']['uid']['table'] = 'harmony_thread';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   /* Field: Bulk operations: Thread */
   $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
-  $handler->display->display_options['fields']['views_bulk_operations']['table'] = 'thread';
+  $handler->display->display_options['fields']['views_bulk_operations']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['views_bulk_operations']['field'] = 'views_bulk_operations';
   $handler->display->display_options['fields']['views_bulk_operations']['label'] = '';
   $handler->display->display_options['fields']['views_bulk_operations']['element_label_colon'] = FALSE;
@@ -326,64 +326,64 @@ function harmony_core_views_default_views() {
   );
   /* Field: Thread: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'thread';
+  $handler->display->display_options['fields']['title']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['link_to_thread'] = TRUE;
   /* Field: Thread: Category */
-  $handler->display->display_options['fields']['field_category']['id'] = 'field_category';
-  $handler->display->display_options['fields']['field_category']['table'] = 'field_data_field_category';
-  $handler->display->display_options['fields']['field_category']['field'] = 'field_category';
+  $handler->display->display_options['fields']['field_harmony_category']['id'] = 'field_harmony_category';
+  $handler->display->display_options['fields']['field_harmony_category']['table'] = 'field_data_field_harmony_category';
+  $handler->display->display_options['fields']['field_harmony_category']['field'] = 'field_harmony_category';
   /* Field: Field: Post count */
-  $handler->display->display_options['fields']['field_post_count']['id'] = 'field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['table'] = 'field_data_field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['field'] = 'field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['label'] = 'Posts';
-  $handler->display->display_options['fields']['field_post_count']['settings'] = array(
+  $handler->display->display_options['fields']['field_harmony_post_count']['id'] = 'field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['table'] = 'field_data_field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['field'] = 'field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['label'] = 'Posts';
+  $handler->display->display_options['fields']['field_harmony_post_count']['settings'] = array(
     'thousand_separator' => ' ',
     'prefix_suffix' => 1,
   );
   /* Field: Thread: Status */
   $handler->display->display_options['fields']['status']['id'] = 'status';
-  $handler->display->display_options['fields']['status']['table'] = 'thread';
+  $handler->display->display_options['fields']['status']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['status']['field'] = 'status';
   /* Field: Thread: Date created */
   $handler->display->display_options['fields']['created']['id'] = 'created';
-  $handler->display->display_options['fields']['created']['table'] = 'thread';
+  $handler->display->display_options['fields']['created']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['created']['field'] = 'created';
   $handler->display->display_options['fields']['created']['label'] = 'Created';
   $handler->display->display_options['fields']['created']['date_format'] = 'short';
   /* Field: Thread: Date updated */
   $handler->display->display_options['fields']['updated']['id'] = 'updated';
-  $handler->display->display_options['fields']['updated']['table'] = 'thread';
+  $handler->display->display_options['fields']['updated']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['updated']['field'] = 'updated';
   $handler->display->display_options['fields']['updated']['label'] = 'Updated';
   $handler->display->display_options['fields']['updated']['date_format'] = 'short';
   /* Field: Thread: Locked */
   $handler->display->display_options['fields']['locked']['id'] = 'locked';
-  $handler->display->display_options['fields']['locked']['table'] = 'thread';
+  $handler->display->display_options['fields']['locked']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['locked']['field'] = 'locked';
   $handler->display->display_options['fields']['locked']['not'] = 0;
   /* Field: Thread: Pinned */
   $handler->display->display_options['fields']['pinned']['id'] = 'pinned';
-  $handler->display->display_options['fields']['pinned']['table'] = 'thread';
+  $handler->display->display_options['fields']['pinned']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['pinned']['field'] = 'pinned';
   $handler->display->display_options['fields']['pinned']['not'] = 0;
   /* Field: Thread: Edit link */
   $handler->display->display_options['fields']['edit_link']['id'] = 'edit_link';
-  $handler->display->display_options['fields']['edit_link']['table'] = 'thread';
+  $handler->display->display_options['fields']['edit_link']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['edit_link']['field'] = 'edit_link';
   $handler->display->display_options['fields']['edit_link']['label'] = '';
   $handler->display->display_options['fields']['edit_link']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['edit_link']['text'] = 'edit';
   /* Field: Thread: Delete link */
   $handler->display->display_options['fields']['delete_link']['id'] = 'delete_link';
-  $handler->display->display_options['fields']['delete_link']['table'] = 'thread';
+  $handler->display->display_options['fields']['delete_link']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['delete_link']['field'] = 'delete_link';
   $handler->display->display_options['fields']['delete_link']['label'] = 'Operations';
   $handler->display->display_options['fields']['delete_link']['text'] = 'delete';
   /* Filter criterion: Thread: Title */
   $handler->display->display_options['filters']['title']['id'] = 'title';
-  $handler->display->display_options['filters']['title']['table'] = 'thread';
+  $handler->display->display_options['filters']['title']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['title']['field'] = 'title';
   $handler->display->display_options['filters']['title']['operator'] = 'contains';
   $handler->display->display_options['filters']['title']['group'] = 1;
@@ -397,26 +397,26 @@ function harmony_core_views_default_views() {
     1 => 0,
   );
   /* Filter criterion: Thread: Category (field_category) */
-  $handler->display->display_options['filters']['field_category_tid']['id'] = 'field_category_tid';
-  $handler->display->display_options['filters']['field_category_tid']['table'] = 'field_data_field_category';
-  $handler->display->display_options['filters']['field_category_tid']['field'] = 'field_category_tid';
-  $handler->display->display_options['filters']['field_category_tid']['group'] = 1;
-  $handler->display->display_options['filters']['field_category_tid']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['field_category_tid']['expose']['operator_id'] = 'field_category_tid_op';
-  $handler->display->display_options['filters']['field_category_tid']['expose']['label'] = 'Category';
-  $handler->display->display_options['filters']['field_category_tid']['expose']['operator'] = 'field_category_tid_op';
-  $handler->display->display_options['filters']['field_category_tid']['expose']['identifier'] = 'field_category_tid';
-  $handler->display->display_options['filters']['field_category_tid']['expose']['multiple'] = TRUE;
-  $handler->display->display_options['filters']['field_category_tid']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['field_harmony_category_tid']['id'] = 'field_harmony_category_tid';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['table'] = 'field_data_field_harmony_category';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['field'] = 'field_harmony_category_tid';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['group'] = 1;
+  $handler->display->display_options['filters']['field_harmony_category_tid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['operator_id'] = 'field_harmony_category_tid_op';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['label'] = 'Category';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['operator'] = 'field_harmony_category_tid_op';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['identifier'] = 'field_harmony_category_tid';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['multiple'] = TRUE;
+  $handler->display->display_options['filters']['field_harmony_category_tid']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
   );
-  $handler->display->display_options['filters']['field_category_tid']['type'] = 'select';
-  $handler->display->display_options['filters']['field_category_tid']['vocabulary'] = 'category';
-  $handler->display->display_options['filters']['field_category_tid']['hierarchy'] = 1;
+  $handler->display->display_options['filters']['field_harmony_category_tid']['type'] = 'select';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['vocabulary'] = 'harmony_category';
+  $handler->display->display_options['filters']['field_harmony_category_tid']['hierarchy'] = 1;
   /* Filter criterion: Thread: Locked */
   $handler->display->display_options['filters']['locked']['id'] = 'locked';
-  $handler->display->display_options['filters']['locked']['table'] = 'thread';
+  $handler->display->display_options['filters']['locked']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['locked']['field'] = 'locked';
   $handler->display->display_options['filters']['locked']['value'] = 'All';
   $handler->display->display_options['filters']['locked']['group'] = 1;
@@ -431,7 +431,7 @@ function harmony_core_views_default_views() {
   );
   /* Filter criterion: Thread: Pinned */
   $handler->display->display_options['filters']['pinned']['id'] = 'pinned';
-  $handler->display->display_options['filters']['pinned']['table'] = 'thread';
+  $handler->display->display_options['filters']['pinned']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['pinned']['field'] = 'pinned';
   $handler->display->display_options['filters']['pinned']['value'] = 'All';
   $handler->display->display_options['filters']['pinned']['group'] = 1;
@@ -446,7 +446,7 @@ function harmony_core_views_default_views() {
   );
   /* Filter criterion: Thread: Status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'thread';
+  $handler->display->display_options['filters']['status']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['status']['field'] = 'status';
   $handler->display->display_options['filters']['status']['group'] = 1;
   $handler->display->display_options['filters']['status']['exposed'] = TRUE;
@@ -467,10 +467,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
-  $export['administration_threads'] = $view;
+  $export['harmony_administration_threads'] = $view;
 
   $view = new view();
-  $view->name = 'category_sub_category_listing';
+  $view->name = 'harmony_category_sub_category_listing';
   $view->description = 'Lists the sub-categories of the current category.';
   $view->tag = 'default';
   $view->base_table = 'taxonomy_term_data';
@@ -497,11 +497,11 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['name']['alter']['ellipsis'] = FALSE;
   $handler->display->display_options['fields']['name']['link_to_taxonomy'] = TRUE;
   /* Field: Field: Thread count */
-  $handler->display->display_options['fields']['field_thread_count']['id'] = 'field_thread_count';
-  $handler->display->display_options['fields']['field_thread_count']['table'] = 'field_data_field_thread_count';
-  $handler->display->display_options['fields']['field_thread_count']['field'] = 'field_thread_count';
-  $handler->display->display_options['fields']['field_thread_count']['label'] = 'Threads';
-  $handler->display->display_options['fields']['field_thread_count']['settings'] = array(
+  $handler->display->display_options['fields']['field_harmony_thread_count']['id'] = 'field_harmony_thread_count';
+  $handler->display->display_options['fields']['field_harmony_thread_count']['table'] = 'field_data_field_harmony_thread_count';
+  $handler->display->display_options['fields']['field_harmony_thread_count']['field'] = 'field_harmony_thread_count';
+  $handler->display->display_options['fields']['field_harmony_thread_count']['label'] = 'Threads';
+  $handler->display->display_options['fields']['field_harmony_thread_count']['settings'] = array(
     'thousand_separator' => ',',
     'prefix_suffix' => 1,
   );
@@ -521,25 +521,25 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['arguments']['parent']['specify_validation'] = TRUE;
   $handler->display->display_options['arguments']['parent']['validate']['type'] = 'taxonomy_term';
   $handler->display->display_options['arguments']['parent']['validate_options']['vocabularies'] = array(
-    'category' => 'category',
+    'harmony_category' => 'harmony_category',
   );
   /* Filter criterion: Taxonomy vocabulary: Machine name */
   $handler->display->display_options['filters']['machine_name']['id'] = 'machine_name';
   $handler->display->display_options['filters']['machine_name']['table'] = 'taxonomy_vocabulary';
   $handler->display->display_options['filters']['machine_name']['field'] = 'machine_name';
   $handler->display->display_options['filters']['machine_name']['value'] = array(
-    'category' => 'category',
+    'harmony_category' => 'harmony_category',
   );
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'block');
-  $export['category_sub_category_listing'] = $view;
+  $export['harmony_category_sub_category_listing'] = $view;
 
   $view = new view();
-  $view->name = 'post_revisions';
+  $view->name = 'harmony_post_revisions';
   $view->description = '';
   $view->tag = 'default';
-  $view->base_table = 'post_revision';
+  $view->base_table = 'harmony_post_revision';
   $view->human_name = 'Post revisions';
   $view->core = 7;
   $view->api_version = '3.0';
@@ -612,7 +612,7 @@ function harmony_core_views_default_views() {
   );
   /* Relationship: Post (historical data): Author */
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
-  $handler->display->display_options['relationships']['uid']['table'] = 'post_revision';
+  $handler->display->display_options['relationships']['uid']['table'] = 'harmony_post_revision';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   /* Field: Harmony: View result reverse counter */
   $handler->display->display_options['fields']['reverse_counter']['id'] = 'reverse_counter';
@@ -629,7 +629,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['name']['exclude'] = TRUE;
   /* Field: Post (historical data): Created date */
   $handler->display->display_options['fields']['timestamp']['id'] = 'timestamp';
-  $handler->display->display_options['fields']['timestamp']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['timestamp']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['timestamp']['field'] = 'timestamp';
   $handler->display->display_options['fields']['timestamp']['label'] = 'Edited';
   $handler->display->display_options['fields']['timestamp']['alter']['alter_text'] = TRUE;
@@ -637,53 +637,53 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['timestamp']['date_format'] = 'long';
   /* Field: Post (historical data): Log message */
   $handler->display->display_options['fields']['log']['id'] = 'log';
-  $handler->display->display_options['fields']['log']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['log']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['log']['field'] = 'log';
   /* Field: Post (historical data): Is current */
   $handler->display->display_options['fields']['is_current']['id'] = 'is_current';
-  $handler->display->display_options['fields']['is_current']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['is_current']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['is_current']['field'] = 'is_current';
   $handler->display->display_options['fields']['is_current']['label'] = '';
   $handler->display->display_options['fields']['is_current']['element_label_colon'] = FALSE;
   /* Field: Post (historical data): Administrative delete link */
   $handler->display->display_options['fields']['delete_revision']['id'] = 'delete_revision';
-  $handler->display->display_options['fields']['delete_revision']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['delete_revision']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['delete_revision']['field'] = 'delete_revision';
   $handler->display->display_options['fields']['delete_revision']['label'] = '';
   $handler->display->display_options['fields']['delete_revision']['element_label_colon'] = FALSE;
   /* Field: Post (historical data): Administrative set current revision link */
   $handler->display->display_options['fields']['make_current']['id'] = 'make_current';
-  $handler->display->display_options['fields']['make_current']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['make_current']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['make_current']['field'] = 'make_current';
   $handler->display->display_options['fields']['make_current']['label'] = '';
   $handler->display->display_options['fields']['make_current']['element_label_colon'] = FALSE;
   /* Field: Post (historical data): Link to view or AJAX load the post differences */
   $handler->display->display_options['fields']['view_diff']['id'] = 'view_diff';
-  $handler->display->display_options['fields']['view_diff']['table'] = 'post_revision';
+  $handler->display->display_options['fields']['view_diff']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['view_diff']['field'] = 'view_diff';
   $handler->display->display_options['fields']['view_diff']['label'] = '';
   $handler->display->display_options['fields']['view_diff']['element_label_colon'] = FALSE;
   /* Sort criterion: Post (historical data): Created date */
   $handler->display->display_options['sorts']['timestamp']['id'] = 'timestamp';
-  $handler->display->display_options['sorts']['timestamp']['table'] = 'post_revision';
+  $handler->display->display_options['sorts']['timestamp']['table'] = 'harmony_post_revision';
   $handler->display->display_options['sorts']['timestamp']['field'] = 'timestamp';
   $handler->display->display_options['sorts']['timestamp']['order'] = 'DESC';
   /* Contextual filter: Post (historical data): Post ID */
   $handler->display->display_options['arguments']['post_id']['id'] = 'post_id';
-  $handler->display->display_options['arguments']['post_id']['table'] = 'post_revision';
+  $handler->display->display_options['arguments']['post_id']['table'] = 'harmony_post_revision';
   $handler->display->display_options['arguments']['post_id']['field'] = 'post_id';
   $handler->display->display_options['arguments']['post_id']['default_action'] = 'not found';
   $handler->display->display_options['arguments']['post_id']['default_argument_type'] = 'fixed';
   $handler->display->display_options['arguments']['post_id']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['post_id']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['post_id']['summary_options']['items_per_page'] = '25';
-  $export['post_revisions'] = $view;
+  $export['harmony_post_revisions'] = $view;
 
   $view = new view();
-  $view->name = 'thread_listing';
+  $view->name = 'harmony_thread_listing';
   $view->description = 'Listing of threads belonging to a category,';
   $view->tag = 'default';
-  $view->base_table = 'thread';
+  $view->base_table = 'harmony_thread';
   $view->human_name = 'Thread listing';
   $view->core = 7;
   $view->api_version = '3.0';
@@ -707,12 +707,12 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['columns'] = array(
     'pinned' => 'pinned',
     'title' => 'title',
-    'field_category' => 'field_category',
-    'field_post_count' => 'field_post_count',
+    'field_harmony_category' => 'field_harmony_category',
+    'field_harmony_post_count' => 'field_harmony_post_count',
     'likes' => 'likes',
     'views' => 'views',
-    'field_post_time_first' => 'field_post_time_first',
-    'field_post_time_last' => 'field_post_time_first',
+    'field_harmony_post_time_first' => 'field_harmony_post_time_first',
+    'field_harmony_post_time_last' => 'field_harmony_post_time_first',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
@@ -730,14 +730,14 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'field_category' => array(
+    'field_harmony_category' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
     ),
-    'field_post_count' => array(
+    'field_harmony_post_count' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => 'views-align-center',
@@ -758,14 +758,14 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'field_post_time_first' => array(
+    'field_harmony_post_time_first' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => 'views-align-center',
       'separator' => ' ',
       'empty_column' => 0,
     ),
-    'field_post_time_last' => array(
+    'field_harmony_post_time_last' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
@@ -782,71 +782,71 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['empty']['area']['format'] = 'plain_text';
   /* Field: Thread: Pinned */
   $handler->display->display_options['fields']['pinned']['id'] = 'pinned';
-  $handler->display->display_options['fields']['pinned']['table'] = 'thread';
+  $handler->display->display_options['fields']['pinned']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['pinned']['field'] = 'pinned';
   /* Field: Thread: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'thread';
+  $handler->display->display_options['fields']['title']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['title']['field'] = 'title';
   $handler->display->display_options['fields']['title']['link_to_thread'] = TRUE;
   /* Field: Thread: Category */
-  $handler->display->display_options['fields']['field_category']['id'] = 'field_category';
-  $handler->display->display_options['fields']['field_category']['table'] = 'field_data_field_category';
-  $handler->display->display_options['fields']['field_category']['field'] = 'field_category';
+  $handler->display->display_options['fields']['field_harmony_category']['id'] = 'field_harmony_category';
+  $handler->display->display_options['fields']['field_harmony_category']['table'] = 'field_data_field_harmony_category';
+  $handler->display->display_options['fields']['field_harmony_category']['field'] = 'field_harmony_category';
   /* Field: Field: Post count */
-  $handler->display->display_options['fields']['field_post_count']['id'] = 'field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['table'] = 'field_data_field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['field'] = 'field_post_count';
-  $handler->display->display_options['fields']['field_post_count']['label'] = 'Posts';
-  $handler->display->display_options['fields']['field_post_count']['settings'] = array(
+  $handler->display->display_options['fields']['field_harmony_post_count']['id'] = 'field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['table'] = 'field_data_field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['field'] = 'field_harmony_post_count';
+  $handler->display->display_options['fields']['field_harmony_post_count']['label'] = 'Posts';
+  $handler->display->display_options['fields']['field_harmony_post_count']['settings'] = array(
     'thousand_separator' => ',',
     'prefix_suffix' => 1,
   );
   /* Field: Thread: Likes */
   $handler->display->display_options['fields']['likes']['id'] = 'likes';
-  $handler->display->display_options['fields']['likes']['table'] = 'thread';
+  $handler->display->display_options['fields']['likes']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['likes']['field'] = 'likes';
   /* Field: Thread: Views */
   $handler->display->display_options['fields']['views']['id'] = 'views';
-  $handler->display->display_options['fields']['views']['table'] = 'thread';
+  $handler->display->display_options['fields']['views']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['views']['field'] = 'views';
   /* Field: Thread: Date updated */
   $handler->display->display_options['fields']['updated']['id'] = 'updated';
-  $handler->display->display_options['fields']['updated']['table'] = 'thread';
+  $handler->display->display_options['fields']['updated']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['updated']['field'] = 'updated';
   $handler->display->display_options['fields']['updated']['label'] = 'Updated';
   $handler->display->display_options['fields']['updated']['date_format'] = 'short';
   /* Sort criterion: Thread: Pinned */
   $handler->display->display_options['sorts']['pinned']['id'] = 'pinned';
-  $handler->display->display_options['sorts']['pinned']['table'] = 'thread';
+  $handler->display->display_options['sorts']['pinned']['table'] = 'harmony_thread';
   $handler->display->display_options['sorts']['pinned']['field'] = 'pinned';
   $handler->display->display_options['sorts']['pinned']['order'] = 'DESC';
   /* Sort criterion: Thread: Date updated */
   $handler->display->display_options['sorts']['updated']['id'] = 'updated';
-  $handler->display->display_options['sorts']['updated']['table'] = 'thread';
+  $handler->display->display_options['sorts']['updated']['table'] = 'harmony_thread';
   $handler->display->display_options['sorts']['updated']['field'] = 'updated';
   $handler->display->display_options['sorts']['updated']['order'] = 'DESC';
   /* Contextual filter: Thread: Category (field_category) */
-  $handler->display->display_options['arguments']['field_category_tid']['id'] = 'field_category_tid';
-  $handler->display->display_options['arguments']['field_category_tid']['table'] = 'field_data_field_category';
-  $handler->display->display_options['arguments']['field_category_tid']['field'] = 'field_category_tid';
-  $handler->display->display_options['arguments']['field_category_tid']['default_argument_type'] = 'fixed';
-  $handler->display->display_options['arguments']['field_category_tid']['summary']['number_of_records'] = '0';
-  $handler->display->display_options['arguments']['field_category_tid']['summary']['format'] = 'default_summary';
-  $handler->display->display_options['arguments']['field_category_tid']['summary_options']['items_per_page'] = '25';
-  $handler->display->display_options['arguments']['field_category_tid']['specify_validation'] = TRUE;
-  $handler->display->display_options['arguments']['field_category_tid']['validate']['type'] = 'taxonomy_term';
-  $handler->display->display_options['arguments']['field_category_tid']['validate_options']['vocabularies'] = array(
-    'category' => 'category',
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['id'] = 'field_harmony_category_tid';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['table'] = 'field_data_field_harmony_category';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['field'] = 'field_harmony_category_tid';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['summary_options']['items_per_page'] = '25';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['specify_validation'] = TRUE;
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['validate']['type'] = 'taxonomy_term';
+  $handler->display->display_options['arguments']['field_harmony_category_tid']['validate_options']['vocabularies'] = array(
+    'harmony_category' => 'harmony_category',
   );
   /* Filter criterion: Thread: Status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'thread';
+  $handler->display->display_options['filters']['status']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['status']['field'] = 'status';
   $handler->display->display_options['filters']['status']['value'] = array(
     1 => '1',
   );
-  $export['thread_listing'] = $view;
+  $export['harmony_thread_listing'] = $view;
 
   return $export;
 }

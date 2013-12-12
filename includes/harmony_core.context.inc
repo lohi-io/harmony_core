@@ -10,7 +10,7 @@
  * Expose thread view as a context condition.
  */
 class harmony_core_context_condition_thread extends context_condition {
-  function thread_properties() {
+  function harmony_thread_properties() {
     return array(
       'all' => array(
         'title' => t('All threads'),
@@ -51,7 +51,7 @@ class harmony_core_context_condition_thread extends context_condition {
   function condition_values() {
     $values = array();
 
-    foreach ($this->thread_properties() as $k => $property) {
+    foreach ($this->harmony_thread_properties() as $k => $property) {
       $values[$k] = $property['title'];
     }
 
@@ -59,10 +59,10 @@ class harmony_core_context_condition_thread extends context_condition {
   }
 
   function execute($thread) {
-    $properties = $this->thread_properties();
+    $properties = $this->harmony_thread_properties();
 
     foreach ($this->get_contexts() as $context) {
-      $conditions = $context->conditions['thread']['values'];
+      $conditions = $context->conditions['harmony_thread']['values'];
 
       foreach ($conditions as $condition) {
         if ($condition == 'all' || isset($thread->{$properties[$condition]['property']}) && $thread->{$properties[$condition]['property']} == $properties[$condition]['value']) {

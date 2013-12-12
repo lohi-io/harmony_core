@@ -10,9 +10,9 @@
 function harmony_core_field_default_field_instances() {
   $field_instances = array();
 
-  // Exported field_instance: 'post-post-field_text'
-  $field_instances['post-post-field_text'] = array(
-    'bundle' => 'post',
+  // Exported field_instance: 'harmony_post-harmony_post-field_harmony_text'
+  $field_instances['harmony_post-harmony_post-field_harmony_text'] = array(
+    'bundle' => 'harmony_post',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -25,8 +25,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 0,
       ),
     ),
-    'entity_type' => 'post',
-    'field_name' => 'field_text',
+    'entity_type' => 'harmony_post',
+    'field_name' => 'field_harmony_text',
     'label' => 'Text',
     'required' => 1,
     'settings' => array(
@@ -44,9 +44,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'post-post-field_thread'
-  $field_instances['post-post-field_thread'] = array(
-    'bundle' => 'post',
+  // Exported field_instance: 'harmony_post-harmony_post-field_harmony_thread'
+  $field_instances['harmony_post-harmony_post-field_harmony_thread'] = array(
+    'bundle' => 'harmony_post',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -61,8 +61,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 1,
       ),
     ),
-    'entity_type' => 'post',
-    'field_name' => 'field_thread',
+    'entity_type' => 'harmony_post',
+    'field_name' => 'field_harmony_thread',
     'label' => 'Thread',
     'required' => 0,
     'settings' => array(
@@ -81,9 +81,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'taxonomy_term-category-field_colour'
-  $field_instances['taxonomy_term-category-field_colour'] = array(
-    'bundle' => 'category',
+  // Exported field_instance: 'taxonomy_term-harmony_category-field_harmony_colour'
+  $field_instances['taxonomy_term-harmony_category-field_harmony_colour'] = array(
+    'bundle' => 'harmony_category',
     'default_value' => array(
       0 => array(
         'value' => '4993ff',
@@ -107,7 +107,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'taxonomy_term',
-    'field_name' => 'field_colour',
+    'field_name' => 'field_harmony_colour',
     'label' => 'Colour',
     'required' => 0,
     'settings' => array(
@@ -125,9 +125,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'taxonomy_term-category-field_thread_count'
-  $field_instances['taxonomy_term-category-field_thread_count'] = array(
-    'bundle' => 'category',
+  // Exported field_instance: 'taxonomy_term-harmony_category-field_harmony_thread_count'
+  $field_instances['taxonomy_term-harmony_category-field_harmony_thread_count'] = array(
+    'bundle' => 'harmony_category',
     'default_value' => array(
       0 => array(
         'value' => 0,
@@ -156,7 +156,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'taxonomy_term',
-    'field_name' => 'field_thread_count',
+    'field_name' => 'field_harmony_thread_count',
     'label' => 'Thread count',
     'required' => 0,
     'settings' => array(
@@ -175,9 +175,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'thread-thread-field_category'
-  $field_instances['thread-thread-field_category'] = array(
-    'bundle' => 'thread',
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_category'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_category'] = array(
+    'bundle' => 'harmony_thread',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -190,8 +190,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 7,
       ),
     ),
-    'entity_type' => 'thread',
-    'field_name' => 'field_category',
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_category',
     'label' => 'Category',
     'required' => 0,
     'settings' => array(
@@ -206,9 +206,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'thread-thread-field_last_user_to_post_a_reply'
-  $field_instances['thread-thread-field_last_user_to_post_a_reply'] = array(
-    'bundle' => 'thread',
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_last_user_to_post_a_reply'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_last_user_to_post_a_reply'] = array(
+    'bundle' => 'harmony_thread',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -223,8 +223,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 2,
       ),
     ),
-    'entity_type' => 'thread',
-    'field_name' => 'field_last_user_to_post_a_reply',
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_last_user_to_post_a_reply',
     'label' => 'Last user to post a reply',
     'required' => 0,
     'settings' => array(
@@ -243,9 +243,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'thread-thread-field_post_count'
-  $field_instances['thread-thread-field_post_count'] = array(
-    'bundle' => 'thread',
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_post_count'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_post_count'] = array(
+    'bundle' => 'harmony_thread',
     'default_value' => array(
       0 => array(
         'value' => 0,
@@ -269,8 +269,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 0,
       ),
     ),
-    'entity_type' => 'thread',
-    'field_name' => 'field_post_count',
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_post_count',
     'label' => 'Post count',
     'required' => 0,
     'settings' => array(
@@ -289,9 +289,9 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'thread-thread-field_thread_continued_from'
-  $field_instances['thread-thread-field_thread_continued_from'] = array(
-    'bundle' => 'thread',
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_thread_continued_from'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_thread_continued_from'] = array(
+    'bundle' => 'harmony_thread',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -306,8 +306,8 @@ function harmony_core_field_default_field_instances() {
         'weight' => 5,
       ),
     ),
-    'entity_type' => 'thread',
-    'field_name' => 'field_thread_continued_from',
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_thread_continued_from',
     'label' => 'Thread continued from',
     'required' => 0,
     'settings' => array(
@@ -326,8 +326,8 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'user-user-field_post_count'
-  $field_instances['user-user-field_post_count'] = array(
+  // Exported field_instance: 'user-user-field_harmony_post_count'
+  $field_instances['user-user-field_harmony_post_count'] = array(
     'bundle' => 'user',
     'default_value' => array(
       0 => array(
@@ -351,7 +351,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'user',
-    'field_name' => 'field_post_count',
+    'field_name' => 'field_harmony_post_count',
     'label' => 'Post count',
     'required' => 0,
     'settings' => array(
@@ -370,8 +370,8 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'user-user-field_thread_count'
-  $field_instances['user-user-field_thread_count'] = array(
+  // Exported field_instance: 'user-user-field_harmony_thread_count'
+  $field_instances['user-user-field_harmony_thread_count'] = array(
     'bundle' => 'user',
     'default_value' => array(
       0 => array(
@@ -395,7 +395,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'user',
-    'field_name' => 'field_thread_count',
+    'field_name' => 'field_harmony_thread_count',
     'label' => 'Thread count',
     'required' => 0,
     'settings' => array(

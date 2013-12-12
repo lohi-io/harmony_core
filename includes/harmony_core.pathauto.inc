@@ -23,10 +23,10 @@ function harmony_core_pathauto($op) {
     case 'settings':
       $settings =  array(
         'module' => 'harmony_core',
-        'token_type' => 'thread',
+        'token_type' => 'harmony_thread',
         'groupheader' => t('Thread paths'),
         'patterndescr' => t('This pattern applies to all threads.'),
-        'patterndefault' => 'thread/[thread:thread-id]/[thread:title]',
+        'patterndefault' => 'thread/[harmony-thread:thread-id]/[harmony-thread:title]',
         'batch_update_callback' => 'harmony_core_thread_pathauto_bulk_update_batch_process',
         'batch_file' => drupal_get_path('module', 'harmony_core') . '/includes/harmony_core.pathauto.inc',
       );
@@ -49,14 +49,14 @@ function harmony_core_thread_pathauto_bulk_update_batch_process(&$context) {
     $context['sandbox']['current'] = 0;
   }
 
-  $query = db_select('thread', 't');
+  $query = db_select('harmony_thread', 't');
   $query->leftJoin('url_alias', 'ua', "CONCAT('thread/', t.thread_id) = ua.source");
   $query->addField('t', 'thread_id');
   $query->isNull('ua.source');
   $query->condition('t.thread_id', $context['sandbox']['current'], '>');
   $query->orderBy('t.thread_id');
   $query->addTag('pathauto_bulk_update');
-  $query->addMetaData('entity', 'thread');
+  $query->addMetaData('entity', 'harmony_thread');
 
   // Get the total amount of items to process.
   if (!isset($context['sandbox']['total'])) {
@@ -91,7 +91,7 @@ function harmony_core_thread_update_alias($thread, $op, array $options = array()
     return;
   }
 
-  $options += array('language' => pathauto_entity_language('thread', $thread));
+  $options += array('language' => pathauto_entity_language('harmony_thread', $thread));
 
   // Weird but you pass the module name that specified hook_path_alias_types().
   // Skip processing if the node has no pattern.
@@ -100,8 +100,8 @@ function harmony_core_thread_update_alias($thread, $op, array $options = array()
   }
 
   module_load_include('inc', 'pathauto');
-  $uri = entity_uri('thread', $thread);
-  pathauto_create_alias('harmony_core', $op, $uri['path'], array('thread' => $thread), '', $options['language']);
+  $uri = entity_uri('harmony_thread', $thread);
+  pathauto_create_alias('harmony_core', $op, $uri['path'], array('harmony_thread' => $thread), '', $options['language']);
 }
 
 /**

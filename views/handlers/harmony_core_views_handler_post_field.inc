@@ -18,9 +18,10 @@ class harmony_core_views_handler_post_field extends views_handler_field {
     parent::init($view, $options);
     // Don't add the additional fields to groupby
     if (!empty($this->options['link_to_post'])) {
-      $this->additional_fields['post_id'] = array('table' => 'post', 'field' => 'post_id');
+      $this->additional_fields['post_id'] = array('table' => 'harmony_post', 'field' => 'post_id');
+      /* @todo do we use this? */
       if (module_exists('translation')) {
-        $this->additional_fields['language'] = array('table' => 'post', 'field' => 'language');
+        $this->additional_fields['language'] = array('table' => 'harmony_post', 'field' => 'language');
       }
     }
   }

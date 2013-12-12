@@ -18,9 +18,10 @@ class harmony_core_views_handler_thread_field extends views_handler_field {
     parent::init($view, $options);
     // Don't add the additional fields to groupby
     if (!empty($this->options['link_to_thread'])) {
-      $this->additional_fields['thread_id'] = array('table' => 'thread', 'field' => 'thread_id');
+      $this->additional_fields['thread_id'] = array('table' => 'harmony_thread', 'field' => 'thread_id');
+      /* @todo do we use this? */
       if (module_exists('translation')) {
-        $this->additional_fields['language'] = array('table' => 'thread', 'field' => 'language');
+        $this->additional_fields['language'] = array('table' => 'harmony_thread', 'field' => 'language');
       }
     }
   }

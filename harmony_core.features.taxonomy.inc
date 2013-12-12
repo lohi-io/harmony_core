@@ -9,13 +9,13 @@
  */
 function harmony_core_taxonomy_default_vocabularies() {
   return array(
-    'category' => array(
+    'harmony_category' => array(
       'name' => 'Category',
-      'machine_name' => 'category',
+      'machine_name' => 'harmony_category',
       'description' => '',
       'hierarchy' => 1,
       'module' => 'taxonomy',
-      'weight' => 0,
+      'weight' => -10,
     ),
   );
 }

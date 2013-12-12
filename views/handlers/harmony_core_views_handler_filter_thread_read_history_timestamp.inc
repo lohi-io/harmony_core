@@ -64,7 +64,7 @@ class harmony_core_views_handler_filter_thread_read_history_timestamp extends vi
 
     $this->ensure_my_table();
     $field = "$this->table_alias.$this->real_field";
-    $thread = $this->query->ensure_table('thread', $this->relationship);
+    $thread = $this->query->ensure_table('harmony_thread', $this->relationship);
 
     // NULL means a history record doesn't exist. That's clearly new content.
     // Unless it's very very old content. Everything in the query is already
