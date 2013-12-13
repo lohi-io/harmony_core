@@ -149,7 +149,7 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'field_post_count' => array(
+    'field_harmony_post_count' => array(
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => 'views-align-center',

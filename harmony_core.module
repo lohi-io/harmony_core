@@ -1686,7 +1686,7 @@ function harmony_core_thread_insert($thread) {
   // Set the first posts title to be the same as the thread.
   /*$thread->field_harmony_first_post->title->set($entity->title);
   // Set the first posts thread entity ref to be this thread.
-  $thread->field_harmony_first_post->field_thread->set($thread_id);
+  $thread->field_harmony_first_post->field_harmony_thread->set($thread_id);
   // Save the first post.
   $thread->field_harmony_first_post->save();*/
 
@@ -1725,7 +1725,7 @@ function harmony_core_thread_update($thread) {
 
     // Get a list of post nodes to update.
     $posts = db_query("SELECT entity_id 
-      FROM {field_harmony_data_field_thread} 
+      FROM {field_data_field_harmony_thread} 
       WHERE entity_type = 'node' 
       AND bundle = 'harmony_post' 
       AND field_harmony_thread_target_id = :thread_id", 
@@ -1779,7 +1779,7 @@ function harmony_core_thread_on_delete($thread) {
 
   // Get a list of post nodes to delete.
   /*$posts = db_query("SELECT entity_id 
-    FROM {field_harmony_data_field_thread} 
+    FROM {field_data_field_harmony_thread} 
     WHERE entity_type = 'node' 
     AND bundle = 'post' 
     AND field_thread_target_id = :thread_id", 
@@ -1888,7 +1888,7 @@ function harmony_core_node_insert($node) {
     $post = entity_metadata_wrapper('node', $node);
 
     // Get the thread id.
-    $thread_id = $post->field_thread->value();
+    $thread_id = $post->field_harmony_thread->value();
 
     // The thread id should be populated, if not then it's because
     // it's the first post in a thread.

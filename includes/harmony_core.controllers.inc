@@ -99,7 +99,7 @@ class HarmonyThreadController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('harmony_thread', $e);
+      watchdog_exception($this->entityType, $e);
       throw $e;
     }
   }
@@ -249,7 +249,7 @@ class HarmonyPostController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('harmony_post', $e);
+      watchdog_exception($this->entityType, $e);
       throw $e;
     }
   }
