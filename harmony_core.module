@@ -296,6 +296,13 @@ function harmony_core_entity_property_info() {
     'schema field' => 'locked',
     'type' => 'boolean',
   );
+  $post_properties['replies'] = array(
+    'label' => t('Replies count'),
+    'description' => t('Number of times that the post has been replied to.'),
+    'type' => 'integer',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'replies',
+  );
   $post_properties['log'] = array(
     'label' => t('Revision log message'),
     'type' => 'text',
