@@ -19,22 +19,15 @@ function harmony_core_strongarm() {
       'full' => array(
         'custom_settings' => TRUE,
       ),
+      'diff_standard' => array(
+        'custom_settings' => FALSE,
+      ),
       'token' => array(
         'custom_settings' => FALSE,
       ),
     ),
     'extra_fields' => array(
-      'form' => array(
-        'path' => array(
-          'weight' => '2',
-        ),
-        'name' => array(
-          'weight' => '0',
-        ),
-        'description' => array(
-          'weight' => '1',
-        ),
-      ),
+      'form' => array(),
       'display' => array(
         'description' => array(
           'default' => array(

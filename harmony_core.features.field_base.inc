@@ -182,14 +182,7 @@ function harmony_core_field_default_field_bases() {
     'field_permissions' => array(
       'type' => 0,
     ),
-    'foreign keys' => array(
-      'harmony_thread' => array(
-        'columns' => array(
-          'target_id' => 'thread_id',
-        ),
-        'table' => 'harmony_thread',
-      ),
-    ),
+    'foreign keys' => array(),
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',
@@ -226,14 +219,7 @@ function harmony_core_field_default_field_bases() {
     'field_permissions' => array(
       'type' => 2,
     ),
-    'foreign keys' => array(
-      'harmony_post' => array(
-        'columns' => array(
-          'target_id' => 'post_id',
-        ),
-        'table' => 'harmony_post',
-      ),
-    ),
+    'foreign keys' => array(),
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',

@@ -396,7 +396,7 @@ function harmony_core_views_default_views() {
     2 => '2',
     1 => 0,
   );
-  /* Filter criterion: Thread: Category (field_category) */
+  /* Filter criterion: Thread: Category (field_harmony_category) */
   $handler->display->display_options['filters']['field_harmony_category_tid']['id'] = 'field_harmony_category_tid';
   $handler->display->display_options['filters']['field_harmony_category_tid']['table'] = 'field_data_field_harmony_category';
   $handler->display->display_options['filters']['field_harmony_category_tid']['field'] = 'field_harmony_category_tid';
@@ -826,7 +826,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['sorts']['updated']['table'] = 'harmony_thread';
   $handler->display->display_options['sorts']['updated']['field'] = 'updated';
   $handler->display->display_options['sorts']['updated']['order'] = 'DESC';
-  /* Contextual filter: Thread: Category (field_category) */
+  /* Contextual filter: Thread: Category (field_harmony_category) */
   $handler->display->display_options['arguments']['field_harmony_category_tid']['id'] = 'field_harmony_category_tid';
   $handler->display->display_options['arguments']['field_harmony_category_tid']['table'] = 'field_data_field_harmony_category';
   $handler->display->display_options['arguments']['field_harmony_category_tid']['field'] = 'field_harmony_category_tid';
