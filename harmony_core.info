@@ -59,6 +59,7 @@ dependencies[] = diff
 dependencies[] = transliteration
 dependencies[] = short_scale_formatter
 dependencies[] = strongarm
+dependencies[] = entity_token
 
 ;configure = admin/config/harmony
 
