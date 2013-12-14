@@ -227,11 +227,11 @@ function harmony_core_field_default_field_bases() {
       'type' => 2,
     ),
     'foreign keys' => array(
-      'node' => array(
+      'harmony_post' => array(
         'columns' => array(
-          'target_id' => 'nid',
+          'target_id' => 'post_id',
         ),
-        'table' => 'node',
+        'table' => 'harmony_post',
       ),
     ),
     'indexes' => array(
@@ -254,7 +254,7 @@ function harmony_core_field_default_field_bases() {
         ),
         'target_bundles' => array(),
       ),
-      'target_type' => 'harmony_thread',
+      'target_type' => 'harmony_post',
     ),
     'translatable' => 0,
     'type' => 'entityreference',

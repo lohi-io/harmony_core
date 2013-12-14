@@ -90,6 +90,7 @@ features[field_instance][] = user-user-field_harmony_thread_count
 features[taxonomy][] = harmony_category
 features[taxonomy_display][] = harmony_category
 features[variable][] = field_bundle_settings_taxonomy_term__harmony_category
+features[variable][] = pathauto_harmony_core_pattern
 features[views_view][] = harmony_administration_posts
 features[views_view][] = harmony_administration_threads
 features[views_view][] = harmony_category_sub_category_listing
