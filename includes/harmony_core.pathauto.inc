@@ -26,7 +26,7 @@ function harmony_core_pathauto($op) {
         'token_type' => 'harmony_thread',
         'groupheader' => t('Thread paths'),
         'patterndescr' => t('This pattern applies to all threads.'),
-        'patterndefault' => 'thread/[harmony-thread:thread-id]/[harmony-thread:title]',
+        'patterndefault' => 'thread/[harmony_thread:thread-id]/[harmony_thread:title]',
         'batch_update_callback' => 'harmony_core_thread_pathauto_bulk_update_batch_process',
         'batch_file' => drupal_get_path('module', 'harmony_core') . '/includes/harmony_core.pathauto.inc',
       );

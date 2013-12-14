@@ -203,8 +203,8 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_last_user_to_post_a_reply'
-  $field_instances['harmony_thread-harmony_thread-field_harmony_last_user_to_post_a_reply'] = array(
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_last_user_to_reply'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_last_user_to_reply'] = array(
     'bundle' => 'harmony_thread',
     'default_value' => NULL,
     'deleted' => 0,
@@ -221,7 +221,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'harmony_thread',
-    'field_name' => 'field_harmony_last_user_to_post_a_reply',
+    'field_name' => 'field_harmony_last_user_to_reply',
     'label' => 'Last user to post a reply',
     'required' => 0,
     'settings' => array(
@@ -286,8 +286,8 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_thread_continued_from'
-  $field_instances['harmony_thread-harmony_thread-field_harmony_thread_continued_from'] = array(
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_thread_cont_from'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_thread_cont_from'] = array(
     'bundle' => 'harmony_thread',
     'default_value' => NULL,
     'deleted' => 0,
@@ -304,7 +304,7 @@ function harmony_core_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'harmony_thread',
-    'field_name' => 'field_harmony_thread_continued_from',
+    'field_name' => 'field_harmony_thread_cont_from',
     'label' => 'Thread continued from',
     'required' => 0,
     'settings' => array(

@@ -44,7 +44,7 @@ function harmony_core_context_default_contexts() {
   // Included for use with string extractors like potx.
   t('Is active on category term pages.');
   t('harmony');
-  $export['category_page'] = $context;
+  $export['harmony_category_page'] = $context;
 
   return $export;
 }

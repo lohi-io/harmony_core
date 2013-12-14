@@ -17,7 +17,7 @@ function harmony_core_taxonomy_display_default_displays() {
   $taxonomy_display->term_display_options = '';
   $taxonomy_display->associated_display_plugin = 'TaxonomyDisplayAssociatedDisplayHandlerViews';
   $taxonomy_display->associated_display_options = array(
-    'view' => 'harmony_thread_listing',
+    'view' => 'thread_listing',
     'display' => 'default',
   );
   $taxonomy_display->add_feed = FALSE;

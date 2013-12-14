@@ -79,22 +79,22 @@ function harmony_core_field_default_field_bases() {
     'type' => 'text',
   );
 
-  // Exported field_base: 'field_harmony_last_user_to_post_a_reply'
-  $field_bases['field_harmony_last_user_to_post_a_reply'] = array(
+  // Exported field_base: 'field_harmony_last_user_to_reply'
+  $field_bases['field_harmony_last_user_to_reply'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_harmony_last_user_to_post_a_reply',
+    'field_name' => 'field_harmony_last_user_to_reply',
     'field_permissions' => array(
       'type' => 2,
     ),
     'foreign keys' => array(
-      'node' => array(
+      'users' => array(
         'columns' => array(
-          'target_id' => 'nid',
+          'target_id' => 'uid',
         ),
-        'table' => 'node',
+        'table' => 'users',
       ),
     ),
     'indexes' => array(
@@ -183,11 +183,11 @@ function harmony_core_field_default_field_bases() {
       'type' => 0,
     ),
     'foreign keys' => array(
-      'node' => array(
+      'harmony_thread' => array(
         'columns' => array(
-          'target_id' => 'nid',
+          'target_id' => 'thread_id',
         ),
-        'table' => 'node',
+        'table' => 'harmony_thread',
       ),
     ),
     'indexes' => array(
@@ -210,19 +210,19 @@ function harmony_core_field_default_field_bases() {
         ),
         'target_bundles' => array(),
       ),
-      'target_type' => 'thread',
+      'target_type' => 'harmony_thread',
     ),
     'translatable' => 0,
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_harmony_thread_continued_from'
-  $field_bases['field_harmony_thread_continued_from'] = array(
+  // Exported field_base: 'field_harmony_thread_cont_from'
+  $field_bases['field_harmony_thread_cont_from'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_harmony_thread_continued_from',
+    'field_name' => 'field_harmony_thread_cont_from',
     'field_permissions' => array(
       'type' => 2,
     ),
@@ -254,7 +254,7 @@ function harmony_core_field_default_field_bases() {
         ),
         'target_bundles' => array(),
       ),
-      'target_type' => 'thread',
+      'target_type' => 'harmony_thread',
     ),
     'translatable' => 0,
     'type' => 'entityreference',

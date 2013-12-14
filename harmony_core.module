@@ -502,7 +502,7 @@ function harmony_core_menu() {
 
   $items['thread/%harmony_thread'] = array(
     'title callback' => 'entity_label',
-    'title arguments' => array('thread', 1),
+    'title arguments' => array('harmony_thread', 1),
     'page callback' => 'harmony_core_thread_view',
     'page arguments' => array(1),
     'access callback' => 'harmony_core_thread_access_callback',
@@ -553,7 +553,7 @@ function harmony_core_menu() {
 
   $items['post/%harmony_post'] = array(
     'title callback' => 'entity_label',
-    'title arguments' => array('post', 1),
+    'title arguments' => array('harmony_post', 1),
     'page callback' => 'harmony_core_post_view_page',
     'page arguments' => array(1),
     'access callback' => 'harmony_core_post_access_callback',
@@ -1440,9 +1440,9 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   //$form['field_harmony_first_post'][$first_post_lang]['form']['status']['#access'] = FALSE;
 
   // Hide property-ish type fields that we don't want user 1 to see.
-  $form['field_harmony_last_user_to_post_a_reply']['#access'] = FALSE;
+  $form['field_harmony_last_user_to_reply']['#access'] = FALSE;
   $form['field_harmony_post_count']['#access'] = FALSE;
-  $form['field_harmony_thread_continued_from']['#access'] = FALSE;
+  $form['field_harmony_thread_cont_from']['#access'] = FALSE;
 
   // Add the buttons.
   $form['actions'] = array('#type' => 'actions');
@@ -1491,7 +1491,7 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   // If saving a new thread then set the first instance of
   // the last user to update field.
   if ($thread->is_new) {
-    $wrapper->field_harmony_last_user_to_post_a_reply->set($thread->uid);
+    $wrapper->field_harmony_last_user_to_reply->set($thread->uid);
   }
 
   $thread = harmony_thread_save($thread);
@@ -1677,9 +1677,10 @@ function _harmony_core_post_form_alter(&$form) {
 }
 
 /**
- * Implements hook_thread_insert().
+ * Implements hook_harmony_thread_insert().
  */
-function harmony_core_thread_insert($thread) {
+function harmony_core_harmony_thread_insert($thread) {
+  // @todo, hangover from eck prototype, shift to harmony_thread_save();
   list($thread_id) = entity_extract_ids('harmony_thread', $thread);
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
@@ -1710,7 +1711,7 @@ function harmony_core_thread_insert($thread) {
 /**
  * Implements hook_thread_update().
  */
-function harmony_core_thread_update($thread) {
+function harmony_core_harmony_thread_update($thread) {
   list($thread_id) = entity_extract_ids('harmony_thread', $thread);
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
@@ -1767,7 +1768,7 @@ function harmony_core_thread_update($thread) {
   harmony_core_thread_update_alias($thread, 'update');
 }
 
-function harmony_core_thread_on_delete($thread) {
+function harmony_core_harmony_thread_delete($thread) {
   list($thread_id) = entity_extract_ids('harmony_thread', $thread);
 
   // @todo this needs to live in the entity controller.
@@ -1781,7 +1782,7 @@ function harmony_core_thread_on_delete($thread) {
   /*$posts = db_query("SELECT entity_id 
     FROM {field_data_field_harmony_thread} 
     WHERE entity_type = 'node' 
-    AND bundle = 'post' 
+    AND bundle = 'harmony_post' 
     AND field_thread_target_id = :thread_id", 
     array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
 
@@ -1896,7 +1897,7 @@ function harmony_core_node_insert($node) {
       // Set the last time the thread was updated.
       $post->field_harmony_thread->updated->set(REQUEST_TIME);
       // Set the last user to update the thread field.
-      $post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->set($node->uid);
+      $post->field_harmony_thread->field_harmony_last_user_to_reply->set($node->uid);
       // Save the thread.
       $post->field_harmony_thread->save();
 
@@ -1921,8 +1922,8 @@ function harmony_core_node_update($node) {
       // @todo, check that this post is published.
 
       // Update the thread's last active user if not current.
-      if ($post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->value() != $node->uid) {
-        $post->field_harmony_thread->field_harmony_last_user_to_post_a_reply->set($node->uid);
+      if ($post->field_harmony_thread->field_harmony_last_user_to_reply->value() != $node->uid) {
+        $post->field_harmony_thread->field_harmony_last_user_to_reply->set($node->uid);
       }
 
       // Update the thread's last updated time.
