@@ -135,6 +135,9 @@ function harmony_core_entity_info() {
     'uri callback' => 'harmony_core_post_uri',
     'module' => 'harmony_core',
     'access callback' => 'harmony_core_post_access_callback',
+    'inline entity form' => array(
+      'controller' => 'HarmonyPostInlineEntityFormController',
+    ),
   );
 
   return $entities;
@@ -875,7 +878,7 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
   $entity_type = 'harmony_post';
 
   // Use the best available identifier for the cache ID.
-  if (is_object($entity)) {
+  if (is_object($entity) && !empty($entity->post_id)) {
     $cid = $entity->post_id;
   }
   elseif (is_string($entity)) {
@@ -1370,7 +1373,6 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
     '#type' => 'value',
     '#value' => $thread,
   );
-  $form['#thread_edit_form'] = TRUE;
   $form['#attributes']['class'][] = 'thread-form';
 
   if (empty($thread->is_new)) {
@@ -1435,16 +1437,10 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   );
 
   // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
-  //$first_post_lang = $form['field_harmony_first_post']['#language'];
+  $first_post_lang = $form['field_harmony_first_post']['#language'];
 
   // Remove the fielset.
-  //$form['field_harmony_first_post'][$first_post_lang]['#type'] = 'markup';
-
-  // Hide the post title field.
-  //_harmony_core_post_form_alter($form['field_harmony_first_post'][$first_post_lang]['form']);
-
-  // Hide the random node status field, we're not interested in that here.
-  //$form['field_harmony_first_post'][$first_post_lang]['form']['status']['#access'] = FALSE;
+  $form['field_harmony_first_post'][$first_post_lang]['#type'] = 'markup';
 
   // Hide property-ish type fields that we don't want user 1 to see.
   $form['field_harmony_last_user_to_reply']['#access'] = FALSE;
@@ -1485,6 +1481,7 @@ function harmony_core_thread_form_validate($form, &$form_state) {
  */
 function harmony_core_thread_form_submit($form, &$form_state) {
   $thread = $form_state['values']['thread'];
+  $is_new = $thread->is_new;
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
   $wrapper->title->set($form_state['values']['title']);
@@ -1497,11 +1494,21 @@ function harmony_core_thread_form_submit($form, &$form_state) {
 
   // If saving a new thread then set the first instance of
   // the last user to update field.
-  if ($thread->is_new) {
+  if ($is_new) {
     $wrapper->field_harmony_last_user_to_reply->set($thread->uid);
   }
 
   $thread = harmony_thread_save($thread);
+
+  // Set various bits of data on the first post.
+  if ($is_new && $wrapper->field_harmony_first_post->value()) {
+    $wrapper->field_harmony_first_post->title->set($thread->title);
+    $wrapper->field_harmony_first_post->field_harmony_thread->set($thread->thread_id);
+    $wrapper->field_harmony_first_post->status->set($thread->status);
+    $wrapper->field_harmony_first_post->locked->set($thread->locked);
+    $wrapper->field_harmony_first_post->save();
+  }
+
   $form_state['redirect'] = "thread/$thread->thread_id";
 }
 
@@ -1515,11 +1522,18 @@ function harmony_core_post_form($form, &$form_state, $post) {
     '#type' => 'value',
     '#value' => $post,
   );
-  $form['#post_edit_form'] = TRUE;
   $form['#attributes']['class'][] = 'post-form';
 
   if (empty($post->is_new)) {
     $post->is_new = FALSE;
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+    if ($wrapper->field_harmony_thread->value()) {
+      // Prevent users from editing within a locked thread.
+      if ($wrapper->field_harmony_thread->locked->value()) {
+        drupal_access_denied();
+      }
+    }
   }
 
   // Prevent users from editing a locked post.
@@ -1619,8 +1633,6 @@ function harmony_core_post_form_validate($form, &$form_state) {
 function harmony_core_post_form_submit($form, &$form_state) {
   $post = $form_state['values']['post'];
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
-
-  //$wrapper->title->set($form_state['values']['title']);
 
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->locked->set($form_state['values']['locked']);
