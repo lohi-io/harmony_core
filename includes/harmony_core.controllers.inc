@@ -66,6 +66,7 @@ class HarmonyThreadController extends EntityAPIController {
       $entity->updated = REQUEST_TIME;
 
       $this->invoke('presave', $entity);
+      $op = $entity->is_new ? 'insert' : 'update';
 
       if ($entity->is_new) {
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
@@ -88,6 +89,22 @@ class HarmonyThreadController extends EntityAPIController {
           //harmony_access_acquire_grants($thread, FALSE);
         }
       }
+
+      // Update counts elsewhere.
+      if ($entity->is_new) {
+        harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid);
+
+        $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
+
+        // Increment the category thread count if the thread belongs to a category.
+        if ($wrapper->field_harmony_category->value()) {
+          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value());
+        }
+      }
+
+      // Update path alias.
+      module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
+      harmony_core_thread_update_alias($entity, $op);
 
       // Ignore slave server temporarily.
       db_ignore_slave();
@@ -237,6 +254,25 @@ class HarmonyPostController extends EntityAPIController {
           // @see node_save().
           //harmont_access_acquire_grants($post, FALSE);
         }
+      }
+
+      // Update some details on the thread.
+      $wrapper = entity_metadata_wrapper('harmony_post', $entity);
+      if ($wrapper->field_harmony_thread->value()) {
+        $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+        // Set who last updated the thread.
+        $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
+        // Set the last time the thread was updated.
+        $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
+        $wrapper->field_harmony_thread->save();
+
+        // Update the post count.
+        harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
+      }
+
+      // Update post counts elsewhere.
+      if ($entity->is_new) {
+        harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid);
       }
 
       // Ignore slave server temporarily.

@@ -1503,16 +1503,16 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   // the last user to update field.
   if ($is_new) {
     $wrapper->field_harmony_last_user_to_reply->set($thread->uid);
+    //$wrapper->field_harmony_post_count->set(1);
   }
 
   $thread = harmony_thread_save($thread);
 
   // Set various bits of data on the first post.
+  // Other values are set in HarmonyPostInlineEntityFormController::entityFormSubmit().
   if ($is_new && $wrapper->field_harmony_first_post->value()) {
     $wrapper->field_harmony_first_post->title->set($thread->title);
     $wrapper->field_harmony_first_post->field_harmony_thread->set($thread->thread_id);
-    $wrapper->field_harmony_first_post->status->set($thread->status);
-    $wrapper->field_harmony_first_post->locked->set($thread->locked);
     $wrapper->field_harmony_first_post->save();
   }
 
@@ -1703,38 +1703,6 @@ function _harmony_core_post_form_alter(&$form) {
 }
 
 /**
- * Implements hook_harmony_thread_insert().
- */
-function harmony_core_harmony_thread_insert($thread) {
-  // @todo, hangover from eck prototype, shift to harmony_thread_save();
-  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
-  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
-
-  // Set the first posts title to be the same as the thread.
-  /*$thread->field_harmony_first_post->title->set($entity->title);
-  // Set the first posts thread entity ref to be this thread.
-  $thread->field_harmony_first_post->field_harmony_thread->set($thread_id);
-  // Save the first post.
-  $thread->field_harmony_first_post->save();*/
-
-  // @todo, checking around whether or not thread is published,
-  // if so increment things otherwise don't.
-  // Move to controller!
-
-  // Increment the category thread count if the thread belongs to a category.
-  if ($wrapper->field_harmony_category->value()) {
-    harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value());
-  }
-
-  // Increment users thread & post count.
-  harmony_core_update_meta_count(array('field_harmony_thread_count', 'field_harmony_post_count'), 'user', $thread->uid);
-
-  // Update path alias.
-  module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
-  harmony_core_thread_update_alias($thread, 'insert');
-}
-
-/**
  * Implements hook_thread_update().
  */
 function harmony_core_harmony_thread_update($thread) {
@@ -1788,10 +1756,6 @@ function harmony_core_harmony_thread_update($thread) {
       }
     }
   }*/
-
-  // Update path alias.
-  module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
-  harmony_core_thread_update_alias($thread, 'update');
 }
 
 function harmony_core_harmony_thread_delete($thread) {

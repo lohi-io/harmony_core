@@ -107,6 +107,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
       $wrapper->first_post->set(TRUE);
     }
     $wrapper->status->set($form_state['values']['status']);
+    $wrapper->locked->set($form_state['values']['locked']);
 
     field_attach_submit('harmony_post', $post, $form, $form_state);
   }
