@@ -193,6 +193,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'first_post' => array(
+        'description' => 'Boolean indicating whether the post is the first within the thread.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'status' => array('status'),
@@ -271,6 +277,12 @@ function harmony_core_schema() {
       ),
       'replies' => array(
         'description' => 'Number of times that the post has been replied to.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'first_post' => array(
+        'description' => 'Boolean indicating whether the post is the first within the thread.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,

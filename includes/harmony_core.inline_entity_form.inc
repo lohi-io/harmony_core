@@ -44,10 +44,11 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
       'language' => LANGUAGE_NONE,
       'created' => REQUEST_TIME,
       'updated' => REQUEST_TIME,
-      'is_new' => TRUE,
     );
 
     $post = (object) array_merge($post_defaults, (array) $form['#entity']);
+
+    $post->is_new = empty($post->post_id);
 
     $form['post'] = array(
       '#type' => 'value',
@@ -88,6 +89,8 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $form['field_harmony_text'][$text_lang][0]['#title_display'] = 'invisible';
     $form['field_harmony_text'][$text_lang][0]['#attributes']['placeholder'] = t('Type here.');
 
+    $form['field_harmony_thread']['#access'] = FALSE;
+
     return $form;
   }
 
@@ -100,6 +103,9 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $post = $form['#entity'];
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+    if ($post->is_new) {
+      $wrapper->first_post->set(TRUE);
+    }
     $wrapper->status->set($form_state['values']['status']);
 
     field_attach_submit('harmony_post', $post, $form, $form_state);

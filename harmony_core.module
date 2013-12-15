@@ -306,6 +306,13 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'replies',
   );
+  $post_properties['first_post'] = array(
+    'label' => t('Is first post in thread'),
+    'description' => t('Boolean indicating whether the post is the first within the thread.'),
+    'type' => 'boolean',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'first_post',
+  );
   $post_properties['log'] = array(
     'label' => t('Revision log message'),
     'type' => 'text',
