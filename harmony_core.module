@@ -524,7 +524,7 @@ function harmony_core_menu() {
   $items['thread/%harmony_thread'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('harmony_thread', 1),
-    'page callback' => 'harmony_core_thread_view',
+    'page callback' => 'harmony_core_thread_view_page',
     'page arguments' => array(1),
     'access callback' => 'harmony_core_thread_access_callback',
     'access arguments' => array('view', 1),

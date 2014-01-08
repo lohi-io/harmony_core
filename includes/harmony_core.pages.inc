@@ -20,14 +20,14 @@ function harmony_core_thread_add() {
     'locked' => HARMONY_NOT_LOCKED,
     'is_new' => TRUE,
   );
-  
+
   drupal_set_title(t('Create thread'), PASS_THROUGH);
   $output = drupal_get_form('harmony_core_thread_form', $thread);
 
   return $output;
 }
 
-function harmony_core_thread_view($thread, $view_mode = 'full') {
+function harmony_core_thread_view_page($thread, $view_mode = 'full', $langcode = NULL) {
   $uri = entity_uri('harmony_thread', $thread);
   // Set the thread path as the canonical URL to prevent duplicate content.
   drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
@@ -44,9 +44,101 @@ function harmony_core_thread_view($thread, $view_mode = 'full') {
   // Update last read date for this thread and user.
   harmony_core_thread_last_read_set($thread);
 
-  dsm($thread);
+  return harmony_core_thread_view_multiple(array($thread->thread_id => $thread), $view_mode, $langcode);
+}
 
-  return '';
+function harmony_core_thread_view_multiple($threads, $view_mode = 'full', $langcode = NULL) {
+  field_attach_prepare_view('harmony_thread', $threads, $view_mode, $langcode);
+  entity_prepare_view('harmony_thread', $threads, $langcode);
+
+  $build = array();
+  foreach ($threads as $thread) {
+    $build['threads'][$thread->thread_id] = harmony_core_thread_view($thread, $view_mode, $langcode);
+  }
+
+  return $build;
+}
+
+function harmony_core_thread_view($thread, $view_mode = 'full', $langcode = NULL) {
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
+  // Populate $thread->content with a render() array.
+  harmony_core_thread_build_content($thread, $view_mode, $langcode);
+
+  $build = $thread->content;
+  // We don't need duplicate rendering info in thread->content.
+  unset($thread->content);
+
+  $build += array(
+    '#theme' => 'harmony_thread',
+    '#thread' => $thread,
+    '#view_mode' => $view_mode,
+    '#language' => $langcode,
+  );
+
+  // Allow modules to modify the structured thread.
+  $type = 'harmony_thread';
+  drupal_alter(array('harmony_thread_view', 'entity_view'), $build, $type);
+
+  return $build;
+}
+
+function harmony_core_thread_build_content($thread, $view_mode = 'full', $langcode = NULL) {
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
+  // Remove previously built content, if exists.
+  $thread->content = array();
+
+  // Allow modules to change the view mode.
+  $context = array(
+    'entity_type' => 'harmony_thread',
+    'entity' => $thread,
+    'langcode' => $langcode,
+  );
+  drupal_alter('entity_view_mode', $view_mode, $context);
+
+  // Build fields content.
+  // In case of a multiple view, harmony_core_thread_view_multiple() already ran the
+  // 'prepare_view' step. An internal flag prevents the operation from running
+  // twice.
+  field_attach_prepare_view('harmony_thread', array($thread->thread_id => $thread), $view_mode, $langcode);
+  entity_prepare_view('harmony_thread', array($thread->thread_id => $thread), $langcode);
+  $thread->content += field_attach_view('harmony_thread', $thread, $view_mode, $langcode);
+
+  // Always display a read more link on teasers because we have no way to know
+  // when a teaser view is different than a full view.
+  /*$links = array();
+  $node->content['links'] = array(
+    '#theme' => 'links__node',
+    '#pre_render' => array('drupal_pre_render_links'),
+    '#attributes' => array('class' => array('links', 'inline')),
+  );
+  if ($view_mode == 'teaser') {
+    $node_title_stripped = strip_tags($node->title);
+    $links['node-readmore'] = array(
+      'title' => t('Read more<span class="element-invisible"> about @title</span>', array('@title' => $node_title_stripped)),
+      'href' => 'node/' . $node->nid,
+      'html' => TRUE,
+      'attributes' => array('rel' => 'tag', 'title' => $node_title_stripped),
+    );
+  }
+  $node->content['links']['node'] = array(
+    '#theme' => 'links__node__node',
+    '#links' => $links,
+    '#attributes' => array('class' => array('links', 'inline')),
+  );*/
+
+  // Allow modules to make their own additions to the thread.
+  module_invoke_all('harmony_thread_view', $thread, $view_mode, $langcode);
+  module_invoke_all('entity_view', $thread, 'harmony_thread', $view_mode, $langcode);
+
+  // Make sure the current view mode is stored if no module has already
+  // populated the related key.
+  $thread->content += array('#view_mode' => $view_mode);
 }
 
 /**
@@ -111,7 +203,7 @@ function harmony_core_post_add() {
     'locked' => HARMONY_NOT_LOCKED,
     'is_new' => TRUE,
   );
-  
+
   drupal_set_title(t('Create post'), PASS_THROUGH);
   $output = drupal_get_form('harmony_core_post_form', $post);
 
