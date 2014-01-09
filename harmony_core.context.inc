@@ -29,9 +29,9 @@ function harmony_core_context_default_contexts() {
   $context->reactions = array(
     'block' => array(
       'blocks' => array(
-        'views-e968ac19225f2c0a7dcc9ca744c116bc' => array(
+        'views-490cba9e5998ba07082022e998419960' => array(
           'module' => 'views',
-          'delta' => 'e968ac19225f2c0a7dcc9ca744c116bc',
+          'delta' => '490cba9e5998ba07082022e998419960',
           'region' => 'content',
           'weight' => '-10',
         ),
