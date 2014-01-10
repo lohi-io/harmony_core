@@ -17,6 +17,9 @@ function harmony_core_ctools_plugin_api($module = NULL, $api = NULL) {
   if ($module == "taxonomy_display" && $api == "taxonomy_display") {
     return array("version" => "1");
   }
+  if ($module == 'metatag' && $api == 'metatag') {
+    return array('version' => 1);
+  }
 }
 
 /**

@@ -2233,6 +2233,37 @@ function harmony_core_user_delete($account) {
 }
 
 /**
+ * Implements hook_metatag_config_default().
+ */
+function harmony_core_metatag_config_default() {
+  $configs = array();
+
+  $config = new stdClass();
+  $config->disabled = FALSE;
+  $config->api_version = 1;
+  $config->instance = 'harmony_thread';
+  $config->config = array(
+    'title' => array(
+      'value' => '[harmony_thread:title] | [site:name]',
+    ),
+  );
+  $configs[$config->instance] = $config;
+
+  $config = new stdClass();
+  $config->disabled = FALSE;
+  $config->api_version = 1;
+  $config->instance = 'harmony_post';
+  $config->config = array(
+    'title' => array(
+      'value' => 'Post in [harmony_post:field-harmony-thread:title] by [harmony_post:uid:name] | [site:name]',
+    ),
+  );
+  $configs[$config->instance] = $config;
+
+  return $configs;
+}
+
+/**
  * Implements hook_page_alter().
  *
  * View tracking for threads and anonymous users.
