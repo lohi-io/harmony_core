@@ -2246,6 +2246,9 @@ function harmony_core_metatag_config_default() {
     'title' => array(
       'value' => '[harmony_thread:title] | [site:name]',
     ),
+    'description' => array(
+      'value' => '[harmony_thread:summary]',
+    ),
   );
   $configs[$config->instance] = $config;
 
