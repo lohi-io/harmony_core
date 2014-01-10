@@ -95,6 +95,7 @@ function harmony_core_entity_info() {
     'uri callback' => 'harmony_core_thread_uri',
     'module' => 'harmony_core',
     'access callback' => 'harmony_core_thread_access_callback',
+    'metatags' => TRUE,
   );
 
   $entities['harmony_post'] = array(
@@ -138,6 +139,7 @@ function harmony_core_entity_info() {
     'inline entity form' => array(
       'controller' => 'HarmonyPostInlineEntityFormController',
     ),
+    'metatags' => TRUE,
   );
 
   return $entities;
