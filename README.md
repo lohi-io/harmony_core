@@ -13,3 +13,12 @@ Easily! The listing pages are views so you can change the paths on the page disp
 ## Language notes
 As I'm British, that's the language I've used. Being mindful of those who'd rather have American-English here's a list of words that I've used, to come back and offer some kind of localisation around.
 + Colour
+
+## Harmony core has integration with...
+
++ Pathauto module (thread entity)
++ Context (Trigger context when viewing a thread with x)
++ Views of course!
++ Inline entity form
++ Actions & Views bulk operations
++ Metatag module, thread & post.
