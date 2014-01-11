@@ -8,6 +8,7 @@
  * Implements hook_token_info().
  */
 function harmony_core_token_info() {
+  // Just tack an extra token in, entity_token will be doing the rest.
   return array(
     'tokens' => array(
       'harmony_thread' => array(
