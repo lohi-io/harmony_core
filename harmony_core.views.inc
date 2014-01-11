@@ -10,7 +10,7 @@
  *
  * We need to use this hook instead of hook_views_data() as
  * entity API already provides data for our custom entity type.
- */ 
+ */
  function harmony_core_views_data_alter(&$data) {
   // General fields.
   $data['views']['reverse_counter'] = array(
@@ -29,7 +29,7 @@
       'help' => t('Provide a simple link to the thread.'),
       'handler' => 'harmony_core_views_handler_thread_field_link',
     ),
-  );  
+  );
   $data['harmony_thread']['edit_link'] = array(
     'field' => array(
       'title' => t('Edit link'),
@@ -116,7 +116,7 @@
       'help' => t('Provide a simple link to the post.'),
       'handler' => 'harmony_core_views_handler_post_field_link',
     ),
-  );  
+  );
   $data['harmony_post']['edit_link'] = array(
     'field' => array(
       'title' => t('Edit link'),
@@ -293,6 +293,25 @@
         'title' => t('Link to view or AJAX load the post differences'),
         'help' => t('Provide a link for users who have permission, to view a diff of a revision.'),
         'handler' => 'harmony_core_views_handler_post_field_view_diff',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_views_plugins().
+ */
+function harmony_core_views_plugins() {
+  return array(
+    'module' => 'harmony_core',
+    'argument default' => array(
+      'harmony_thread_id' => array(
+        'title' => t('Thread ID from URL'),
+        'handler' => 'harmony_core_views_plugin_argument_default_thread'
+      ),
+      'harmony_post_id' => array(
+        'title' => t('Post ID from URL'),
+        'handler' => 'harmony_core_views_plugin_argument_default_post'
       ),
     ),
   );
