@@ -1202,6 +1202,13 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
+    'harmony_core_post_reassign_action' => array(
+      'type' => 'harmony_post',
+      'label' => t('Re-assign post(s) to a different thread'),
+      'configurable' => TRUE,
+      'behavior' => array('changes_property'),
+      'vbo_configurable' => TRUE,
+    ),
   );
 
   // @todo "delete" actions.
@@ -1360,6 +1367,81 @@ function harmony_core_post_publish_action($post, $context = array()) {
 function harmony_core_post_unpublish_action($post, $context = array()) {
   $post->status = HARMONY_NOT_PUBLISHED;
   watchdog('action', 'Set post %title to unpublished.', array('%title' => $post->title));
+}
+
+function harmony_core_post_reassign_action_form($settings) {
+  global $user;
+  $form = array();
+  $form_state = array();
+
+  $post = (object) array(
+    'title' => '',
+    'uid' => $user->uid,
+    'language' => LANGUAGE_NONE,
+    'status' => HARMONY_PUBLISHED,
+    'created' => REQUEST_TIME,
+    'updated' => REQUEST_TIME,
+    'locked' => HARMONY_NOT_LOCKED,
+    'is_new' => TRUE,
+  );
+
+  field_attach_form('harmony_post', $post, $form, $form_state, NULL, array('field_name' => 'field_harmony_thread'));
+
+  // Entity reference prepopulate will be hiding this field.
+  $form['field_harmony_thread']['#access'] = TRUE;
+  // Change the title.
+  $form['field_harmony_thread'][$form['#entity']->language][0]['target_id']['#title'] = t('Thread to re-assign post(s) to');
+
+  // No meta tags here plz, gets everywhere.
+  unset($form['#metatags']);
+
+  return $form;
+}
+
+function harmony_core_post_reassign_action_validate($form, &$form_state) {
+  $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
+  $view_arg = !empty($form_state['build_info']['args'][0]->args[0]) && is_numeric($form_state['build_info']['args'][0]->args[0]) ? $form_state['build_info']['args'][0]->args[0] : 0;
+
+  // Check we're not moving posts to the same thread as they're in now.
+  if ($form_state['values']['field_harmony_thread'][$lang][0]['target_id'] === $view_arg) {
+    form_set_error('field_harmony_thread', t("You cannot move posts to the same thread as they're in now."));
+  }
+}
+
+function harmony_core_post_reassign_action_submit($form, &$form_state) {
+  $return = array();
+  $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
+  $thread_id = $form_state['values']['field_harmony_thread'][$lang][0]['target_id'];
+  // Load the thread here once so we can pass along the title.
+  $thread = harmony_thread_load($thread_id);
+
+  $return['thread_id'] = $thread_id;
+  $return['thread_title'] = $thread->title;
+
+  return $return;
+}
+
+function harmony_core_post_reassign_action(&$post, $context) {
+  // We can't re-assign the first post otherwise there wouldn't be
+  // anything in the thread.
+  if ($post->first_post) {
+    $error_vars = array(
+      '@post_id' => $post->post_id,
+      '@thread_merge_url' => url('admin/content/threads'),
+    );
+    drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
+  }
+  else {
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+    $wrapper->field_harmony_thread->set($context['thread_id']);
+    $wrapper->save();
+    $message_vars = array(
+      '@post_id' => $post->post_id,
+      '%thread_title' => $context['thread_title'],
+    );
+
+    drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot;.', $message_vars));
+  }
 }
 
 /**
