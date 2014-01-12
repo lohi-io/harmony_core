@@ -896,8 +896,6 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
-    'title' => 'title',
-    'field_harmony_thread' => 'field_harmony_thread',
     'name' => 'name',
     'status' => 'status',
     'created' => 'created',
@@ -905,23 +903,9 @@ function harmony_core_views_default_views() {
     'edit_link' => 'delete_link',
     'delete_link' => 'delete_link',
   );
-  $handler->display->display_options['style_options']['default'] = 'updated';
+  $handler->display->display_options['style_options']['default'] = 'created';
   $handler->display->display_options['style_options']['info'] = array(
     'views_bulk_operations' => array(
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'title' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'field_harmony_thread' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -1002,11 +986,11 @@ function harmony_core_views_default_views() {
       'label' => '',
     ),
     'action::views_bulk_operations_modify_action' => array(
-      'selected' => 1,
+      'selected' => 0,
       'postpone_processing' => 1,
       'skip_confirmation' => 0,
-      'override_label' => 1,
-      'label' => 'Re-assign post(s) to a different thread',
+      'override_label' => 0,
+      'label' => '',
       'settings' => array(
         'show_all_tokens' => 1,
         'display_values' => array(
@@ -1024,6 +1008,13 @@ function harmony_core_views_default_views() {
       ),
     ),
     'action::harmony_core_post_publish_action' => array(
+      'selected' => 1,
+      'postpone_processing' => 0,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'label' => '',
+    ),
+    'action::harmony_core_post_reassign_action' => array(
       'selected' => 1,
       'postpone_processing' => 0,
       'skip_confirmation' => 0,
