@@ -1202,6 +1202,13 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
+    'harmony_core_thread_merge_action' => array(
+      'type' => 'harmony_thread',
+      'label' => t('Merge thread posts to a different thread and delete'),
+      'configurable' => TRUE,
+      'behavior' => array('changes_property'),
+      'vbo_configurable' => TRUE,
+    ),
     'harmony_core_post_reassign_action' => array(
       'type' => 'harmony_post',
       'label' => t('Re-assign post(s) to a different thread'),
@@ -1369,10 +1376,8 @@ function harmony_core_post_unpublish_action($post, $context = array()) {
   watchdog('action', 'Set post %title to unpublished.', array('%title' => $post->title));
 }
 
-function harmony_core_post_reassign_action_form($settings) {
+function harmony_core_action_get_thread_entityreference_form(&$form, &$form_state) {
   global $user;
-  $form = array();
-  $form_state = array();
 
   $post = (object) array(
     'title' => '',
@@ -1389,11 +1394,73 @@ function harmony_core_post_reassign_action_form($settings) {
 
   // Entity reference prepopulate will be hiding this field.
   $form['field_harmony_thread']['#access'] = TRUE;
-  // Change the title.
-  $form['field_harmony_thread'][$form['#entity']->language][0]['target_id']['#title'] = t('Thread to re-assign post(s) to');
 
   // No meta tags here plz, gets everywhere.
   unset($form['#metatags']);
+}
+
+function harmony_core_action_get_thread_entityreference_form_submit($form, $form_state) {
+  $return = array();
+  $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
+  $thread_id = $form_state['values']['field_harmony_thread'][$lang][0]['target_id'];
+  // Load the thread here once so we can pass along the title.
+  $thread = harmony_thread_load($thread_id);
+
+  $return['thread_id'] = $thread_id;
+  $return['thread_title'] = $thread->title;
+
+  return $return;
+}
+
+function harmony_core_thread_merge_action_form($settings) {
+  $form = array();
+  $form_state = array();
+
+  // Help text.
+  $form['guidance_text'] = array(
+    '#markup' => t('<p>Posts from the selected threads will be moved to the specified one, and the selected threads deleted.'),
+  );
+
+  harmony_core_action_get_thread_entityreference_form($form, $form_state);
+
+  // Change the title.
+  $form['field_harmony_thread'][$form['#entity']->language][0]['target_id']['#title'] = t('Thread to merge post(s) in to');
+
+  return $form;
+}
+
+function harmony_core_thread_merge_action_submit($form, &$form_state) {
+  return harmony_core_action_get_thread_entityreference_form_submit($form, $form_state);
+}
+
+function harmony_core_thread_merge_action(&$thread, $context) {
+  // Check we're not trying to merge a thread in to ...itself.
+  if ($thread_id === $context['thread_id']) {
+    drupal_set_message(t('You selected a thread to merge with itself, skipping.'), 'error');
+  }
+  else {
+    // Get a list of posts in the thread.
+    $query = new EntityFieldQuery;
+    $query_result = $query
+      ->entityCondition('entity_type', 'harmony_post')
+      ->fieldCondition('field_harmony_thread', 'target_id', $context['thread_id'])
+      ->execute();
+
+    if (!empty($query_result['harmony_post'])) {
+      $post_ids = array_keys($query_result['harmony_post']);
+      $posts = harmony_post_load_multiple($post_ids);
+    }
+  }
+}
+
+function harmony_core_post_reassign_action_form($settings) {
+  $form = array();
+  $form_state = array();
+
+  harmony_core_action_get_thread_entityreference_form($form, $form_state);
+
+  // Change the title.
+  $form['field_harmony_thread'][$form['#entity']->language][0]['target_id']['#title'] = t('Thread to re-assign post(s) to');
 
   return $form;
 }
@@ -1409,16 +1476,7 @@ function harmony_core_post_reassign_action_validate($form, &$form_state) {
 }
 
 function harmony_core_post_reassign_action_submit($form, &$form_state) {
-  $return = array();
-  $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
-  $thread_id = $form_state['values']['field_harmony_thread'][$lang][0]['target_id'];
-  // Load the thread here once so we can pass along the title.
-  $thread = harmony_thread_load($thread_id);
-
-  $return['thread_id'] = $thread_id;
-  $return['thread_title'] = $thread->title;
-
-  return $return;
+  return harmony_core_action_get_thread_entityreference_form_submit($form, $form_state);
 }
 
 function harmony_core_post_reassign_action(&$post, $context) {
