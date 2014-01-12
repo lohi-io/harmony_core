@@ -1433,6 +1433,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
   }
   else {
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
+    $wrapper->title->set($context['thread_title']);
     $wrapper->field_harmony_thread->set($context['thread_id']);
     $wrapper->save();
     $message_vars = array(
