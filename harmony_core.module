@@ -1447,7 +1447,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
     );
 
     // Decrement the old thread's post count.
-    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id);
+    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id, 'decrement');
 
     // Increment the new thread's.
     harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $context['thread_title']);
