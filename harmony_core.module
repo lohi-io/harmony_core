@@ -1423,7 +1423,7 @@ function harmony_core_post_reassign_action_submit($form, &$form_state) {
 
 function harmony_core_post_reassign_action(&$post, $context) {
   // We can't re-assign the first post otherwise there wouldn't be
-  // anything in the thread.
+  // anything in the thread, instead recommend merging threads.
   if ($post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
@@ -1433,6 +1433,11 @@ function harmony_core_post_reassign_action(&$post, $context) {
   }
   else {
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+    // Hold on to the old thread_id.
+    $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
+
+    // Set new values.
     $wrapper->title->set($context['thread_title']);
     $wrapper->field_harmony_thread->set($context['thread_id']);
     $wrapper->save();
@@ -1441,6 +1446,13 @@ function harmony_core_post_reassign_action(&$post, $context) {
       '%thread_title' => $context['thread_title'],
     );
 
+    // Decrement the old thread's post count.
+    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id);
+
+    // Increment the new thread's.
+    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $context['thread_title']);
+
+    // Inform the user.
     drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot;.', $message_vars));
   }
 }
