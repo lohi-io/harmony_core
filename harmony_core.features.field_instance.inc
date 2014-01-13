@@ -24,6 +24,13 @@ function harmony_core_field_default_field_instances() {
         'type' => 'text_default',
         'weight' => 0,
       ),
+      'full' => array(
+        'label' => 'hidden',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 0,
+      ),
     ),
     'entity_type' => 'harmony_post',
     'field_name' => 'field_harmony_text',
@@ -66,7 +73,7 @@ function harmony_core_field_default_field_instances() {
         'rows' => 3,
       ),
       'type' => 'text_textarea',
-      'weight' => 1,
+      'weight' => 0,
     ),
   );
 
@@ -79,6 +86,12 @@ function harmony_core_field_default_field_instances() {
     'description' => '',
     'display' => array(
       'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 1,
+      ),
+      'full' => array(
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
@@ -111,7 +124,7 @@ function harmony_core_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'weight' => 1,
     ),
   );
 

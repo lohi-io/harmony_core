@@ -437,6 +437,13 @@ function harmony_core_views_default_views() {
       'override_label' => 0,
       'label' => '',
     ),
+    'action::harmony_core_thread_merge_action' => array(
+      'selected' => 1,
+      'postpone_processing' => 0,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'label' => '',
+    ),
     'action::views_bulk_operations_modify_action' => array(
       'selected' => 1,
       'postpone_processing' => 0,
@@ -1307,6 +1314,52 @@ function harmony_core_views_default_views() {
     1 => '1',
   );
   $export['harmony_thread_listing'] = $view;
+
+  $view = new view();
+  $view->name = 'harmony_thread_posts_listing';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'harmony_post';
+  $view->human_name = 'Thread: Posts listing';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['style_plugin'] = 'default';
+  $handler->display->display_options['row_plugin'] = 'harmony_post';
+  /* Field: Post: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  /* Sort criterion: Post: Date created */
+  $handler->display->display_options['sorts']['created']['id'] = 'created';
+  $handler->display->display_options['sorts']['created']['table'] = 'harmony_post';
+  $handler->display->display_options['sorts']['created']['field'] = 'created';
+  /* Contextual filter: Post: Thread (field_harmony_thread) */
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['id'] = 'field_harmony_thread_target_id';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['table'] = 'field_data_field_harmony_thread';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['field'] = 'field_harmony_thread_target_id';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['default_action'] = 'default';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['default_argument_type'] = 'harmony_thread_id';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['field_harmony_thread_target_id']['summary_options']['items_per_page'] = '25';
+  /* Filter criterion: Post: Status */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'harmony_post';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = array(
+    1 => '1',
+  );
+  $export['harmony_thread_posts_listing'] = $view;
 
   return $export;
 }

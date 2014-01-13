@@ -77,6 +77,7 @@ features[views_view][] = harmony_category_sub_category_listing
 features[views_view][] = harmony_post_revisions
 features[views_view][] = harmony_thread_administer_posts
 features[views_view][] = harmony_thread_listing
+features[views_view][] = harmony_thread_posts_listing
 features_exclude[field][taxonomy_term-harmony_category-field_harmony_thread_count] = taxonomy_term-harmony_category-field_harmony_thread_count
 features_exclude[field][taxonomy_term-harmony_category-field_harmony_colour] = taxonomy_term-harmony_category-field_harmony_colour
 files[] = includes/harmony_core.controllers.inc
