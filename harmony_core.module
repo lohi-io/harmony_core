@@ -123,8 +123,8 @@ function harmony_core_entity_info() {
     'load hook' => 'harmony_post_load',
     'view modes' => array(
       'full' => array(
-        'label' => t('Default'),
-        'custom settings' => FALSE,
+        'label' => t('Full'),
+        'custom settings' => TRUE,
       ),
       // Used when showing an inline reply to a post.
       'inline_reply' => array(
@@ -2033,6 +2033,30 @@ function harmony_core_harmony_thread_delete($thread) {
   pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
 
   entity_delete('harmony_thread', entity_id('harmony_thread' ,$thread));
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function harmony_core_field_extra_fields() {
+  $extra['harmony_post'] = array(
+    'harmony_post' => array(
+      'form' => array(),
+      'display' => array(
+        'harmony_core_post_reply_link' => array(
+          'label' => t('Reply link'),
+          'description' => t('Direct reply link'),
+          'weight' => 10,
+        ),
+      ),
+    ),
+  );
+
+  return $extra;
+}
+
+function harmony_core_post_reply_link($post, $view_mode) {
+  return '<a href="aa">aaah</a>';
 }
 
 /**
