@@ -10,6 +10,54 @@
 function harmony_core_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'harmony_post-harmony_post-field_harmony_post_is_reply_to'
+  $field_instances['harmony_post-harmony_post-field_harmony_post_is_reply_to'] = array(
+    'bundle' => 'harmony_post',
+    'default_value' => NULL,
+    'default_value_function' => 'entityreference_prepopulate_field_default_value',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+    ),
+    'entity_type' => 'harmony_post',
+    'field_name' => 'field_harmony_post_is_reply_to',
+    'label' => 'Post is reply to',
+    'required' => 0,
+    'settings' => array(
+      'behaviors' => array(
+        'prepopulate' => array(
+          'action' => 'hide',
+          'action_on_edit' => 1,
+          'fallback' => 'hide',
+          'og_context' => 0,
+          'skip_perm' => 0,
+          'status' => 1,
+        ),
+      ),
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
   // Exported field_instance: 'harmony_post-harmony_post-field_harmony_text'
   $field_instances['harmony_post-harmony_post-field_harmony_text'] = array(
     'bundle' => 'harmony_post',
@@ -283,6 +331,54 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_post_listing'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_post_listing'] = array(
+    'bundle' => 'harmony_thread',
+    'default_value' => array(
+      0 => array(
+        'vname' => 'harmony_thread_posts_listing|default',
+        'vargs' => '[harmony_thread:thread-id]',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'module' => 'viewfield',
+        'settings' => array(),
+        'type' => 'viewfield_default',
+        'weight' => 9,
+      ),
+    ),
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_post_listing',
+    'label' => 'Post listing',
+    'required' => 0,
+    'settings' => array(
+      'allowed_views' => array(
+        'admin_views_node' => 0,
+        'admin_views_user' => 0,
+        'harmony_administration_posts' => 0,
+        'harmony_administration_threads' => 0,
+        'harmony_category_sub_category_listing' => 0,
+        'harmony_post_revisions' => 0,
+        'harmony_thread_administer_posts' => 0,
+        'harmony_thread_listing' => 0,
+        'harmony_thread_posts_listing' => 'harmony_thread_posts_listing',
+      ),
+      'force_default' => 1,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'viewfield',
+      'settings' => array(),
+      'type' => 'viewfield_select',
+      'weight' => 5,
+    ),
+  );
+
   // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_thread_cont_from'
   $field_instances['harmony_thread-harmony_thread-field_harmony_thread_cont_from'] = array(
     'bundle' => 'harmony_thread',
@@ -509,6 +605,8 @@ function harmony_core_field_default_field_instances() {
   t('First post');
   t('Last user to post a reply');
   t('Post count');
+  t('Post is reply to');
+  t('Post listing');
   t('Text');
   t('Thread');
   t('Thread continued from');
