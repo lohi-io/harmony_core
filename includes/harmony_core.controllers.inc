@@ -238,7 +238,6 @@ class HarmonyPostController extends EntityAPIController {
 
         $this->resetCache(array($entity->{$this->idKey}));
         $this->invoke('update', $entity);
-
         //field_attach_update($this->entityType, $entity);
 
         // Field API always saves as default revision, so if the revision saved
@@ -288,6 +287,50 @@ class HarmonyPostController extends EntityAPIController {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
+  }
+
+  protected function saveRevision($entity) {
+    // Update the reivion user to be the current person editing.
+    global $user;
+    $entity->uid = $user->uid;
+
+    // Convert the entity into an array as it might not have the same properties
+    // as the entity, it is just a raw structure.
+    $record = (array) $entity;
+    // File fields assumes we are using $entity->revision instead of
+    // $entity->is_new_revision, so we also support it and make sure it's set to
+    // the same value.
+    $entity->is_new_revision = !empty($entity->is_new_revision) || !empty($entity->revision) || $entity->is_new;
+    $entity->revision = &$entity->is_new_revision;
+    $entity->{$this->defaultRevisionKey} = !empty($entity->{$this->defaultRevisionKey}) || $entity->is_new;
+
+    // When saving a new revision, set any existing revision ID to NULL so as to
+    // ensure that a new revision will actually be created.
+    if ($entity->is_new_revision && isset($record[$this->revisionKey])) {
+      $record[$this->revisionKey] = NULL;
+    }
+
+    if ($entity->is_new_revision) {
+      drupal_write_record($this->revisionTable, $record);
+      $update_default_revision = $entity->{$this->defaultRevisionKey};
+    }
+    else {
+      drupal_write_record($this->revisionTable, $record, $this->revisionKey);
+      // @todo: Fix original entity to be of the same revision and check whether
+      // the default revision key has been set.
+      $update_default_revision = $entity->{$this->defaultRevisionKey} && $entity->{$this->revisionKey} != $entity->original->{$this->revisionKey};
+    }
+    // Make sure to update the new revision key for the entity.
+    $entity->{$this->revisionKey} = $record[$this->revisionKey];
+
+    // Mark this revision as the default one.
+    if ($update_default_revision) {
+      db_update($this->entityInfo['base table'])
+        ->fields(array($this->revisionKey => $record[$this->revisionKey]))
+        ->condition($this->idKey, $entity->{$this->idKey})
+        ->execute();
+    }
+    return $entity->is_new_revision ? SAVED_NEW : SAVED_UPDATED;
   }
 
   public function buildQuery($ids, $conditions = array(), $revision_id = FALSE) {
