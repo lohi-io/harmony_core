@@ -1406,6 +1406,7 @@ function harmony_core_action_get_thread_entityreference_form_submit($form, $form
   // Load the thread here once so we can pass along the title.
   $thread = harmony_thread_load($thread_id);
 
+  $return['thread'] = $thread;
   $return['thread_id'] = $thread_id;
   $return['thread_title'] = $thread->title;
 
@@ -1439,16 +1440,84 @@ function harmony_core_thread_merge_action(&$thread, $context) {
     drupal_set_message(t('You selected a thread to merge with itself, skipping.'), 'error');
   }
   else {
-    // Get a list of posts in the thread.
+    $thread_wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+    // Get a list of posts in the current thread.
     $query = new EntityFieldQuery;
     $query_result = $query
       ->entityCondition('entity_type', 'harmony_post')
-      ->fieldCondition('field_harmony_thread', 'target_id', $context['thread_id'])
+      ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
       ->execute();
 
     if (!empty($query_result['harmony_post'])) {
+      // Get the first post in the target/new thread.
+      // We need to re-assess each time what the first post is.
+      $first_post_query = new EntityFieldQuery;
+      $first_post_result = $query
+        ->entityCondition('entity_type', 'harmony_post')
+        ->fieldCondition('field_harmony_thread', 'target_id', $context['thread_id'])
+        ->propertyOrderBy('created')
+        ->range(0, 1)
+        ->execute();
+
+      $first_post_updated = FALSE;
+      $first_post_timestamp = 0;
+      if (!empty($first_post_result['harmony_post'])) {
+        $first_post_id = array_shift(array_keys($first_post_result['harmony_post']));
+        $first_post = harmony_post_load($first_post_id);
+        $first_post_wrapper = entity_metadata_wrapper('harmony_post', $first_post);
+        $first_post_timestamp = $first_post_wrapper->created->value();
+      }
+
+      // Flatten the post id array a bit and load the posts.
       $post_ids = array_keys($query_result['harmony_post']);
       $posts = harmony_post_load_multiple($post_ids);
+      $posts_count = count($posts);
+
+      if (!empty($posts)) {
+        foreach ($posts as $post) {
+          $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+          // Set the post thread and new title.
+          $wrapper->title->set($context['thread_title']);
+          $wrapper->field_harmony_thread->set($context['thread_id']);
+
+          // If the post was created before the current first post, re-assign.
+          if ($wrapper->created->value() < $first_post_timestamp) {
+            $wrapper->first_post->set(1);
+            $first_post_updated = TRUE;
+          }
+          else {
+            $wrapper->first_post->set(0);
+          }
+
+          // Save changes.
+          $wrapper->save();
+        }
+      }
+
+      // If first post isn't first anymore, update.
+      if ($first_post_updated) {
+        $first_post_wrapper->first_post->set(0);
+        $first_post_wrapper->save();
+      }
+
+      // Set the post count to 0, and delete.
+      $thread_wrapper->field_harmony_post_count->set(0);
+      $thread_wrapper->save();
+      harmony_thread_delete($thread->thread_id);
+
+      // Update the target thread's post count.
+      $target_thread_wrapper = entity_metadata_wrapper('harmony_thread', $context['thread']);
+      $new_post_count = $target_thread_wrapper->field_harmony_post_count->value() + $posts_count;
+      $target_thread_wrapper->field_harmony_post_count->set($new_post_count);
+      $target_thread_wrapper->save();
+
+      $message_vars = array(
+        '@old_thread_title' => $thread->title,
+        '@target_thread' => $context['thread_title'],
+      );
+      drupal_set_message(t('Posts from the thread &quot;@old_thread_title&quot; to &quot;@target_thread&quot;.', $message_vars));
     }
   }
 }
@@ -1492,7 +1561,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
   else {
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-    // Hold on to the old thread_id.
+    // Hold on to the old thread_id. @todo, verify this works :|
     $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
 
     // Set new values.
@@ -1508,7 +1577,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
     harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id, 'decrement');
 
     // Increment the new thread's.
-    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $context['thread_title']);
+    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $context['thread_id']);
 
     // Inform the user.
     drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot;.', $message_vars));
@@ -1667,7 +1736,6 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   // the last user to update field.
   if ($is_new) {
     $wrapper->field_harmony_last_user_to_reply->set($thread->uid);
-    //$wrapper->field_harmony_post_count->set(1);
   }
 
   $thread = harmony_thread_save($thread);
