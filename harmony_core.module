@@ -2056,7 +2056,17 @@ function harmony_core_field_extra_fields() {
 }
 
 function harmony_core_post_reply_link($post, $view_mode) {
-  return '<a href="aa">aaah</a>';
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+  $link_options = array(
+    'query' => array(
+      'field_harmony_thread' => $wrapper->field_harmony_thread->thread_id->value(),
+      'field_harmony_post_is_reply_to' => $post->post_id,
+    ),
+  );
+  $link = l(t('Reply'), 'post/add', $link_options);
+
+  return $link;
 }
 
 /**

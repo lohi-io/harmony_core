@@ -276,9 +276,11 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   entity_prepare_view('harmony_post', array($post->post_id => $post), $langcode);
   $post->content += field_attach_view('harmony_post', $post, $view_mode, $langcode);
 
-  $post->content['harmony_core_post_reply_link'] = array(
-    '#markup' => harmony_core_post_reply_link($post, $view_mode),
-  );
+  if (user_access('create posts')) {
+    $post->content['harmony_core_post_reply_link'] = array(
+      '#markup' => harmony_core_post_reply_link($post, $view_mode),
+    );
+  }
 
   // Always display a read more link on teasers because we have no way to know
   // when a teaser view is different than a full view.
