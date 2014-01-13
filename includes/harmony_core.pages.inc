@@ -282,6 +282,12 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     );
   }
 
+  if (user_access('reply as new thread')) {
+    $post->content['harmony_core_post_reply_as_thread_link'] = array(
+      '#markup' => harmony_core_post_reply_as_thread_link($post, $view_mode),
+    );
+  }
+
   // Always display a read more link on teasers because we have no way to know
   // when a teaser view is different than a full view.
   /*$links = array();

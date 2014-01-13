@@ -2045,7 +2045,12 @@ function harmony_core_field_extra_fields() {
       'display' => array(
         'harmony_core_post_reply_link' => array(
           'label' => t('Reply link'),
-          'description' => t('Direct reply link'),
+          'description' => t('Direct reply link.'),
+          'weight' => 10,
+        ),
+        'harmony_core_post_reply_as_thread_link' => array(
+          'label' => t('Reply as new thread link'),
+          'description' => t('Link to create a new thread as a reply to a post.'),
           'weight' => 10,
         ),
       ),
@@ -2065,6 +2070,19 @@ function harmony_core_post_reply_link($post, $view_mode) {
     ),
   );
   $link = l(t('Reply'), 'post/add', $link_options);
+
+  return $link;
+}
+
+function harmony_core_post_reply_as_thread_link($post, $view_mode) {
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+  $link_options = array(
+    'query' => array(
+      'field_harmony_thread_cont_from' => $post->post_id,
+    ),
+  );
+  $link = l(t('Reply'), 'thread/add', $link_options);
 
   return $link;
 }
