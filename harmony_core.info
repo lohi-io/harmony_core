@@ -103,3 +103,4 @@ files[] = views/handlers/harmony_core_views_handler_post_field_make_current.inc
 files[] = views/handlers/harmony_core_views_handler_post_field_view_diff.inc
 files[] = views/handlers/harmony_core_views_plugin_argument_default_post.inc
 files[] = views/handlers/harmony_core_views_plugin_argument_default_thread.inc
+files[] = views/handlers/harmony_core_views_plugin_row_post_view.inc
