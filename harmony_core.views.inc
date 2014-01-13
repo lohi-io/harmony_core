@@ -304,6 +304,16 @@
 function harmony_core_views_plugins() {
   return array(
     'module' => 'harmony_core',
+    'row' => array(
+      'harmony_post' => array(
+        'title' => t('Harmony'),
+        'help' => t('Display the content with standard post view.'),
+        'handler' => 'harmony_core_views_plugin_row_harmony_post_view',
+        'base' => array('harmony_post'),
+        'uses options' => TRUE,
+        'type' => 'normal',
+      ),
+    ),
     'argument default' => array(
       'harmony_thread_id' => array(
         'title' => t('Thread ID from URL'),
