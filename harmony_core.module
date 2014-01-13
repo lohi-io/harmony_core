@@ -1402,6 +1402,7 @@ function harmony_core_action_get_thread_entityreference_form(&$form, &$form_stat
 function harmony_core_action_get_thread_entityreference_form_submit($form, $form_state) {
   $return = array();
   $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
+  print_r($form['#entity']);
   $thread_id = $form_state['values']['field_harmony_thread'][$lang][0]['target_id'];
   // Load the thread here once so we can pass along the title.
   $thread = harmony_thread_load($thread_id);
@@ -1436,7 +1437,7 @@ function harmony_core_thread_merge_action_submit($form, &$form_state) {
 
 function harmony_core_thread_merge_action(&$thread, $context) {
   // Check we're not trying to merge a thread in to ...itself.
-  if ($thread_id === $context['thread_id']) {
+  if ($thread->thread_id === $context['thread_id']) {
     drupal_set_message(t('You selected a thread to merge with itself, skipping.'), 'error');
   }
   else {
@@ -2051,7 +2052,7 @@ function harmony_core_field_extra_fields() {
         'harmony_core_post_reply_as_thread_link' => array(
           'label' => t('Reply as new thread link'),
           'description' => t('Link to create a new thread as a reply to a post.'),
-          'weight' => 10,
+          'weight' => 11,
         ),
       ),
     ),
@@ -2082,7 +2083,7 @@ function harmony_core_post_reply_as_thread_link($post, $view_mode) {
       'field_harmony_thread_cont_from' => $post->post_id,
     ),
   );
-  $link = l(t('Reply'), 'thread/add', $link_options);
+  $link = l(t('Reply as a new thread'), 'thread/add', $link_options);
 
   return $link;
 }
