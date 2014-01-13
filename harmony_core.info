@@ -36,6 +36,7 @@ dependencies[] = taxonomy
 dependencies[] = taxonomy_display
 dependencies[] = text
 dependencies[] = transliteration
+dependencies[] = viewfield
 dependencies[] = views
 dependencies[] = views_bulk_operations
 dependencies[] = views_load_more
