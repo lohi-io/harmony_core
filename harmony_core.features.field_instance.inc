@@ -20,12 +20,9 @@ function harmony_core_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 2,
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 3,
       ),
     ),
     'entity_type' => 'harmony_post',
@@ -137,7 +134,7 @@ function harmony_core_field_default_field_instances() {
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 1,
+        'weight' => 4,
       ),
       'full' => array(
         'label' => 'above',
@@ -184,11 +181,11 @@ function harmony_core_field_default_field_instances() {
     'description' => '',
     'display' => array(
       'default' => array(
-        'label' => 'above',
+        'label' => 'inline',
         'module' => 'taxonomy',
         'settings' => array(),
         'type' => 'taxonomy_term_reference_link',
-        'weight' => 7,
+        'weight' => 1,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -216,12 +213,9 @@ function harmony_core_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 8,
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 5,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -257,12 +251,9 @@ function harmony_core_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
-        'weight' => 2,
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 4,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -298,17 +289,9 @@ function harmony_core_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'short_scale_formatter',
-        'settings' => array(
-          'billion' => 'b',
-          'million' => 'm',
-          'thousand' => 'k',
-          'trillion' => 't',
-          'wrapper_element' => 'span',
-          'wrapper_title_text' => '',
-        ),
-        'type' => 'short_scale_formatter',
-        'weight' => 0,
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 3,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -348,7 +331,7 @@ function harmony_core_field_default_field_instances() {
         'module' => 'viewfield',
         'settings' => array(),
         'type' => 'viewfield_default',
-        'weight' => 9,
+        'weight' => 0,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -387,13 +370,13 @@ function harmony_core_field_default_field_instances() {
     'description' => '',
     'display' => array(
       'default' => array(
-        'label' => 'above',
+        'label' => 'inline',
         'module' => 'entityreference',
         'settings' => array(
-          'link' => FALSE,
+          'link' => 1,
         ),
         'type' => 'entityreference_label',
-        'weight' => 5,
+        'weight' => 2,
       ),
     ),
     'entity_type' => 'harmony_thread',
