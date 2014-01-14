@@ -2064,28 +2064,40 @@ function harmony_core_field_extra_fields() {
 function harmony_core_post_reply_link($post, $view_mode) {
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-  $link_options = array(
-    'query' => array(
-      'field_harmony_thread' => $wrapper->field_harmony_thread->thread_id->value(),
-      'field_harmony_post_is_reply_to' => $post->post_id,
+  $link = array(
+    'harmony_link' => 'reply',
+    'text' => t('Reply'),
+    'path' => 'post/add',
+    'options' => array(
+      'query' => array(
+        'field_harmony_thread' => $wrapper->field_harmony_thread->thread_id->value(),
+        'field_harmony_post_is_reply_to' => $post->post_id,
+      ),
     ),
   );
-  $link = l(t('Reply'), 'post/add', $link_options);
 
-  return $link;
+  drupal_alter('harmony_post_link', $link);
+
+  return l($link['text'], $link['path'], $link['options']);
 }
 
 function harmony_core_post_reply_as_thread_link($post, $view_mode) {
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-  $link_options = array(
-    'query' => array(
-      'field_harmony_thread_cont_from' => $post->post_id,
+  $link = array(
+    'harmony_link' => 'reply_as_thread',
+    'text' => t('Reply as a new thread'),
+    'path' => 'thread/add',
+    'options' => array(
+      'query' => array(
+        'field_harmony_thread_cont_from' => $post->post_id,
+      ),
     ),
   );
-  $link = l(t('Reply as a new thread'), 'thread/add', $link_options);
 
-  return $link;
+  drupal_alter('harmony_post_link', $link);
+
+  return l($link['text'], $link['path'], $link['options']);
 }
 
 /**
