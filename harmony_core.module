@@ -686,11 +686,13 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'render element' => 'elements',
       'template' => 'harmony-thread',
       'path' => $module_dir . '/theme',
+      'file' => 'harmony_core.theme.inc',
     ),
     'harmony_post' => array(
       'render element' => 'elements',
       'template' => 'harmony-post',
       'path' => $module_dir . '/theme',
+      'file' => 'harmony_core.theme.inc',
     ),
     'harmony_post_diff_inline_metadata' => array(
       'arguments' => array(
