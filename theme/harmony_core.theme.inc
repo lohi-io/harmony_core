@@ -54,6 +54,9 @@ function template_preprocess_harmony_post(&$variables) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
 
+  // Add in the user profile.
+  $variables['user_picture'] = variable_get('user_pictures', 0) && theme_get_setting('toggle_node_user_picture') ? theme('user_picture', array('account' => $post)) : '';
+
   // Make the field variables available with the appropriate language.
   field_attach_preprocess('harmony_post', $post, $variables['content'], $variables);
 
@@ -72,8 +75,6 @@ function template_preprocess_harmony_post(&$variables) {
   if (!empty($post->field_harmony_post_is_reply_to)) {
     $variables['classes_array'][] = 'post-is-direct-reply';
   }
-  // Add in clearfix.
-  $variables['classes_array'][] = 'clearfix';
 
   // Suggest some templates, including default? What's going wrong here?
   $variables['theme_hook_suggestions'][] = 'harmony_post';

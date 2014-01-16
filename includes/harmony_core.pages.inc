@@ -243,6 +243,11 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
     '#post' => $post,
     '#view_mode' => $view_mode,
     '#language' => $langcode,
+    '#attached' => array(
+      'css' => array(
+        drupal_get_path('module', 'harmony_core') . '/css/harmony-core.css',
+      ),
+    ),
   );
 
   // Allow modules to modify the structured post.

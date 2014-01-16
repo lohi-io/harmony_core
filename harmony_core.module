@@ -145,6 +145,16 @@ function harmony_core_entity_info() {
   return $entities;
 }
 
+/**
+* Implements hook_entity_info_alter().
+*/
+function harmony_core_entity_info_alter(&$entity_info) {
+  $entity_info['user']['view modes']['harmony_user_post_profile'] = array(
+    'label' => t('Post profile'),
+    'custom settings' => TRUE,
+  );
+}
+
 function harmony_core_post_revision_access($op, $name, $entity = NULL, $account = NULL) {
   return $op == 'view' ? user_access('view post revisions', $account) : user_access('administer forum content', $account);
 }
