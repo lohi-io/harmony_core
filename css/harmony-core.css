@@ -17,7 +17,16 @@
   margin-bottom: 20px;
 }
 
+.post-header {
+  margin-bottom: 5px;
+}
+
 .post-user-profile {
   float: left;
+  width: 120px;
   margin-right: 10px;
+}
+
+.post-content {
+  margin-left: 130px;
 }
