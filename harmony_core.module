@@ -1414,7 +1414,7 @@ function harmony_core_action_get_thread_entityreference_form(&$form, &$form_stat
 function harmony_core_action_get_thread_entityreference_form_submit($form, $form_state) {
   $return = array();
   $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
-  print_r($form['#entity']);
+
   $thread_id = $form_state['values']['field_harmony_thread'][$lang][0]['target_id'];
   // Load the thread here once so we can pass along the title.
   $thread = harmony_thread_load($thread_id);
@@ -1889,11 +1889,20 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->log->set($form_state['values']['log']);
+  unset($wrapper);
 
   field_attach_submit('harmony_post', $post, $form, $form_state);
 
   $post = harmony_post_save($post);
-  $form_state['redirect'] = "post/$post->post_id";
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+  if ($wrapper->field_harmony_thread->value()) {
+    $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    $form_state['redirect'] = "thread/$thread_id";
+  }
+  else {
+    $form_state['redirect'] = "post/$post->post_id";
+  }
 }
 
 /**
