@@ -9,8 +9,8 @@
 /**
  * Display inline diff metadata.
  */
-function theme_harmony_post_diff_inline_metadata($vars) {
-  $post = $vars['post'];
+function theme_harmony_post_diff_inline_metadata($variables) {
+  $post = $variables['post'];
 
   $output = "<div class='diff-inline-metadata clear-block'>";
   $output .= '<div class="diff-inline-legend clear-block">';
@@ -41,7 +41,7 @@ function template_preprocess_harmony_post(&$variables) {
 
   // Thread data.
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
-  $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+  $thread_id = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->thread_id->value(): NULL;
 
   // Add in some useful variables.
   $variables['title'] = check_plain($post->title);
@@ -66,6 +66,22 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['account'] = $account;
   $user_view = user_view($account, 'harmony_user_post_profile');
   $variables['user_profile'] = drupal_render($user_view);
+
+  // Add the "Direct reply" link.
+  $variables['direct_reply'] = NULL;
+  if ($wrapper->field_harmony_post_is_reply_to->value()) {
+    $replying_to_post_id = $wrapper->field_harmony_post_is_reply_to->post_id->value();
+    $replying_to_name = $wrapper->field_harmony_post_is_reply_to->uid->name->value();
+
+    $variables['direct_reply'] = l(t('In reply to @name', array('@name' => $replying_to_name)), "thread/$thread_id", array('fragment' => "post-$replying_to_post_id"));
+  }
+
+  // Generate the revisions link if there's more than 1.
+  $revision_count = db_query('SELECT COUNT(vid) FROM {harmony_post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
+  $variables['revisions'] = NULL;
+  if ($revision_count > 1) {
+    $variables['revisions'] = l(format_plural($revision_count, '1 edit', '@count edits'), "post/$post->post_id/revisions");
+  }
 
   // Make the field variables available with the appropriate language.
   field_attach_preprocess('harmony_post', $post, $variables['content'], $variables);
