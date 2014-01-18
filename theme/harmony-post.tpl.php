@@ -14,6 +14,7 @@
   <div class="clearfix">
     <div class="post-left post-user-profile text-center">
       <?php print $user_picture; ?>
+      <?php print $username; ?>
     </div>
     <div class="post-content">
       <?php print render($content); ?>

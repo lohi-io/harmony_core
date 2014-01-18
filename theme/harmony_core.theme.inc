@@ -39,8 +39,13 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['post'] = $variables['elements']['#post'];
   $post = $variables['post'];
 
+  // Thread data.
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+  $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+
   // Add in some useful variables.
   $variables['title'] = check_plain($post->title);
+  $variables['thread_url'] = url("thread/$thread_id");
   $variables['url'] = url("post/$post->post_id");
   $variables['created'] = format_date($post->created);
   $variables['updated'] = format_date($post->updated);
@@ -54,8 +59,24 @@ function template_preprocess_harmony_post(&$variables) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
 
-  // Add in the user profile.
-  $variables['user_picture'] = variable_get('user_pictures', 0) && theme_get_setting('toggle_node_user_picture') ? theme('user_picture', array('account' => $post)) : '';
+  // Add in the user data, this template is a basic "better than nothing"
+  // effort so harmony_core doesn't look terrible out of the box. The
+  // better way IMO is to use display suite, and embed the user entity
+  // in the post display with a specific view mode, then there's field UI
+  // control over what's in there and the markup.
+  $account = user_load($post->uid);
+  $variables['account'] = $account;
+
+  $variables['user_picture'] = variable_get('user_pictures', 0) && theme_get_setting('toggle_node_user_picture') ? theme('user_picture', array('account' => $account)) : '';
+
+  $username_variables = array(
+    'account' => $account,
+    'name' => check_plain(format_username($account)),
+  );
+  if (!empty($account->uid) && user_access('access user profiles')) {
+    $username_variables['link_path'] = "user/$account->uid";
+  }
+  $variables['username'] = theme('username', $username_variables);
 
   // Make the field variables available with the appropriate language.
   field_attach_preprocess('harmony_post', $post, $variables['content'], $variables);
