@@ -1,10 +1,14 @@
 
-.text-center {
-  text-align: center;
+.pull-left {
+  float: left;
 }
 
-.text-right {
-  text-align: right;
+.pull-right {
+  float: right;
+}
+
+.text-center {
+  text-align: center;
 }
 
 .text-small {
@@ -27,6 +31,12 @@
   margin-right: 10px;
 }
 
-.post-content {
+.post-user-profile .profile,
+.post-user-profile .profile .user-picture,
+.post-user-profile .user-picture img {
+  margin: 0;
+}
+
+.post-left-offset {
   margin-left: 130px;
 }

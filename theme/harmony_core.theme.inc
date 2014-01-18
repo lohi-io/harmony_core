@@ -59,24 +59,13 @@ function template_preprocess_harmony_post(&$variables) {
     $variables['content'][$key] = $variables['elements'][$key];
   }
 
-  // Add in the user data, this template is a basic "better than nothing"
-  // effort so harmony_core doesn't look terrible out of the box. The
-  // better way IMO is to use display suite, and embed the user entity
-  // in the post display with a specific view mode, then there's field UI
-  // control over what's in there and the markup.
+  // Add in the user profile, this is controlled via field ui
+  // so you can easily add/remove things. Display suite is
+  // recommended for as much control as possible.
   $account = user_load($post->uid);
   $variables['account'] = $account;
-
-  $variables['user_picture'] = variable_get('user_pictures', 0) && theme_get_setting('toggle_node_user_picture') ? theme('user_picture', array('account' => $account)) : '';
-
-  $username_variables = array(
-    'account' => $account,
-    'name' => check_plain(format_username($account)),
-  );
-  if (!empty($account->uid) && user_access('access user profiles')) {
-    $username_variables['link_path'] = "user/$account->uid";
-  }
-  $variables['username'] = theme('username', $username_variables);
+  $user_view = user_view($account, 'harmony_user_post_profile');
+  $variables['user_profile'] = drupal_render($user_view);
 
   // Make the field variables available with the appropriate language.
   field_attach_preprocess('harmony_post', $post, $variables['content'], $variables);

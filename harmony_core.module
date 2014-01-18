@@ -2061,25 +2061,59 @@ function harmony_core_harmony_thread_delete($thread) {
  * Implements hook_field_extra_fields().
  */
 function harmony_core_field_extra_fields() {
-  $extra['harmony_post'] = array(
-    'harmony_post' => array(
-      'form' => array(),
-      'display' => array(
-        'harmony_core_post_reply_link' => array(
-          'label' => t('Reply link'),
-          'description' => t('Direct reply link.'),
-          'weight' => 10,
-        ),
-        'harmony_core_post_reply_as_thread_link' => array(
-          'label' => t('Reply as new thread link'),
-          'description' => t('Link to create a new thread as a reply to a post.'),
-          'weight' => 11,
-        ),
+  $extra['harmony_post']['harmony_post'] = array(
+    'form' => array(),
+    'display' => array(
+      'harmony_core_post_reply_link' => array(
+        'label' => t('Reply link'),
+        'description' => t('Direct reply link.'),
+        'weight' => 10,
+      ),
+      'harmony_core_post_reply_as_thread_link' => array(
+        'label' => t('Reply as new thread link'),
+        'description' => t('Link to create a new thread as a reply to a post.'),
+        'weight' => 11,
+      ),
+    ),
+  );
+
+  $extra['user']['user'] = array(
+    'form' => array(),
+    'display' => array(
+      'harmony_core_user_name' => array(
+        'label' => t('Harmony - Username'),
+        'description' => t('Display the users name, if permissions allow linked to their profile.'),
+        'weight' => 11,
+      ),
+      'user_picture' => array(
+        'label' => t('User Picture'),
+        'description' => t('Display the users picture/avatar using the sizing specified in the site user settings.'),
+        'weight' => 10,
       ),
     ),
   );
 
   return $extra;
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function harmony_core_user_view($account, $view_mode, $langcode) {
+  $extra_fields = field_info_extra_fields('user', 'user', 'display');
+
+  if (isset($extra_fields['harmony_core_user_name']['display'][$view_mode]['visible']) && $extra_fields['harmony_core_user_name']['display'][$view_mode]['visible']) {
+    $username_variables = array(
+      'account' => $account,
+      'name' => check_plain(format_username($account)),
+    );
+    if (!empty($account->uid) && user_access('access user profiles')) {
+      $username_variables['link_path'] = "user/$account->uid";
+    }
+    $account->content['harmony_core_user_name'] = array(
+      '#markup' => theme('username', $username_variables),
+    );
+  }
 }
 
 function harmony_core_post_reply_link($post, $view_mode) {
