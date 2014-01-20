@@ -3,6 +3,17 @@
 /**
  * @file
  * Default theme implementation to display a Harmony Post entity.
+ *
+ * Available variables:
+ *
+ * - $post: The post entity itself.
+ *
+ * Template suggestions available, listed from the most specific template to
+ * the least. Drupal will use the most specific template it finds:
+ * - harmony-post.tpl.php
+ * - harmony-post__[view_mode].tpl.php
+ * - harmony-post__[post_id].tpl.php
+ *
  */
 
 hide($content['links']);

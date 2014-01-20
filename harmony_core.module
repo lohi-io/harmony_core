@@ -882,7 +882,7 @@ function harmony_core_entity_access_check($op, $entity, $account, $entity_type) 
  *   - "delete"
  *   - "create"
  * @param $entity
- *   The thread object on which the operation is to be performed.
+ *   The post object on which the operation is to be performed.
  * @param $account
  *   Optional, a user object representing the user for whom the operation is to
  *   be performed. Determines access for a user other than the current user.
@@ -1907,20 +1907,6 @@ function harmony_core_post_form_submit($form, &$form_state) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- */
-function harmony_core_form_node_form_alter(&$form, &$form_state, $form_id) {
-  // Post content type.
-  if ($form['#node']->type == 'post') {
-    // Hide the title field and make other changes.
-    _harmony_core_post_form_alter($form);
-
-    // Change the submit button text.
-    $form['submit']['#value'] = t('Post reply');
-  }
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
  *
  * Hide the thread count field.
  */
@@ -2097,6 +2083,73 @@ function harmony_core_user_view($account, $view_mode, $langcode) {
     $account->content['harmony_core_user_name'] = array(
       '#markup' => theme('username', $username_variables),
     );
+  }
+}
+
+/**
+ * Implements hook_flag_access().
+ */
+function harmony_core_flag_access($flag, $entity_id, $action, $account) {
+  if ($flag->name === 'harmony_likes') {
+    $post = harmony_post_load($entity_id);
+    if (!harmony_core_post_access_callback('view', $post, $account)) {
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Implements hook_flag_access_multiple().
+ */
+function harmony_core_flag_access_multiple($flag, $entity_ids, $account) {
+  if ($flag->name === 'harmony_likes') {
+    $access = array();
+    $posts = harmony_post_load_multiple($entity_ids);
+
+    foreach ($posts as $post) {
+      if (!harmony_core_post_access_callback('view', $post, $account)) {
+        $access[$post->post_id] = FALSE;
+      }
+    }
+
+    return $access;
+  }
+}
+
+/**
+ * Implements hook_flag_flag().
+*
+ * Increments the likes property on the thread entity.
+ */
+function harmony_core_flag_flag($flag, $entity_id, $account, $flagging) {
+  if ($flag->name === 'harmony_likes') {
+    $post = harmony_post_load($entity_id);
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+    if ($wrapper->field_harmony_thread->value()) {
+      $likes_count = $wrapper->field_harmony_thread->likes->value();
+      $wrapper->field_harmony_thread->likes->set($likes_count + 1);
+      $wrapper->field_harmony_thread->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_flag_unflag().
+ *
+ * Decrements the likes property on the thread entity.
+ */
+function harmony_core_flag_unflag($flag, $entity_id, $account, $flagging) {
+  if ($flag->name === 'harmony_likes') {
+    $post = harmony_post_load($entity_id);
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+    if ($wrapper->field_harmony_thread->value()) {
+      $likes_count = $wrapper->field_harmony_thread->likes->value();
+      dsm($likes_count);
+      $wrapper->field_harmony_thread->likes->set($likes_count - 1);
+      $wrapper->field_harmony_thread->save();
+    }
   }
 }
 

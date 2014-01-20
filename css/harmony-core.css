@@ -54,3 +54,18 @@ ul.post-links {
 .post:hover ul.post-links {
   opacity: 1;
 }
+
+.flag-harmony-likes a:hover {
+  text-decoration: none;
+}
+
+.flag-harmony-likes a .count,
+.flag-harmony-likes a:hover .count {
+  color: #3b3b3b;
+}
+
+.flag-harmony-likes a:hover .text {
+  text-decoration: underline;
+}
+
+
