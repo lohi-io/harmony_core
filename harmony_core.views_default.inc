@@ -809,6 +809,14 @@ function harmony_core_views_default_views() {
       'empty_column' => 0,
     ),
   );
+  /* Footer: Global: Text area */
+  $handler->display->display_options['footer']['area']['id'] = 'area';
+  $handler->display->display_options['footer']['area']['table'] = 'views';
+  $handler->display->display_options['footer']['area']['field'] = 'area';
+  $handler->display->display_options['footer']['area']['empty'] = TRUE;
+  $handler->display->display_options['footer']['area']['content'] = '[field_harmony_thread-revision_id]';
+  $handler->display->display_options['footer']['area']['format'] = 'filtered_html';
+  $handler->display->display_options['footer']['area']['tokenize'] = TRUE;
   /* Relationship: Post (historical data): Author */
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
   $handler->display->display_options['relationships']['uid']['table'] = 'harmony_post_revision';
@@ -862,6 +870,20 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['view_diff']['field'] = 'view_diff';
   $handler->display->display_options['fields']['view_diff']['label'] = '';
   $handler->display->display_options['fields']['view_diff']['element_label_colon'] = FALSE;
+  /* Field: Post (historical data): Thread */
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['id'] = 'field_harmony_thread-revision_id';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['table'] = 'field_revision_field_harmony_thread';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['field'] = 'field_harmony_thread-revision_id';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['label'] = '';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['alter']['text'] = 'Return to the thread';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['alter']['path'] = 'thread/[field_harmony_thread-revision_id-target_id]';
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_harmony_thread-revision_id']['settings'] = array(
+    'link' => 0,
+  );
   /* Sort criterion: Post (historical data): Created date */
   $handler->display->display_options['sorts']['timestamp']['id'] = 'timestamp';
   $handler->display->display_options['sorts']['timestamp']['table'] = 'harmony_post_revision';
