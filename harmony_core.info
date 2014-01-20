@@ -71,6 +71,7 @@ features[field_instance][] = taxonomy_term-harmony_category-field_harmony_thread
 features[field_instance][] = user-user-field_harmony_post_count
 features[field_instance][] = user-user-field_harmony_thread_count
 features[filter][] = harmony_filtered
+features[flag][] = harmony_likes
 features[taxonomy][] = harmony_category
 features[taxonomy_display][] = harmony_category
 features[variable][] = field_bundle_settings_taxonomy_term__harmony_category
