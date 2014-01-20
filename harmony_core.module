@@ -2061,22 +2061,6 @@ function harmony_core_harmony_thread_delete($thread) {
  * Implements hook_field_extra_fields().
  */
 function harmony_core_field_extra_fields() {
-  $extra['harmony_post']['harmony_post'] = array(
-    'form' => array(),
-    'display' => array(
-      'harmony_core_post_reply_link' => array(
-        'label' => t('Reply link'),
-        'description' => t('Direct reply link.'),
-        'weight' => 10,
-      ),
-      'harmony_core_post_reply_as_thread_link' => array(
-        'label' => t('Reply as new thread link'),
-        'description' => t('Link to create a new thread as a reply to a post.'),
-        'weight' => 11,
-      ),
-    ),
-  );
-
   $extra['user']['user'] = array(
     'form' => array(),
     'display' => array(
@@ -2114,45 +2098,6 @@ function harmony_core_user_view($account, $view_mode, $langcode) {
       '#markup' => theme('username', $username_variables),
     );
   }
-}
-
-function harmony_core_post_reply_link($post, $view_mode) {
-  $wrapper = entity_metadata_wrapper('harmony_post', $post);
-
-  $link = array(
-    'harmony_link' => 'reply',
-    'text' => t('Reply'),
-    'path' => 'post/add',
-    'options' => array(
-      'query' => array(
-        'field_harmony_thread' => $wrapper->field_harmony_thread->thread_id->value(),
-        'field_harmony_post_is_reply_to' => $post->post_id,
-      ),
-    ),
-  );
-
-  drupal_alter('harmony_post_link', $link);
-
-  return l($link['text'], $link['path'], $link['options']);
-}
-
-function harmony_core_post_reply_as_thread_link($post, $view_mode) {
-  $wrapper = entity_metadata_wrapper('harmony_post', $post);
-
-  $link = array(
-    'harmony_link' => 'reply_as_thread',
-    'text' => t('Reply as a new thread'),
-    'path' => 'thread/add',
-    'options' => array(
-      'query' => array(
-        'field_harmony_thread_cont_from' => $post->post_id,
-      ),
-    ),
-  );
-
-  drupal_alter('harmony_post_link', $link);
-
-  return l($link['text'], $link['path'], $link['options']);
 }
 
 /**

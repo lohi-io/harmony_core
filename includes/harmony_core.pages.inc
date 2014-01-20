@@ -264,6 +264,8 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
   // Remove previously built content, if exists.
   $post->content = array();
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+  $thread_id = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->thread_id->value() : NULL;
 
   // Allow modules to change the view mode.
   $context = array(
@@ -281,40 +283,62 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   entity_prepare_view('harmony_post', array($post->post_id => $post), $langcode);
   $post->content += field_attach_view('harmony_post', $post, $view_mode, $langcode);
 
-  if (user_access('create posts')) {
-    $post->content['harmony_core_post_reply_link'] = array(
-      '#markup' => harmony_core_post_reply_link($post, $view_mode),
-    );
-  }
-
-  if (user_access('reply as new thread')) {
-    $post->content['harmony_core_post_reply_as_thread_link'] = array(
-      '#markup' => harmony_core_post_reply_as_thread_link($post, $view_mode),
-    );
-  }
-
-  // Always display a read more link on teasers because we have no way to know
-  // when a teaser view is different than a full view.
-  /*$links = array();
-  $node->content['links'] = array(
-    '#theme' => 'links__node',
+  // Posts have links, we need to collect them together.
+  $links = array();
+  $post->content['links'] = array(
+    '#theme' => 'links__post',
     '#pre_render' => array('drupal_pre_render_links'),
-    '#attributes' => array('class' => array('links', 'inline')),
+    '#attributes' => array('class' => array('post-links', 'inline')),
   );
-  if ($view_mode == 'teaser') {
-    $node_title_stripped = strip_tags($node->title);
-    $links['node-readmore'] = array(
-      'title' => t('Read more<span class="element-invisible"> about @title</span>', array('@title' => $node_title_stripped)),
-      'href' => 'node/' . $node->nid,
-      'html' => TRUE,
-      'attributes' => array('rel' => 'tag', 'title' => $node_title_stripped),
+  if (harmony_core_post_access_callback('update', $post)) {
+    $edit_query = array();
+
+    if ($thread_id) {
+      $edit_query = array(
+        'destination' => url("thread/$thread_id"),
+      );
+
+      if (!empty($_GET['page']) && is_numeric($_GET['page'])) {
+        $edit_query['destination'] = url("thread/$thread_id", array('query' => array('page' => $_GET['page'])));
+      }
+      else {
+        $edit_query['destination'] = url("thread/$thread_id");
+      }
+    }
+
+    $links['edit'] = array(
+      'title' => t('Edit'),
+      'href' => "post/$post->post_id/edit",
+      'attributes' => array('title' => t('Edit this post')),
+      'query' => $edit_query,
     );
   }
-  $node->content['links']['node'] = array(
-    '#theme' => 'links__node__node',
+  if (user_access('create posts')) {
+    $links['reply'] = array(
+      'title' => t('Reply'),
+      'href' => 'post/add',
+      'attributes' => array('title' => t('Reply directly to this post')),
+      'query' => array(
+        'field_harmony_thread' => $thread_id,
+        'field_harmony_post_is_reply_to' => $post->post_id,
+      ),
+    );
+  }
+  if (user_access('reply as new thread')) {
+    $links['reply_as_new_thread'] = array(
+      'title' => t('Reply as a new thread'),
+      'href' => 'post/add',
+      'attributes' => array('title' => t('Create a new thread as a reply to this post')),
+      'query' => array(
+        'field_harmony_thread_cont_from' => $post->post_id,
+      ),
+    );
+  }
+  $post->content['links']['post'] = array(
+    '#theme' => 'links__post__post',
     '#links' => $links,
-    '#attributes' => array('class' => array('links', 'inline')),
-  );*/
+    '#attributes' => array('class' => array('inline')),
+  );
 
   // Allow modules to make their own additions to the post.
   module_invoke_all('harmony_post_view', $post, $view_mode, $langcode);

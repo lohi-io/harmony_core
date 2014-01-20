@@ -5,6 +5,8 @@
  * Default theme implementation to display a Harmony Post entity.
  */
 
+hide($content['links']);
+$links = render($content['links']);
 ?>
 <div id="post-<?php print $post->post_id; ?>" class="<?php print $classes; ?>"<?php print $attributes; ?>>
   <a name="post-<?php print $post->post_id; ?>"></a>
@@ -29,6 +31,12 @@
     </div>
     <div class="post-content post-left-offset">
       <?php print render($content); ?>
+
+      <?php if ($links): ?>
+      <div class="clearfix">
+        <?php print $links; ?>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>

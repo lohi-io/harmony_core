@@ -40,3 +40,17 @@
 .post-left-offset {
   margin-left: 130px;
 }
+
+ul.post-links,
+.region-content ul.post-links,
+ul.post-links li.first {
+  padding-left: 0;
+}
+
+ul.post-links {
+  opacity: 0.8;
+}
+
+.post:hover ul.post-links {
+  opacity: 1;
+}
