@@ -2087,36 +2087,6 @@ function harmony_core_user_view($account, $view_mode, $langcode) {
 }
 
 /**
- * Implements hook_flag_access().
- */
-function harmony_core_flag_access($flag, $entity_id, $action, $account) {
-  if ($flag->name === 'harmony_likes') {
-    $post = harmony_post_load($entity_id);
-    if (!harmony_core_post_access_callback('view', $post, $account)) {
-      return FALSE;
-    }
-  }
-}
-
-/**
- * Implements hook_flag_access_multiple().
- */
-function harmony_core_flag_access_multiple($flag, $entity_ids, $account) {
-  if ($flag->name === 'harmony_likes') {
-    $access = array();
-    $posts = harmony_post_load_multiple($entity_ids);
-
-    foreach ($posts as $post) {
-      if (!harmony_core_post_access_callback('view', $post, $account)) {
-        $access[$post->post_id] = FALSE;
-      }
-    }
-
-    return $access;
-  }
-}
-
-/**
  * Implements hook_flag_flag().
 *
  * Increments the likes property on the thread entity.
