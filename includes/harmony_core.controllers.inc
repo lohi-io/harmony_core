@@ -157,8 +157,45 @@ class HarmonyThreadController extends EntityAPIController {
       $this->resetCache($ids);
 
       foreach ($entities as $id => $entity) {
+        $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
+
+        // Decrement some thread counts.
+        if ($wrapper->field_harmony_category->value()) {
+          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), 'decrement');
+        }
+
+        // User thread count.
+        harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, 'decrement');
+
+        // Unpublish and delete the posts in the thread.
+        // Unpublish.
+        $unpublish_query = "UPDATE {harmony_post} AS hp
+        INNER JOIN {field_data_field_harmony_thread} as fdfht
+        SET hp.status = '0'
+        WHERE fdfht.entity_type = 'harmony_post'
+        AND fdfht.field_harmony_thread_target_id = :thread_id";
+        db_query($unpublish_query, array(':thread_id' => $id));
+
+        // Delete.
+        $query = new EntityFieldQuery;
+        $query_result = $query
+          ->entityCondition('entity_type', 'harmony_post')
+          ->fieldCondition('field_harmony_thread', 'target_id', $id)
+          ->execute();
+
+        $entity->mass_update_set = FALSE;
+        if (!empty($query_result['harmony_post'])) {
+          $posts = array_keys($query_result['harmony_post']);
+          harmony_core_mass_update('harmony_post', $posts, 'delete');
+          $entity->mass_update_set = TRUE;
+        }
+
+        // Invoke delete hooks.
         $this->invoke('delete', $entity);
         field_attach_delete($this->entityType, $entity);
+
+        // Return the entity.
+        return $entity;
       }
       // Ignore slave server temporarily.
       db_ignore_slave();
@@ -265,7 +302,7 @@ class HarmonyPostController extends EntityAPIController {
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
         $wrapper->field_harmony_thread->save();
 
-        // Update the post count.
+        // Update the post count for the thread.
         harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
       }
 
@@ -365,6 +402,14 @@ class HarmonyPostController extends EntityAPIController {
     try {
       $ids = array_keys($entities);
 
+      // Prevent any first posts in a thread getting deleted.
+      foreach ($ids as $k => $entity_id) {
+        if ($entities[$entity_id]->first_post) {
+          unset($ids[$k]);
+          unset($entities[$entity_id]);
+        }
+      }
+
       db_delete($this->entityInfo['base table'])
         ->condition($this->idKey, $ids, 'IN')
         ->execute();
@@ -379,6 +424,31 @@ class HarmonyPostController extends EntityAPIController {
       $this->resetCache($ids);
 
       foreach ($entities as $id => $entity) {
+        $wrapper = entity_metadata_wrapper('harmony_post', $entity);
+        $thread_id = NULL;
+        if ($wrapper->field_harmony_thread->value()) {
+          $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+        }
+
+        // Update the post count on the thread.
+        if ($thread_id) {
+          harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
+        }
+
+        // Update post count for the user.
+        harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
+
+        // Remove the Likes from the thread associated with this post.
+        if ($thread_id) {
+          $likes = flag_get_counts('harmony_post', $id);
+          if (!empty($likes['harmony_likes'])) {
+            $post_likes = $likes['harmony_likes'];
+            $thread_likes = $wrapper->field_harmony_thread->likes->value();
+            $wrapper->field_harmony_thread->likes->set($thread_likes - $post_likes);
+            $wrapper->field_harmony_thread->save();
+          }
+        }
+
         $this->invoke('delete', $entity);
         field_attach_delete($this->entityType, $entity);
       }

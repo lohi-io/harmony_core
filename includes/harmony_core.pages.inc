@@ -109,29 +109,6 @@ function harmony_core_thread_build_content($thread, $view_mode = 'full', $langco
   entity_prepare_view('harmony_thread', array($thread->thread_id => $thread), $langcode);
   $thread->content += field_attach_view('harmony_thread', $thread, $view_mode, $langcode);
 
-  // Always display a read more link on teasers because we have no way to know
-  // when a teaser view is different than a full view.
-  /*$links = array();
-  $node->content['links'] = array(
-    '#theme' => 'links__node',
-    '#pre_render' => array('drupal_pre_render_links'),
-    '#attributes' => array('class' => array('links', 'inline')),
-  );
-  if ($view_mode == 'teaser') {
-    $node_title_stripped = strip_tags($node->title);
-    $links['node-readmore'] = array(
-      'title' => t('Read more<span class="element-invisible"> about @title</span>', array('@title' => $node_title_stripped)),
-      'href' => 'node/' . $node->nid,
-      'html' => TRUE,
-      'attributes' => array('rel' => 'tag', 'title' => $node_title_stripped),
-    );
-  }
-  $node->content['links']['node'] = array(
-    '#theme' => 'links__node__node',
-    '#links' => $links,
-    '#attributes' => array('class' => array('links', 'inline')),
-  );*/
-
   // Allow modules to make their own additions to the thread.
   module_invoke_all('harmony_thread_view', $thread, $view_mode, $langcode);
   module_invoke_all('entity_view', $thread, 'harmony_thread', $view_mode, $langcode);
@@ -181,7 +158,13 @@ function harmony_thread_delete_confirm($form, &$form_state, $thread) {
 function harmony_thread_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $thread = harmony_thread_load($form_state['values']['thread_id']);
-    harmony_thread_delete($thread->thread_id);
+    $deleted_thread = harmony_thread_delete($thread->thread_id);
+
+    if ($deleted_thread->mass_update_set) {
+      // The delete process can result in batch operations for deleting
+      // a posts thread, process!
+      batch_process('<front>');
+    }
 
     watchdog('harmony', 'Thread: deleted %title.', array('%title' => $thread->title));
     drupal_set_message(t('The thread %title has been deleted.', array('%title' => $thread->title)));
@@ -291,9 +274,19 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     '#attributes' => array('class' => array('post-links', 'inline')),
   );
   if (harmony_core_post_access_callback('update', $post)) {
+    $links['edit'] = array(
+      'title' => t('Edit'),
+      'href' => "post/$post->post_id/edit",
+      'attributes' => array('title' => t('Edit this post')),
+    );
     $edit_query = array();
 
     if ($thread_id) {
+      // If this is the first post in a thread, edit the thread and not the post.
+      if ($post->first_post) {
+        $links['edit']['href'] = "thread/$thread_id/edit";
+      }
+
       $edit_query = array(
         'destination' => url("thread/$thread_id"),
       );
@@ -306,12 +299,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       }
     }
 
-    $links['edit'] = array(
-      'title' => t('Edit'),
-      'href' => "post/$post->post_id/edit",
-      'attributes' => array('title' => t('Edit this post')),
-      'query' => $edit_query,
-    );
+    $links['edit']['query'] = $edit_query;
   }
   if (user_access('create posts')) {
     $links['reply'] = array(
@@ -372,13 +360,27 @@ function harmony_post_delete_confirm($form, &$form_state, $post) {
   // Always provide entity id in the same form key as in the entity edit form.
   $form['post_id'] = array('#type' => 'value', '#value' => $post->post_id);
 
-  return confirm_form($form,
-    t('Are you sure you want to delete %title?', array('%title' => $post->title)),
-    'post/' . $post->post_id,
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
+  // Check that this isn't the first post in a thread. If it is, prevent deletion.
+  if ($post->first_post) {
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+    $form['text']['#markup'] = '<p>' . t("You cannot delete this post as it's the first in a thread. You must delete the thread.") . '</p>';
+
+    if ($wrapper->field_harmony_thread->value()) {
+      $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+      $form['text']['#markup'] .= '<p>' . l(t('Return to thread'), "thread/$thread_id") . '</p>';
+    }
+  }
+  else {
+    $form = confirm_form($form,
+      t('Are you sure you want to delete %title?', array('%title' => $post->title)),
+      'post/' . $post->post_id,
+      t('This action cannot be undone.'),
+      t('Delete'),
+      t('Cancel')
+    );
+  }
+
+  return $form;
 }
 
 /**

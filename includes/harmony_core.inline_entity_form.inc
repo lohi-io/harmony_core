@@ -89,6 +89,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $form['field_harmony_text'][$text_lang][0]['#title_display'] = 'invisible';
     $form['field_harmony_text'][$text_lang][0]['#attributes']['placeholder'] = t('Type here.');
 
+    // Hide the thread entity reference field.
     $form['field_harmony_thread']['#access'] = FALSE;
 
     return $form;

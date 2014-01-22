@@ -1055,10 +1055,16 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
   return FALSE;
 }
 
+/**
+ * Implements callback_entity_info_label().
+ */
 function harmony_core_thread_label($entity, $entity_type) {
   return empty($entity->title) ? t('Untitled thread') : $entity->title;
 }
 
+/**
+ * Implements callback_entity_info_uri().
+ */
 function harmony_core_thread_uri($entity) {
   return array(
     'path' => 'thread/' . $entity->thread_id,
@@ -1101,10 +1107,16 @@ function harmony_thread_delete_multiple($thread_ids) {
   entity_delete_multiple('harmony_thread', $thread_ids);
 }
 
+/**
+ * Implements callback_entity_info_label().
+ */
 function harmony_core_post_label($entity, $entity_type) {
   return empty($entity->title) ? t('Untitled post') : $entity->title;
 }
 
+/**
+ * Implements callback_entity_info_uri().
+ */
 function harmony_core_post_uri($entity) {
   return array(
     'path' => 'post/' . $entity->post_id,
@@ -1515,15 +1527,19 @@ function harmony_core_thread_merge_action(&$thread, $context) {
         $first_post_wrapper->save();
       }
 
-      // Set the post count to 0, and delete.
+      // Set the post count  & likes to 0, and delete.
+      $likes_count = $thread_wrapper->likes->value();
       $thread_wrapper->field_harmony_post_count->set(0);
+      $thread_wrapper->likes->set(0);
       $thread_wrapper->save();
       harmony_thread_delete($thread->thread_id);
 
-      // Update the target thread's post count.
+      // Update the target thread's post count & likes.
       $target_thread_wrapper = entity_metadata_wrapper('harmony_thread', $context['thread']);
       $new_post_count = $target_thread_wrapper->field_harmony_post_count->value() + $posts_count;
       $target_thread_wrapper->field_harmony_post_count->set($new_post_count);
+      $new_likes_count = $target_thread_wrapper->likes->value() + $likes_count;
+      $target_thread_wrapper->likes->set($new_likes_count);
       $target_thread_wrapper->save();
 
       $message_vars = array(
@@ -1577,6 +1593,16 @@ function harmony_core_post_reassign_action(&$post, $context) {
     // Hold on to the old thread_id. @todo, verify this works :|
     $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
 
+    // Get the number of likes against this post, and update the old thread.
+    $post_likes = NULL;
+    $likes = flag_get_counts('harmony_post', $post->post_id);
+    if (!empty($likes['harmony_likes'])) {
+      $post_likes = $likes['harmony_likes'];
+      $old_thread_likes = $wrapper->field_harmony_thread->likes->value();
+      $wrapper->field_harmony_thread->likes->set($old_thread_likes - $post_likes);
+      $wrapper->field_harmony_thread->save();
+    }
+
     // Set new values.
     $wrapper->title->set($context['thread_title']);
     $wrapper->field_harmony_thread->set($context['thread_id']);
@@ -1585,6 +1611,13 @@ function harmony_core_post_reassign_action(&$post, $context) {
       '@post_id' => $post->post_id,
       '%thread_title' => $context['thread_title'],
     );
+
+    // Update the new thread's likes.
+    if ($post_likes) {
+      $new_thread_likes = $wrapper->field_harmony_thread->likes->value();
+      $wrapper->field_harmony_thread->likes->set($new_thread_likes + $post_likes);
+      $wrapper->field_harmony_thread->save();
+    }
 
     // Decrement the old thread's post count.
     harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id, 'decrement');
@@ -1858,7 +1891,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
     '#weight' => 5,
     '#submit' => array('harmony_core_post_form_submit'),
   );
-  if (!empty($post->post_id) && harmony_core_post_access_callback('delete', $post)) {
+  if (!empty($post->post_id) && !$post->first_post && harmony_core_post_access_callback('delete', $post)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete'),
@@ -2116,7 +2149,6 @@ function harmony_core_flag_unflag($flag, $entity_id, $account, $flagging) {
 
     if ($wrapper->field_harmony_thread->value()) {
       $likes_count = $wrapper->field_harmony_thread->likes->value();
-      dsm($likes_count);
       $wrapper->field_harmony_thread->likes->set($likes_count - 1);
       $wrapper->field_harmony_thread->save();
     }
@@ -2363,14 +2395,15 @@ function harmony_core_thread_mark($thread_id, $timestamp) {
   return MARK_READ;
 }
 
-function harmony_core_mass_update($type, $entities, $op, $properties) {
-  if (count($entities) > 10) {
+function harmony_core_mass_update($type, $entities, $op, $properties = array(), $batch_title = NULL) {
+  if (count($entities) > variable_get('harmony_core_mass_update_batch_threshold', 10)) {
+    $batch_title = $batch_title == '' ? t('Processing') : $batch_title;
     $batch = array(
       'operations' => array(
         array('_harmony_core_mass_update_batch_process', array($type, $entities, $op, $properties))
       ),
       'finished' => '_harmony_core_mass_update_batch_finished',
-      'title' => t('Processing'),
+      'title' => $batch_title,
       // We use a single multi-pass operation, so the default
       // 'Remaining x of y operations' message will be confusing here.
       'progress_message' => '',
@@ -2379,21 +2412,21 @@ function harmony_core_mass_update($type, $entities, $op, $properties) {
     batch_set($batch);
   }
   else {
-    foreach ($entities as $entity) {
-      list($entity_id) = entity_extract_ids($type, $entity);
-      _harmony_core_mass_update_small_set_process($type, $entity_id, $op, $properties);
+    if (!empty($entities) && is_array($entities)) {
+      foreach ($entities as $id) {
+        _harmony_core_mass_update_helper($type, $id, $op, $properties);
+      }
     }
-
-    drupal_set_message(t('The update has been performed.'));
+    //drupal_set_message(t('The update has been performed.'));
   }
 }
 
 function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
-  $load_function = "{$type}_load";
-  $entity = $load_function($entity_id, TRUE);
-
   switch ($op) {
     case 'update':
+      $load_function = "{$type}_load";
+      $entity = $load_function($entity_id, NULL, TRUE);
+
       $entity->original = clone $entity;
       foreach ($updates as $name => $value) {
         $entity->$name = $value;
@@ -2406,7 +2439,7 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
 
     case 'delete':
       $delete_function = "{$type}_delete";
-      $delete_function($entity);
+      $delete_function($entity_id);
 
       break;
   }
@@ -2433,7 +2466,7 @@ function _harmony_core_mass_update_batch_process($type, $entities, $op, $propert
     $context['sandbox']['entities'] = $entities;
   }
 
-  // Process nodes by groups of 5.
+  // Process entities by groups of 5.
   $count = min(5, count($context['sandbox']['entities']));
   for ($i = 1; $i <= $count; $i++) {
     $entity_id = array_shift($context['sandbox']['entities']);
@@ -2467,7 +2500,7 @@ function _harmony_core_mass_update_batch_process($type, $entities, $op, $propert
  */
 function _harmony_core_mass_update_batch_finished($success, $results, $operations) {
   if ($success) {
-    drupal_set_message(t('The update has been performed.'));
+    //drupal_set_message(t('The update has been performed.'));
   }
   else {
     drupal_set_message(t('An error occurred and processing did not complete.'), 'error');
@@ -2485,30 +2518,44 @@ function harmony_core_user_cancel($edit, $account, $method) {
   switch ($method) {
     case 'user_cancel_block_unpublish':
       // Unpublish/unapprove threads.
-      module_load_include('inc', 'node', 'node.admin');
       $threads = db_select('harmony_thread', 't')
         ->fields('t', array('thread_id'))
         ->condition('uid', $account->uid)
         ->execute()
         ->fetchCol();
-      harmony_core_mass_update('harmony_thread', 'update', $threads, array('status' => 0));
+      harmony_core_mass_update('harmony_thread', $threads, 'update', array('status' => 0));
+
+      // Unpublish posts.
+      $posts = db_select('harmony_posts', 'p')
+        ->fields('p', array('post_id'))
+        ->condition('uid', $account->uid)
+        ->execute()
+        ->fetchCol();
+      harmony_core_mass_update('harmony_post', $posts, 'update', array('status' => 0));
       break;
 
     case 'user_cancel_reassign':
-      /* @todo, you've left node business all in here! */
-      // Anonymize threads.
-      module_load_include('inc', 'node', 'node.admin');
-      $nodes = db_select('harmony_thread', 't')
+      // Anonymise threads.
+      $threads = db_select('harmony_thread', 't')
         ->fields('t', array('thread_id'))
         ->condition('uid', $account->uid)
         ->execute()
         ->fetchCol();
-      node_mass_update($threads, array('uid' => 0));
-      // Anonymize old revisions.
-      /*db_update('thread_revision')
+      harmony_core_mass_update('harmony_thread', $threads, 'update', array('uid' => 0));
+
+      // Anonymise posts & revisions.
+      $posts = db_select('harmony_posts', 'p')
+        ->fields('p', array('post_id'))
+        ->condition('uid', $account->uid)
+        ->execute()
+        ->fetchCol();
+      harmony_core_mass_update('harmony_post', $posts, 'update', array('uid' => 0));
+
+      db_update('harmony_post_revision')
         ->fields(array('uid' => 0))
         ->condition('uid', $account->uid)
-        ->execute();*/
+        ->execute();
+
       // Clean history.
       db_delete('harmony_thread_read_history')
         ->condition('uid', $account->uid)
@@ -2527,9 +2574,10 @@ function harmony_core_user_delete($account) {
     ->condition('uid', $account->uid)
     ->execute()
     ->fetchCol();
-  harmony_core_mass_update('harmony_thread', 'delete', $threads, array());
+  harmony_core_mass_update('harmony_thread', $threads, 'delete', array());
 
   // Delete old revisions.
+  // @todo.
   /*$revisions = db_query('SELECT vid FROM {thread_revision} WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
   foreach ($revisions as $revision) {
     node_revision_delete($revision);

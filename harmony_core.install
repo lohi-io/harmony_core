@@ -325,4 +325,5 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_thread_new_limit');
   variable_del('harmony_core_post_revisions_view');
   variable_del('harmony_core_meta_summary_max_length');
+  variable_del('harmony_core_mass_update_batch_threshold');
 }
