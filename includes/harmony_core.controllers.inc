@@ -171,10 +171,13 @@ class HarmonyThreadController extends EntityAPIController {
         // Unpublish.
         $unpublish_query = "UPDATE {harmony_post} AS hp
         INNER JOIN {field_data_field_harmony_thread} as fdfht
-        SET hp.status = '0'
+        SET hp.status = :unpublished
         WHERE fdfht.entity_type = 'harmony_post'
         AND fdfht.field_harmony_thread_target_id = :thread_id";
-        db_query($unpublish_query, array(':thread_id' => $id));
+        db_query($unpublish_query, array(
+          ':unpublished' => HARMONY_NOT_PUBLISHED,
+          ':thread_id' => $id,
+        ));
 
         // Delete.
         $query = new EntityFieldQuery;
