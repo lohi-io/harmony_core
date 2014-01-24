@@ -90,15 +90,74 @@ class HarmonyThreadController extends EntityAPIController {
         }
       }
 
-      // Update counts elsewhere.
-      if ($entity->is_new) {
-        harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid);
+      $entity->batch_process = FALSE;
+
+      // Update counts.
+      $count_direction = NULL;
+      if ($entity->is_new && $entity->status == HARMONY_PUBLISHED || !$entity->is_new && $entity->status != $entity->original->status) {
+        // Determine the direction.
+        if (
+          $entity->is_new && $entity->status == HARMONY_PUBLISHED ||
+          !$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED
+        ) {
+          $count_direction = 'increment';
+        }
+        elseif (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
+          $count_direction = 'decrement';
+        }
+
+        // Thread counts.
+        if ($count_direction) {
+          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, $count_direction);
+        }
 
         $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
 
         // Increment the category thread count if the thread belongs to a category.
-        if ($wrapper->field_harmony_category->value()) {
-          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value());
+        if ($count_direction && $wrapper->field_harmony_category->value()) {
+          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), $count_direction);
+        }
+      }
+
+      $post_properties_to_change = array();
+      // If a thread title is changed, so should its posts.
+      if ($entity->title !== $entity->original->title) {
+        $post_properties_to_change['title'] = $entity->title;
+      }
+
+      // Newly locked threads should propogate through to its posts, batch!
+      if (!$entity->is_new && $entity->locked == HARMONY_LOCKED && $entity->original->locked == HARMONY_NOT_LOCKED) {
+        $post_properties_to_change['locked'] = HARMONY_LOCKED;
+      }
+      // And unlock.
+      elseif (!$entity->is_new && $entity->locked == HARMONY_NOT_LOCKED && $entity->original->locked == HARMONY_LOCKED) {
+        $post_properties_to_change['locked'] = HARMONY_NOT_LOCKED;
+      }
+
+      // If a thread becomes unpublished this should also flow through to the posts.
+      if (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
+        $post_properties_to_change['status'] = HARMONY_NOT_PUBLISHED;
+      }
+      // Thread is now published, publish posts.
+      elseif (!$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED) {
+        $post_properties_to_change['status'] = HARMONY_PUBLISHED;
+      }
+
+      // If changes are desired for a threads posts, do it!
+      if (!empty($post_properties_to_change)) {
+        $query = new EntityFieldQuery;
+        $query_result = $query
+          ->entityCondition('entity_type', 'harmony_post')
+          ->fieldCondition('field_harmony_thread', 'target_id', $entity->{$this->idKey})
+          ->execute();
+
+        if (!empty($query_result['harmony_post'])) {
+          $posts = array_keys($query_result['harmony_post']);
+          harmony_core_mass_update('harmony_post', $posts, 'update', $post_properties_to_change);
+
+          if (count($posts) > variable_get('harmony_core_mass_update_batch_threshold', 10)) {
+            $entity->batch_process = TRUE;
+          }
         }
       }
 
@@ -160,12 +219,14 @@ class HarmonyThreadController extends EntityAPIController {
         $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
 
         // Decrement some thread counts.
-        if ($wrapper->field_harmony_category->value()) {
+        if ($entity->status == HARMONY_PUBLISHED && $wrapper->field_harmony_category->value()) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), 'decrement');
         }
 
         // User thread count.
-        harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, 'decrement');
+        if ($entity->status == HARMONY_PUBLISHED) {
+          harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, 'decrement');
+        }
 
         // Unpublish and delete the posts in the thread.
         // Unpublish.
@@ -186,16 +247,22 @@ class HarmonyThreadController extends EntityAPIController {
           ->fieldCondition('field_harmony_thread', 'target_id', $id)
           ->execute();
 
-        $entity->mass_update_set = FALSE;
+        $entity->batch_process = FALSE;
         if (!empty($query_result['harmony_post'])) {
           $posts = array_keys($query_result['harmony_post']);
           harmony_core_mass_update('harmony_post', $posts, 'delete');
-          $entity->mass_update_set = TRUE;
+
+          if (count($posts) > variable_get('harmony_core_mass_update_batch_threshold', 10)) {
+            $entity->batch_process = TRUE;
+          }
         }
 
         // Invoke delete hooks.
         $this->invoke('delete', $entity);
         field_attach_delete($this->entityType, $entity);
+
+        // Delete path alias.
+        pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
 
         // Return the entity.
         return $entity;
