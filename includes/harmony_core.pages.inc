@@ -160,7 +160,7 @@ function harmony_thread_delete_confirm_submit($form, &$form_state) {
     $thread = harmony_thread_load($form_state['values']['thread_id']);
     $deleted_thread = harmony_thread_delete($thread->thread_id);
 
-    if ($deleted_thread->mass_update_set) {
+    if ($deleted_thread->batch_process) {
       // The delete process can result in batch operations for deleting
       // a posts thread, process!
       batch_process('<front>');
