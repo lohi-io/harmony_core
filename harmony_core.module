@@ -1236,6 +1236,18 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
+    'harmony_core_post_locked_action' => array(
+      'type' => 'harmony_post',
+      'label' => t('Lock post'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_post_unlock_action' => array(
+      'type' => 'harmony_post',
+      'label' => t('Unlock post'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
     'harmony_core_post_unpublish_action' => array(
       'type' => 'harmony_post',
       'label' => t('Unpublish post'),
@@ -1367,7 +1379,7 @@ function harmony_core_thread_locked_action($thread, $context = array()) {
  */
 function harmony_core_thread_unlock_action($thread, $context = array()) {
   $thread->locked = HARMONY_NOT_LOCKED;
-  watchdog('action', 'Unlocked the thread %title .', array('%title' => $thread->title));
+  watchdog('action', 'Unlocked the thread %title.', array('%title' => $thread->title));
 }
 
 /**
@@ -1414,6 +1426,38 @@ function harmony_core_post_publish_action($post, $context = array()) {
 function harmony_core_post_unpublish_action($post, $context = array()) {
   $post->status = HARMONY_NOT_PUBLISHED;
   watchdog('action', 'Set post %title to unpublished.', array('%title' => $post->title));
+}
+
+/**
+ * Sets the locked property of a post to 1.
+ *
+ * @param $post
+ *   A post object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_post_locked_action($post, $context = array()) {
+  $post->locked = HARMONY_LOCKED;
+  watchdog('action', 'Locked a post in the thread %title.', array('%title' => $post->title));
+}
+
+/**
+ * Sets the lock property of a post to 0.
+ *
+ * @param $post
+ *   A post object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_post_unlock_action($post, $context = array()) {
+  $post->locked = HARMONY_NOT_LOCKED;
+  watchdog('action', 'Unlocked a post in the thread %title.', array('%title' => $post->title));
 }
 
 function harmony_core_action_get_thread_entityreference_form(&$form, &$form_state) {
@@ -1811,6 +1855,10 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = "thread/$thread->thread_id";
+
+  if ($thread->batch_process) {
+    batch_process($form_state['redirect']);
+  }
 }
 
 /**
@@ -1952,6 +2000,10 @@ function harmony_core_post_form_submit($form, &$form_state) {
   else {
     $form_state['redirect'] = "post/$post->post_id";
   }
+
+  if ($post->batch_process) {
+    batch_process($form_state['redirect']);
+  }
 }
 
 /**
@@ -2087,7 +2139,7 @@ function harmony_core_harmony_thread_delete($thread) {
     }
   }*/
 
-  pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
+  //pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
 
   entity_delete('harmony_thread', entity_id('harmony_thread' ,$thread));
 }
