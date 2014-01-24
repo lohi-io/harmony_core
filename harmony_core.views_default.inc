@@ -541,10 +541,6 @@ function harmony_core_views_default_views() {
     'thousand_separator' => ' ',
     'prefix_suffix' => 1,
   );
-  /* Field: Thread: Status */
-  $handler->display->display_options['fields']['status']['id'] = 'status';
-  $handler->display->display_options['fields']['status']['table'] = 'harmony_thread';
-  $handler->display->display_options['fields']['status']['field'] = 'status';
   /* Field: Thread: Date created */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'harmony_thread';
@@ -557,6 +553,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['updated']['field'] = 'updated';
   $handler->display->display_options['fields']['updated']['label'] = 'Updated';
   $handler->display->display_options['fields']['updated']['date_format'] = 'short';
+  /* Field: Thread: Status */
+  $handler->display->display_options['fields']['status']['id'] = 'status';
+  $handler->display->display_options['fields']['status']['table'] = 'harmony_thread';
+  $handler->display->display_options['fields']['status']['field'] = 'status';
   /* Field: Thread: Locked */
   $handler->display->display_options['fields']['locked']['id'] = 'locked';
   $handler->display->display_options['fields']['locked']['table'] = 'harmony_thread';
@@ -1014,6 +1014,13 @@ function harmony_core_views_default_views() {
       'override_label' => 0,
       'label' => '',
     ),
+    'action::harmony_core_post_locked_action' => array(
+      'selected' => 1,
+      'postpone_processing' => 0,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'label' => '',
+    ),
     'action::views_bulk_operations_modify_action' => array(
       'selected' => 0,
       'postpone_processing' => 1,
@@ -1052,6 +1059,13 @@ function harmony_core_views_default_views() {
     ),
     'action::system_send_email_action' => array(
       'selected' => 0,
+      'postpone_processing' => 0,
+      'skip_confirmation' => 0,
+      'override_label' => 0,
+      'label' => '',
+    ),
+    'action::harmony_core_post_unlock_action' => array(
+      'selected' => 1,
       'postpone_processing' => 0,
       'skip_confirmation' => 0,
       'override_label' => 0,
