@@ -1190,37 +1190,37 @@ function harmony_core_action_info() {
   $actions = array(
     'harmony_core_thread_publish_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Publish thread'),
+      'label' => t('Publish'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_unpublish_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Unpublish thread'),
+      'label' => t('Unpublish'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_make_pinned_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Pin thread'),
+      'label' => t('Pin to top of listings'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_make_unpinned_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Unpin thread'),
+      'label' => t('Unpin from top of listings'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_locked_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Lock thread'),
+      'label' => t('Lock'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_thread_unlock_action' => array(
       'type' => 'harmony_thread',
-      'label' => t('Unlock thread'),
+      'label' => t('Unlock'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
@@ -1232,25 +1232,25 @@ function harmony_core_action_info() {
     ),
     'harmony_core_post_publish_action' => array(
       'type' => 'harmony_post',
-      'label' => t('Publish post'),
+      'label' => t('Publish'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_post_locked_action' => array(
       'type' => 'harmony_post',
-      'label' => t('Lock post'),
+      'label' => t('Lock'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_post_unlock_action' => array(
       'type' => 'harmony_post',
-      'label' => t('Unlock post'),
+      'label' => t('Unlock'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
     'harmony_core_post_unpublish_action' => array(
       'type' => 'harmony_post',
-      'label' => t('Unpublish post'),
+      'label' => t('Unpublish'),
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
@@ -1277,7 +1277,7 @@ function harmony_core_action_info() {
   if (module_exists('pathauto')) {
     $actions['harmony_core_thread_update_alias_action'] = array(
       'type' => 'harmony_thread',
-      'label' => t('Update thread path alias'),
+      'label' => t('Update path alias'),
       'configurable' => FALSE,
     );
   }
