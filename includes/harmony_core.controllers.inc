@@ -121,7 +121,7 @@ class HarmonyThreadController extends EntityAPIController {
 
       $post_properties_to_change = array();
       // If a thread title is changed, so should its posts.
-      if ($entity->title !== $entity->original->title) {
+      if (!$entity->is_new && $entity->title !== $entity->original->title) {
         $post_properties_to_change['title'] = $entity->title;
       }
 
