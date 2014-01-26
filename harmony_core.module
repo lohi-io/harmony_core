@@ -156,7 +156,7 @@ function harmony_core_entity_info_alter(&$entity_info) {
 }
 
 function harmony_core_post_revision_access($op, $name, $entity = NULL, $account = NULL) {
-  return $op == 'view' ? user_access('view post revisions', $account) : user_access('administer forum content', $account);
+  return $op == 'view' ? user_access('view post revisions', $account) || user_access('bypass forum access control', $account) : user_access('administer forum content', $account);
 }
 
 /**
@@ -729,6 +729,15 @@ function harmony_core_cron() {
   db_delete('harmony_thread_read_history')
     ->condition('timestamp', harmony_core_thread_new_limit(), '<')
     ->execute();
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function harmony_core_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'entityreference') {
+    return 'plugins/entityreference/' . $plugin;
+  }
 }
 
 /**
@@ -1725,11 +1734,6 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
     $thread->is_new = FALSE;
   }
 
-  // Prevent users from editing a locked thread.
-  if ($thread->locked && !user_access('administer forum content')) {
-    drupal_access_denied();
-  }
-
   // Basic thread information.
   // These elements are just values so they are not even sent to the client.
   foreach (array('thread_id', 'uid', 'is_new') as $key) {
@@ -1884,11 +1888,6 @@ function harmony_core_post_form($form, &$form_state, $post) {
     }
   }
 
-  // Prevent users from editing a locked post.
-  if ($post->locked && !user_access('administer forum content')) {
-    drupal_access_denied();
-  }
-
   // Basic post information.
   // These elements are just values so they are not even sent to the client.
   foreach (array('post_id', 'uid', 'is_new') as $key) {
@@ -1925,7 +1924,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
     '#title' => t('Published'),
     '#default_value' => $post->status,
   );
-  if ($thread_id && $wrapper->field_harmony_thread->status->value() === HARMONY_NOT_PUBLISHED) {
+  if ($thread_id && $wrapper->field_harmony_thread->status->value() == HARMONY_NOT_PUBLISHED) {
     $form['options']['status'] += array(
       '#disabled' => TRUE,
       '#description' => t('You cannot publish a post when the thread is unpublished.'),
@@ -1936,6 +1935,12 @@ function harmony_core_post_form($form, &$form_state, $post) {
     '#title' => t('Lock from edits'),
     '#default_value' => $post->locked,
   );
+  if ($thread_id && $wrapper->field_harmony_thread->locked->value() == HARMONY_LOCKED) {
+    $form['options']['locked'] += array(
+      '#disabled' => TRUE,
+      '#description' => t('You cannot unlock a post when the thread is locked.'),
+    );
+  }
 
   // Add in the log for revisions, if not new.
   if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
