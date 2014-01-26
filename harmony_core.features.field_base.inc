@@ -305,7 +305,7 @@ function harmony_core_field_default_field_bases() {
     'locked' => 1,
     'module' => 'entityreference',
     'settings' => array(
-      'handler' => 'base',
+      'handler' => 'harmony_thread_selection_plugin',
       'handler_settings' => array(
         'behaviors' => array(
           'views-select-list' => array(
