@@ -1778,7 +1778,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   );
   $form['options']['locked'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Lock from replies'),
+    '#title' => t('Lock from replies and edits'),
     '#default_value' => $thread->locked,
   );
 
@@ -1873,15 +1873,14 @@ function harmony_core_post_form($form, &$form_state, $post) {
   );
   $form['#attributes']['class'][] = 'post-form';
 
+  $wrapper = NULL;
+  $thread_id = NULL;
   if (empty($post->is_new)) {
     $post->is_new = FALSE;
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
     if ($wrapper->field_harmony_thread->value()) {
-      // Prevent users from editing within a locked thread.
-      if ($wrapper->field_harmony_thread->locked->value()) {
-        drupal_access_denied();
-      }
+      $thread_id = $wrapper->field_harmony_thread->thread_id->value();
     }
   }
 
@@ -1926,6 +1925,12 @@ function harmony_core_post_form($form, &$form_state, $post) {
     '#title' => t('Published'),
     '#default_value' => $post->status,
   );
+  if ($thread_id && $wrapper->field_harmony_thread->status->value() === HARMONY_NOT_PUBLISHED) {
+    $form['options']['status'] += array(
+      '#disabled' => TRUE,
+      '#description' => t('You cannot publish a post when the thread is unpublished.'),
+    );
+  }
   $form['options']['locked'] = array(
     '#type' => 'checkbox',
     '#title' => t('Lock from edits'),
@@ -2187,79 +2192,7 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
 function harmony_core_update_post_title($item) {
   $post = entity_load_single('harmony_post', $item['post_id']);
   $post->title = $item['title'];
-  node_save($post);
-}
-
-/**
- * Implements hook_node_insert().
- */
-function harmony_core_node_insert($node) {
-  if ($node->type == 'harmony_post') {
-    $post = entity_metadata_wrapper('node', $node);
-
-    // Get the thread id.
-    $thread_id = $post->field_harmony_thread->value();
-
-    // The thread id should be populated, if not then it's because
-    // it's the first post in a thread.
-    if ($thread_id) {
-      // Set the last time the thread was updated.
-      $post->field_harmony_thread->updated->set(REQUEST_TIME);
-      // Set the last user to update the thread field.
-      $post->field_harmony_thread->field_harmony_last_user_to_reply->set($node->uid);
-      // Save the thread.
-      $post->field_harmony_thread->save();
-
-      // Increment the thread post count.
-      harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
-
-      // Increment users post count.
-      harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $node->uid);
-    }
-  }
-}
-
-/**
- * Implements hook_node_update().
- */
-function harmony_core_node_update($node) {
-  if ($node->type == 'harmony_post') {
-    $post = entity_metadata_wrapper('node', $node);
-    $thread_id = $post->field_harmony_thread->value();
-
-    if ($thread_id) {
-      // @todo, check that this post is published.
-
-      // Update the thread's last active user if not current.
-      if ($post->field_harmony_thread->field_harmony_last_user_to_reply->value() != $node->uid) {
-        $post->field_harmony_thread->field_harmony_last_user_to_reply->set($node->uid);
-      }
-
-      // Update the thread's last updated time.
-      $post->field_harmony_thread->updated->set(REQUEST_TIME);
-
-      // Save changes.
-      $post->field_harmony_thread->save();
-    }
-  }
-}
-
-/**
- * Implements hook_node_delete().
- */
-function harmony_core_node_delete($node) {
-  if ($node->type == 'harmony_post') {
-    $post = entity_metadata_wrapper('node', $node);
-    $thread_id = $post->field_harmony_thread->value();
-
-    if ($thread_id) {
-      // Decrement the thread post count.
-      harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
-    }
-
-    // Increment users post count.
-    harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $node->uid);
-  }
+  harmony_post_save($post);
 }
 
 /**
@@ -2395,12 +2328,12 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
       $entity = $load_function($entity_id, NULL, TRUE);
 
       $entity->original = clone $entity;
-      foreach ($updates as $name => $value) {
+      foreach ($properties as $name => $value) {
         $entity->$name = $value;
       }
 
       $save_function = "{$type}_save";
-      save_function($entity);
+      $save_function($entity);
 
       break;
 
