@@ -229,10 +229,10 @@ class HarmonyThreadController extends EntityAPIController {
         }
 
         // Unpublish and delete the posts in the thread.
-        // Unpublish.
+        // Also remove the first_post flag.
         $unpublish_query = "UPDATE {harmony_post} AS hp
         INNER JOIN {field_data_field_harmony_thread} as fdfht
-        SET hp.status = :unpublished
+        SET hp.status = :unpublished, hp.first_post = '0'
         WHERE fdfht.entity_type = 'harmony_post'
         AND fdfht.field_harmony_thread_target_id = :thread_id";
         db_query($unpublish_query, array(
@@ -480,50 +480,53 @@ class HarmonyPostController extends EntityAPIController {
         }
       }
 
-      db_delete($this->entityInfo['base table'])
-        ->condition($this->idKey, $ids, 'IN')
-        ->execute();
-
-      if (isset($this->revisionTable)) {
-        db_delete($this->revisionTable)
+      // As we remove the first post, check the array isn't empty.
+      if (empty($ids)) {
+        db_delete($this->entityInfo['base table'])
           ->condition($this->idKey, $ids, 'IN')
           ->execute();
-      }
 
-      // Reset the cache as soon as the changes have been applied.
-      $this->resetCache($ids);
-
-      foreach ($entities as $id => $entity) {
-        $wrapper = entity_metadata_wrapper('harmony_post', $entity);
-        $thread_id = NULL;
-        if ($wrapper->field_harmony_thread->value()) {
-          $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+        if (isset($this->revisionTable)) {
+          db_delete($this->revisionTable)
+            ->condition($this->idKey, $ids, 'IN')
+            ->execute();
         }
 
-        // Update the post count on the thread.
-        if ($thread_id) {
-          harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
-        }
+        // Reset the cache as soon as the changes have been applied.
+        $this->resetCache($ids);
 
-        // Update post count for the user.
-        harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
-
-        // Remove the Likes from the thread associated with this post.
-        if ($thread_id) {
-          $likes = flag_get_counts('harmony_post', $id);
-          if (!empty($likes['harmony_likes'])) {
-            $post_likes = $likes['harmony_likes'];
-            $thread_likes = $wrapper->field_harmony_thread->likes->value();
-            $wrapper->field_harmony_thread->likes->set($thread_likes - $post_likes);
-            $wrapper->field_harmony_thread->save();
+        foreach ($entities as $id => $entity) {
+          $wrapper = entity_metadata_wrapper('harmony_post', $entity);
+          $thread_id = NULL;
+          if ($wrapper->field_harmony_thread->value()) {
+            $thread_id = $wrapper->field_harmony_thread->thread_id->value();
           }
-        }
 
-        $this->invoke('delete', $entity);
-        field_attach_delete($this->entityType, $entity);
+          // Update the post count on the thread.
+          if ($thread_id) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
+          }
+
+          // Update post count for the user.
+          harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
+
+          // Remove the Likes from the thread associated with this post.
+          if ($thread_id) {
+            $likes = flag_get_counts('harmony_post', $id);
+            if (!empty($likes['harmony_likes'])) {
+              $post_likes = $likes['harmony_likes'];
+              $thread_likes = $wrapper->field_harmony_thread->likes->value();
+              $wrapper->field_harmony_thread->likes->set($thread_likes - $post_likes);
+              $wrapper->field_harmony_thread->save();
+            }
+          }
+
+          $this->invoke('delete', $entity);
+          field_attach_delete($this->entityType, $entity);
+        }
+        // Ignore slave server temporarily.
+        db_ignore_slave();
       }
-      // Ignore slave server temporarily.
-      db_ignore_slave();
     }
     catch (Exception $e) {
       if (isset($transaction)) {
