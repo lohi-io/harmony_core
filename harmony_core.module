@@ -871,7 +871,7 @@ function harmony_core_entity_access_check($op, $entity, $account, $entity_type) 
       if (
         $entity->locked == HARMONY_NOT_LOCKED && user_access("edit any {$entity_type}", $account) ||
         $entity->locked == HARMONY_NOT_LOCKED && $account->uid == $entity->uid && user_access("edit own {$entity_type}s", $account) ||
-        $entity->locked == HARMONY_LOCKED && user_access("edit locked {$entity_type}s")
+        $entity->locked == HARMONY_LOCKED && user_access("edit locked {$entity_type}s", $account)
       ) {
         return HARMONY_ACCESS_ALLOW;
       }
@@ -2041,107 +2041,6 @@ function _harmony_core_post_form_alter(&$form) {
   if ($post_text_lang) {
     $form['field_harmony_text'][$post_text_lang][0]['#title_display'] = 'invisible';
   }
-}
-
-/**
- * Implements hook_thread_update().
- */
-function harmony_core_harmony_thread_update($thread) {
-  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
-  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
-
-  // @todo checking for publish/unpublish and adjust post count
-  // accordingly, use $entity->original.
-
-  // Update the title of posts in this thread if it's changed, we do
-  // this for administrative ease and because we use the title in places
-  // like when rendering a search result.
-  /*if ($wrapper->title->value() != $wrapper->field_harmony_first_post->title->value()) {
-    $title = $wrapper->title->value();
-
-    // Get a list of post nodes to update.
-    $posts = db_query("SELECT entity_id
-      FROM {field_data_field_harmony_thread}
-      WHERE entity_type = 'node'
-      AND bundle = 'harmony_post'
-      AND field_harmony_thread_target_id = :thread_id",
-      array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
-
-    // We've got a list of nodes.
-    if (!empty($posts)) {
-      // As per node_mass_update() if the list is less than 10,
-      // process now, else queue and update on Cron run.
-      $post_nids = array_keys($posts);
-
-      if (count($post_nids) <= 10) {
-        // Load the post nodes.
-        $posts = entity_load('node', $post_nids);
-
-        foreach ($posts as $post) {
-          $post->title = $title;
-          node_save($post);
-        }
-      }
-      else {
-        // Process these nodes in a queue.
-        $queue = DrupalQueue::get('update_post_title');
-
-        foreach ($post_nids as $nid) {
-          $item = array(
-            'nid' => $nid,
-            'title' => $title,
-          );
-
-          $queue->createItem($item);
-        }
-      }
-    }
-  }*/
-}
-
-function harmony_core_harmony_thread_delete($thread) {
-  list($thread_id) = entity_extract_ids('harmony_thread', $thread);
-
-  // @todo this needs to live in the entity controller.
-
-  // Remove all of the attached posts, first unpublish and orphan,
-  // then batch delete, this way on hook_node_delete the thread
-  // entity ref will be empty and no attempt will be made to update
-  // it's metadata. SOLR remove.
-
-  // Get a list of post nodes to delete.
-  /*$posts = db_query("SELECT entity_id
-    FROM {field_data_field_harmony_thread}
-    WHERE entity_type = 'node'
-    AND bundle = 'harmony_post'
-    AND field_thread_target_id = :thread_id",
-    array(':thread_id' => $thread_id))->fetchAllAssoc('entity_id');
-
-  // Delete post revisions too.
-
-  // We've got a list of nodes.
-  if (!empty($posts)) {
-    // As per node_mass_update() if the list is less than 10,
-    // process now, else queue and update on Cron run.
-    $post_nids = array_keys($posts);
-
-    if (count($post_nids) <= 10) {
-      // Load the post nodes.
-      node_delete_multiple($post_nids);
-    }
-    else {
-      // Process these nodes in a queue.
-      $queue = DrupalQueue::get('delete_posts');
-
-      foreach ($post_nids as $nid) {
-        $queue->createItem($nid);
-      }
-    }
-  }*/
-
-  //pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
-
-  entity_delete('harmony_thread', entity_id('harmony_thread' ,$thread));
 }
 
 /**
