@@ -121,9 +121,8 @@ ul.post-links {
 }
 
 @media (max-width: 767px) {
-  .thread-list {
-    .clearfix;
-  }
+  /* Clearfix via LESS. */
+  .thread-list:before,.thread-list:after{content:" ";display:table}.thread-list:after{clear:both}.thread-list:before,.thread-list:after{content:" ";display:table}.thread-list:after{clear:both}
 
   .table-list-head ul {
     margin-bottom: 0;
@@ -143,8 +142,9 @@ ul.post-links {
     display: block;
     padding: 8px;
     border-top: 1px solid #ddd;
-    .clearfix;
   }
+
+  .table-list>.table-list-body>li:before,.table-list>.table-list-body>li:after{content:" ";display:table}.table-list>.table-list-body>li:after{clear:both}.table-list>.table-list-body>li:before,.table-list>.table-list-body>li:after{content:" ";display:table}.table-list>.table-list-body>li:after{clear:both}
 
   .table-list > .table-list-body > li:nth-child(odd) {
     background-color: #F9F9F9;
@@ -159,7 +159,7 @@ ul.post-links {
     float: left;
     margin-right: 10px;
     line-height: 28px;
-    .small;
+    font-size: 85%;
   }
 
   .tl-users .avatar {
