@@ -113,3 +113,4 @@ files[] = views/handlers/harmony_core_views_handler_post_field_view_diff.inc
 files[] = views/handlers/harmony_core_views_plugin_argument_default_post.inc
 files[] = views/handlers/harmony_core_views_plugin_argument_default_thread.inc
 files[] = views/handlers/harmony_core_views_plugin_row_post_view.inc
+files[] = views/plugins/harmony_core_views_plugin_style_harmony_table.inc

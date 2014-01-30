@@ -1,4 +1,30 @@
 
+/* Responsive classes. */
+
+@media (min-width: 768px) {
+  .inline-hidden-xs {
+    display: inline !important;
+  }
+
+  .ib-hidden-xs {
+    display: inline-block !important;
+  }
+
+  .inline-visible-xs {
+    display: none !important;
+  }
+
+  .large-sm-min {
+    font-size: 125%;
+  }
+
+  .table-cell-hidden-xs {
+    display: table-cell !important;
+  }
+}
+
+/* Utility styles. */
+
 .pull-left {
   float: left;
 }
@@ -68,4 +94,145 @@ ul.post-links {
   text-decoration: underline;
 }
 
+
+/* Responsive tables. */
+
+/* Bartik specific overrides. */
+
+.region-content .table-list ul,
+.region-content .table-list ol {
+  margin: 0;
+  padding: 0;
+}
+
+.table-list {
+  border-bottom: 1px solid #ddd;
+}
+
+.table-list-body {
+  margin-bottom: 0;
+}
+
+.tl-sub-categories {
+  display: block;
+  margin-top: 6px;
+  border-top: 1px dotted #ddd;
+  padding-top: 5px;
+}
+
+@media (max-width: 767px) {
+  .thread-list {
+    .clearfix;
+  }
+
+  .table-list-head ul {
+    margin-bottom: 0;
+  }
+
+  .table-list-head li {
+    display: none;
+  }
+
+  .table-list-head li.tl-title {
+    display: block;
+    padding: 8px;
+    font-weight: bold;
+  }
+
+  .table-list > .table-list-body > li {
+    display: block;
+    padding: 8px;
+    border-top: 1px solid #ddd;
+    .clearfix;
+  }
+
+  .table-list > .table-list-body > li:nth-child(odd) {
+    background-color: #F9F9F9;
+  }
+
+  .table-list-body .tl-title {
+    margin-bottom: 5px;
+    clear: both;
+  }
+
+  .tl-meta {
+    float: left;
+    margin-right: 10px;
+    line-height: 28px;
+    .small;
+  }
+
+  .tl-users .avatar {
+    width: 28px;
+  }
+
+  .tl-activity .date:last-child {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .table-list {
+    display: table;
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+  }
+
+  .table-list-head,
+  .table-list-body {
+    display: table-header-group;
+    width: 100%;
+    vertical-align: top;
+  }
+
+  .table-list-body {
+    display: table-row-group;
+  }
+
+  .table-list-row,
+  .table-list-body > li {
+    display: table-row;
+    width: 100%;
+    word-wrap: normal;
+  }
+
+  .table-list-head > ul > li,
+  .tl-cell {
+    display: table-cell;
+    padding: 8px;
+    word-wrap: break-word;
+  }
+
+  .tl-cell {
+    padding: 8px;
+    border-top: 1px solid #ddd;
+    vertical-align: middle;
+  }
+
+  .table-list-head > ul > li {
+    font-weight: bold;
+  }
+
+  .table-list > .table-list-body > li:nth-child(odd) > .tl-cell {
+    background-color: #F9F9F9;
+  }
+
+  .tl-posts,
+  .tl-users,
+  .tl-views {
+    width: 70px;
+  }
+
+  .tl-activity {
+    width: 110px;
+  }
+
+  .tl-activity .date {
+    display: inline-block;
+    width: 50px;
+    text-align: center;
+    word-wrap: break-word;
+  }
+}
 

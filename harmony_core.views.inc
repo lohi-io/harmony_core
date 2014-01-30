@@ -302,6 +302,8 @@
  * Implements hook_views_plugins().
  */
 function harmony_core_views_plugins() {
+  $module_dir = drupal_get_path('module', 'harmony_core');
+
   return array(
     'module' => 'harmony_core',
     'row' => array(
@@ -322,6 +324,22 @@ function harmony_core_views_plugins() {
       'harmony_post_id' => array(
         'title' => t('Post ID from URL'),
         'handler' => 'harmony_core_views_plugin_argument_default_post'
+      ),
+    ),
+    'style' => array(
+      'harmony_table' => array(
+        'title' => t('Harmony Responsive Table'),
+        'help' => t('Displays rows in a responsive table.'),
+        'handler' => 'harmony_core_views_plugin_style_harmony_table',
+        'theme' => 'views_view_harmony_table',
+        'path' => $module_dir . '/theme',
+        'theme path' => $module_dir . '/theme',
+        'theme file' => 'theme.inc',
+        'uses row plugin' => FALSE,
+        'uses row class' => TRUE,
+        'uses fields' => TRUE,
+        'uses options' => TRUE,
+        'type' => 'normal',
       ),
     ),
   );

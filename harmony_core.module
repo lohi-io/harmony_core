@@ -590,6 +590,7 @@ function harmony_core_menu() {
     'access arguments' => array('create posts'),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
+    'type' => MENU_CALLBACK,
   );
 
   $items['post/%harmony_post'] = array(
@@ -704,19 +705,24 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'render element' => 'elements',
       'template' => 'harmony-thread',
       'path' => $module_dir . '/theme',
-      'file' => 'harmony_core.theme.inc',
+      'file' => 'theme.inc',
     ),
     'harmony_post' => array(
       'render element' => 'elements',
       'template' => 'harmony-post',
       'path' => $module_dir . '/theme',
-      'file' => 'harmony_core.theme.inc',
+      'file' => 'theme.inc',
     ),
     'harmony_post_diff_inline_metadata' => array(
       'arguments' => array(
         'post' => NULL,
       ),
-      'file' => 'harmony_core.theme.inc',
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
+    'harmony_core_views_style_plugin_harmony_table_ui' => array(
+      'render element' => 'form',
+      'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
   );
