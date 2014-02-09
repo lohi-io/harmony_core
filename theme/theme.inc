@@ -303,10 +303,10 @@ function template_preprocess_views_view_harmony_table(&$vars) {
     foreach ($result as $num => $row) {
       // Add field classes
       $vars['field_classes'][$field][$num] = 'tl-cell';
-      if ($options['info'][$column]['meta_field'] === 1) {
+      if (!empty($options['info'][$column]['meta_field']) && $options['info'][$column]['meta_field'] === 1) {
         $vars['field_classes'][$field][$num] .= ' tl-meta';
       }
-      if ($fields[$field]->options['element_default_classes']) {
+      if (!empty($fields[$field]->options['element_default_classes'])) {
         $vars['field_classes'][$field][$num] .= ' views-field views-field-' . $vars['fields'][$field];
       }
       if ($classes = $fields[$field]->element_classes($num)) {
