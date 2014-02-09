@@ -42,13 +42,22 @@ function harmony_core_filter_default_formats() {
           'filter_html_nofollow' => 0,
         ),
       ),
-      'filter_autop' => array(
+      'atjs' => array(
         'weight' => -45,
+        'status' => 1,
+        'settings' => array(
+          'atjs_listeners' => array(
+            'harmony_users' => 'harmony_users',
+          ),
+        ),
+      ),
+      'filter_autop' => array(
+        'weight' => -44,
         'status' => 1,
         'settings' => array(),
       ),
       'filter_url' => array(
-        'weight' => -44,
+        'weight' => -43,
         'status' => 1,
         'settings' => array(
           'filter_url_length' => 72,
