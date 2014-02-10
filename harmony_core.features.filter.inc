@@ -18,17 +18,17 @@ function harmony_core_filter_default_formats() {
     'status' => 1,
     'weight' => 0,
     'filters' => array(
-      'codefilter' => array(
+      'filter_htmlcorrector' => array(
         'weight' => -50,
         'status' => 1,
         'settings' => array(),
       ),
-      'filter_markdown' => array(
+      'codefilter' => array(
         'weight' => -49,
         'status' => 1,
         'settings' => array(),
       ),
-      'filter_htmlcorrector' => array(
+      'filter_markdown' => array(
         'weight' => -48,
         'status' => 1,
         'settings' => array(),

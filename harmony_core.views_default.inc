@@ -1208,25 +1208,16 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
-    'pinned' => 'pinned',
     'title' => 'title',
     'field_harmony_category' => 'field_harmony_category',
     'field_harmony_post_count' => 'field_harmony_post_count',
-    'likes' => 'likes',
+    'picture' => 'picture',
     'views' => 'views',
+    'likes' => 'likes',
     'updated' => 'updated',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
-    'pinned' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-      'cell_class' => '',
-      'meta_field' => 0,
-    ),
     'title' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
@@ -1254,13 +1245,13 @@ function harmony_core_views_default_views() {
       'cell_class' => 'tl-posts',
       'meta_field' => 1,
     ),
-    'likes' => array(
+    'picture' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
-      'cell_class' => 'tl-likes',
+      'cell_class' => 'tl-users',
       'meta_field' => 1,
     ),
     'views' => array(
@@ -1270,6 +1261,15 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
       'cell_class' => 'tl-views',
+      'meta_field' => 1,
+    ),
+    'likes' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-likes',
       'meta_field' => 1,
     ),
     'updated' => array(
@@ -1289,6 +1289,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = 'No threads have been posted.';
   $handler->display->display_options['empty']['area']['format'] = 'plain_text';
+  /* Relationship: Thread: Author */
+  $handler->display->display_options['relationships']['uid']['id'] = 'uid';
+  $handler->display->display_options['relationships']['uid']['table'] = 'harmony_thread';
+  $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   /* Field: Thread: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'harmony_thread';
@@ -1303,18 +1307,36 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['field_harmony_post_count']['table'] = 'field_data_field_harmony_post_count';
   $handler->display->display_options['fields']['field_harmony_post_count']['field'] = 'field_harmony_post_count';
   $handler->display->display_options['fields']['field_harmony_post_count']['label'] = 'Posts';
+  $handler->display->display_options['fields']['field_harmony_post_count']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['field_harmony_post_count']['alter']['text'] = '[field_harmony_post_count]<span class="inline-visible-xs"> posts</span>';
   $handler->display->display_options['fields']['field_harmony_post_count']['settings'] = array(
     'thousand_separator' => ',',
     'prefix_suffix' => 1,
   );
-  /* Field: Thread: Likes */
-  $handler->display->display_options['fields']['likes']['id'] = 'likes';
-  $handler->display->display_options['fields']['likes']['table'] = 'harmony_thread';
-  $handler->display->display_options['fields']['likes']['field'] = 'likes';
+  /* Field: User: Picture */
+  $handler->display->display_options['fields']['picture']['id'] = 'picture';
+  $handler->display->display_options['fields']['picture']['table'] = 'users';
+  $handler->display->display_options['fields']['picture']['field'] = 'picture';
+  $handler->display->display_options['fields']['picture']['relationship'] = 'uid';
+  $handler->display->display_options['fields']['picture']['label'] = 'Author';
+  $handler->display->display_options['fields']['picture']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['picture']['alter']['text'] = '<span class="inline-visible-xs">By </span>[picture]';
+  $handler->display->display_options['fields']['picture']['element_type'] = 'span';
+  $handler->display->display_options['fields']['picture']['element_class'] = 'avatar';
+  $handler->display->display_options['fields']['picture']['element_default_classes'] = FALSE;
+  $handler->display->display_options['fields']['picture']['image_style'] = 'harmony-32-32';
   /* Field: Thread: Views */
   $handler->display->display_options['fields']['views']['id'] = 'views';
   $handler->display->display_options['fields']['views']['table'] = 'harmony_thread';
   $handler->display->display_options['fields']['views']['field'] = 'views';
+  $handler->display->display_options['fields']['views']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['views']['alter']['text'] = '[views]<span class="inline-visible-xs"> Views</span>';
+  /* Field: Thread: Likes */
+  $handler->display->display_options['fields']['likes']['id'] = 'likes';
+  $handler->display->display_options['fields']['likes']['table'] = 'harmony_thread';
+  $handler->display->display_options['fields']['likes']['field'] = 'likes';
+  $handler->display->display_options['fields']['likes']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['likes']['alter']['text'] = '<i class="fa fa-heart"></i> [likes] ';
   /* Field: Thread: Date updated */
   $handler->display->display_options['fields']['updated']['id'] = 'updated';
   $handler->display->display_options['fields']['updated']['table'] = 'harmony_thread';
