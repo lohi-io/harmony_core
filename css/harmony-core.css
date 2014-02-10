@@ -224,6 +224,10 @@ ul.post-links {
     width: 70px;
   }
 
+  .tl-users img {
+    vertical-align: top;
+  }
+
   .tl-activity {
     width: 110px;
   }

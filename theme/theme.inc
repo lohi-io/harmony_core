@@ -283,7 +283,10 @@ function template_preprocess_views_view_harmony_table(&$vars) {
       if (!empty($options['info'][$field]['align'])) {
         $vars['header_classes'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
       }
-
+      // Add a CSS align cell class to each field if one was set.
+      if (!empty($options['info'][$field]['cell_class'])) {
+        $vars['header_classes'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['cell_class']);
+      }
       // Add a header label wrapper if one was selected.
       if ($vars['header'][$field]) {
         $element_label_type = $fields[$field]->element_label_type(TRUE, TRUE);
@@ -294,17 +297,20 @@ function template_preprocess_views_view_harmony_table(&$vars) {
 
     }
 
-    // Add a CSS align class to each field if one was set
-    if (!empty($options['info'][$field]['align'])) {
-      $vars['fields'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
-    }
-
     // Render each field into its appropriate column.
     foreach ($result as $num => $row) {
       // Add field classes
       $vars['field_classes'][$field][$num] = 'tl-cell';
       if (!empty($options['info'][$column]['meta_field']) && $options['info'][$column]['meta_field'] === 1) {
         $vars['field_classes'][$field][$num] .= ' tl-meta';
+      }
+      // Add a CSS align class to each field if one was set.
+      if (!empty($options['info'][$field]['align'])) {
+        $vars['field_classes'][$field][$num] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
+      }
+      // Add a CSS align cell class to each field if one was set.
+      if (!empty($options['info'][$field]['cell_class'])) {
+        $vars['field_classes'][$field][$num] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['cell_class']);
       }
       if (!empty($fields[$field]->options['element_default_classes'])) {
         $vars['field_classes'][$field][$num] .= ' views-field views-field-' . $vars['fields'][$field];

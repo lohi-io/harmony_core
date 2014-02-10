@@ -44,6 +44,36 @@
       'handler' => 'harmony_core_views_handler_thread_field_link_delete',
     ),
   );
+  // Provide taxonomy with representative thread.
+  $data['taxonomy_term_data']['tid_representative_thread'] = array(
+    'relationship' => array(
+      'title' => t('Representative thread'),
+      'label'  => t('Representative thread'),
+      'help' => t('Obtains a single representative thread for each term, according to a chosen sort criterion.'),
+      'handler' => 'views_handler_relationship_groupwise_max',
+      'relationship field' => 'tid',
+      'outer field' => 'taxonomy_term_data.tid',
+      'argument table' => 'taxonomy_term_data',
+      'argument field' =>  'tid',
+      'base'   => 'harmony_thread',
+      'field'  => 'thread_id',
+    ),
+  );
+  // Provide user with representative thread.
+  $data['users']['uid_representative_thread'] = array(
+    'relationship' => array(
+      'title' => t('Representative thread'),
+      'label'  => t('Representative thread'),
+      'help' => t('Obtains a single representative thread for each user, according to a chosen sort criterion.'),
+      'handler' => 'views_handler_relationship_groupwise_max',
+      'relationship field' => 'uid',
+      'outer field' => 'users.uid',
+      'argument table' => 'users',
+      'argument field' =>  'uid',
+      'base'   => 'harmony_thread',
+      'field'  => 'thread_id',
+    ),
+  );
 
   // Override the title field slightly to use our custom views field handler
   // which has the "link to thread" functionality.

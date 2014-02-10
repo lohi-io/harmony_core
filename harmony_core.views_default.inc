@@ -1206,7 +1206,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['pager']['options']['id'] = '0';
   $handler->display->display_options['pager']['options']['quantity'] = '9';
-  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
     'pinned' => 'pinned',
     'title' => 'title',
@@ -1214,8 +1214,7 @@ function harmony_core_views_default_views() {
     'field_harmony_post_count' => 'field_harmony_post_count',
     'likes' => 'likes',
     'views' => 'views',
-    'field_harmony_post_time_first' => 'field_harmony_post_time_first',
-    'field_harmony_post_time_last' => 'field_harmony_post_time_first',
+    'updated' => 'updated',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
@@ -1225,55 +1224,62 @@ function harmony_core_views_default_views() {
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'title' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-left',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'field_harmony_category' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'field_harmony_post_count' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'likes' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'views' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'field_harmony_post_time_first' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => ' ',
-      'empty_column' => 0,
-    ),
-    'field_harmony_post_time_last' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => 'tl-title',
+      'meta_field' => 0,
+    ),
+    'field_harmony_category' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-category',
+      'meta_field' => 1,
+    ),
+    'field_harmony_post_count' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-posts',
+      'meta_field' => 1,
+    ),
+    'likes' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-likes',
+      'meta_field' => 1,
+    ),
+    'views' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-views',
+      'meta_field' => 1,
+    ),
+    'updated' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => 'tl-activity',
+      'meta_field' => 1,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -1283,10 +1289,6 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = 'No threads have been posted.';
   $handler->display->display_options['empty']['area']['format'] = 'plain_text';
-  /* Field: Thread: Pinned */
-  $handler->display->display_options['fields']['pinned']['id'] = 'pinned';
-  $handler->display->display_options['fields']['pinned']['table'] = 'harmony_thread';
-  $handler->display->display_options['fields']['pinned']['field'] = 'pinned';
   /* Field: Thread: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'harmony_thread';
