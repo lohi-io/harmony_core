@@ -45,7 +45,7 @@
     ),
   );
   // Provide taxonomy with representative thread.
-  $data['taxonomy_term_data']['tid_representative_thread'] = array(
+  /*$data['taxonomy_term_data']['tid_representative_thread'] = array(
     'relationship' => array(
       'title' => t('Representative thread'),
       'label'  => t('Representative thread'),
@@ -73,7 +73,7 @@
       'base'   => 'harmony_thread',
       'field'  => 'thread_id',
     ),
-  );
+  );*/
 
   // Override the title field slightly to use our custom views field handler
   // which has the "link to thread" functionality.
