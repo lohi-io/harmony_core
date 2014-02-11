@@ -48,7 +48,9 @@ $links = render($content['links']);
         <?php print $links; ?>
       </div>
       <?php endif; ?>
+      <?php if ($view_mode != 'inline_reply'): ?>
       <div id="post-<?php print $post->post_id; ?>-replies" class="post-replies clearfix"></div>
+    <?php endif; ?>
     </div>
   </div>
 </div>
