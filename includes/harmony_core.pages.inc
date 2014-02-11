@@ -273,6 +273,26 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     '#pre_render' => array('drupal_pre_render_links'),
     '#attributes' => array('class' => array('post-links', 'inline')),
   );
+  // Check for direct replies.
+  if ($view_mode != 'inline_reply' && user_access('access show replies')) {
+    $post_replies = harmony_post_get_replies($post->post_id);
+    if (!empty($post_replies)) {
+      $links['show_replies'] = array(
+        'title' => format_plural(count($post_replies), '1 reply', '@count replies'),
+        'href' => '',
+        'attributes' => array(
+          'id' => "post-$post->post_id-show-replies",
+          'class' => array(
+            'post-show-replies',
+          ),
+          'data-post-id' => $post->post_id,
+        ),
+      );
+      drupal_add_library('system', 'drupal.ajax');
+      drupal_add_js(drupal_get_path('module', 'harmony_core') . '/js/harmony-post.js');
+    }
+  }
+  // Edit link.
   if (harmony_core_post_access_callback('update', $post)) {
     $links['edit'] = array(
       'title' => t('Edit'),
@@ -485,6 +505,26 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
   else {
     return $output;
   }
+}
+
+/**
+ * harmony_core_ajax_post_replies().
+ *
+ * Return rendered HTML list of replies to a particular post.
+ */
+function harmony_core_ajax_post_replies($post, $view_mode = 'full', $langcode = NULL) {
+  $post_replies = views_embed_view(variable_get('harmony_core_post_replies_view', 'harmony_post_replies_to_post'), 'default', $post->post_id);
+
+  return array(
+    '#type' => 'ajax',
+    '#commands' => array(
+      array(
+        'command' => 'harmony_post_show_replies',
+        'selector' => "#post-{$post->post_id}-replies",
+        'data' => $post_replies,
+      ),
+    ),
+  );
 }
 
 /**

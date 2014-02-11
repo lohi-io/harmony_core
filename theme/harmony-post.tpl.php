@@ -48,6 +48,7 @@ $links = render($content['links']);
         <?php print $links; ?>
       </div>
       <?php endif; ?>
+      <div id="post-<?php print $post->post_id; ?>-replies" class="post-replies clearfix"></div>
     </div>
   </div>
 </div>

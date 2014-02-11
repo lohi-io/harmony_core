@@ -479,6 +479,10 @@ function harmony_core_permission() {
       'title' => t('Delete own posts'),
       'description' => t('Allows users to delete own posts.'),
     ),
+    'access show replies' => array(
+      'title' => t('Access the show direct replies link on posts'),
+      'description' => t('Allows access to the show direct replies links on posts.'),
+    ),
   );
 }
 
@@ -680,6 +684,19 @@ function harmony_core_menu() {
     'access arguments' => array('delete', 1),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
+  );
+
+  $items['ajax/post-replies/%harmony_post'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('harmony_post', 2),
+    'page callback' => 'harmony_core_ajax_post_replies',
+    'page arguments' => array(2),
+    'access callback' => 'harmony_core_post_access_callback',
+    'access arguments' => array('view', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+    'type' => MENU_CALLBACK,
+    'delivery callback' => 'ajax_deliver',
   );
 
   // Thread views counter.
@@ -1553,7 +1570,7 @@ function harmony_core_thread_merge_action(&$thread, $context) {
       // Get the first post in the target/new thread.
       // We need to re-assess each time what the first post is.
       $first_post_query = new EntityFieldQuery;
-      $first_post_result = $query
+      $first_post_result = $first_post_query
         ->entityCondition('entity_type', 'harmony_post')
         ->fieldCondition('field_harmony_thread', 'target_id', $context['thread_id'])
         ->propertyOrderBy('created')
@@ -2649,4 +2666,26 @@ function harmony_core_atjs_ajax_results_alter(&$results, $context) {
       }
     }
   }
+}
+
+/**
+ * Get all of the direct replies to a post.
+ *
+ * @param integer $post_id
+ */
+function harmony_post_get_replies($post_id) {
+  $results = array();
+  $reply_posts_query = new EntityFieldQuery;
+  $reply_posts = $reply_posts_query
+    ->entityCondition('entity_type', 'harmony_post')
+    ->fieldCondition('field_harmony_post_is_reply_to', 'target_id', $post_id)
+    ->propertyCondition('status', HARMONY_PUBLISHED)
+    ->propertyOrderBy('created')
+    ->execute();
+
+  if (!empty($reply_posts['harmony_post'])) {
+    $results = array_keys($reply_posts['harmony_post']);
+  }
+
+  return $results;
 }

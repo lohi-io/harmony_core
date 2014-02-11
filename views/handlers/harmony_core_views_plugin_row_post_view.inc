@@ -30,6 +30,8 @@ class harmony_core_views_plugin_row_harmony_post_view extends views_plugin_row {
     if (isset($this->options['build_mode'])) {
       $this->options['view_mode'] = $this->options['build_mode'];
     }
+
+    module_load_include('inc', 'harmony_core', 'includes/harmony_core.pages');
   }
 
   function option_definition() {
