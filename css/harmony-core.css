@@ -47,6 +47,12 @@
   margin-bottom: 20px;
 }
 
+.post-inline-reply {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+}
+
 .post-header {
   margin-bottom: 10px;
 }
