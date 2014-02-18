@@ -1929,6 +1929,25 @@ function harmony_core_post_form($form, &$form_state, $post) {
   // Attach fields.
   field_attach_form('harmony_post', $post, $form, $form_state);
 
+  // Quoting integration with entity_quote.
+  if ($post->is_new && !empty($_GET['quote']) && is_numeric($_GET['quote'])) {
+    $post_to_quote_id = $_GET['quote'];
+    $post_to_quote = entity_load_single('harmony_post', $post_to_quote_id);
+
+    if ($post_to_quote && harmony_core_post_access_callback('view', $post_to_quote)) {
+      $post_to_quote_wrapper = entity_metadata_wrapper('harmony_post', $post_to_quote);
+      $quote_content = $post_to_quote_wrapper->field_harmony_text->value();
+
+      if ($quote_content) {
+        $quote = "[quote post={$post_to_quote_id}]" . $quote_content['value'] . '[/quote]';
+
+        // Set default value.
+        $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'] = $quote . $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'];
+        $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#format'] = 'harmony_filtered';
+      }
+    }
+  }
+
   // Options for administrators
   $form['options'] = array(
     '#type' => 'fieldset',
