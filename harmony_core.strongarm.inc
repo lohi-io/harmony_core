@@ -27,7 +27,20 @@ function harmony_core_strongarm() {
       ),
     ),
     'extra_fields' => array(
-      'form' => array(),
+      'form' => array(
+        'metatags' => array(
+          'weight' => '6',
+        ),
+        'path' => array(
+          'weight' => '5',
+        ),
+        'name' => array(
+          'weight' => '0',
+        ),
+        'description' => array(
+          'weight' => '1',
+        ),
+      ),
       'display' => array(
         'description' => array(
           'default' => array(
