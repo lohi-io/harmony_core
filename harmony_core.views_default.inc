@@ -1373,6 +1373,11 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['status']['value'] = array(
     1 => '1',
   );
+  /* Filter criterion: Thread: Hidden */
+  $handler->display->display_options['filters']['hidden']['id'] = 'hidden';
+  $handler->display->display_options['filters']['hidden']['table'] = 'harmony_thread';
+  $handler->display->display_options['filters']['hidden']['field'] = 'hidden';
+  $handler->display->display_options['filters']['hidden']['value'] = '0';
   $export['harmony_thread_listing'] = $view;
 
   $view = new view();
