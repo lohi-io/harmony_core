@@ -22,3 +22,25 @@ As I'm British, that's the language I've used. Being mindful of those who'd rath
 + Inline entity form
 + Actions & Views bulk operations
 + Metatag module, thread & post.
+
+## How do I use it?
+
+You can add new threads here:
+/thread/add
+
+The default listing of posts can be found here:
+/forum
+
+You can add and alter fields on the Thread entity here:
+/admin/structure/harmony/thread
+
+And post here:
+/admin/structure/harmony/post
+
+## Install notes
+
+jQuery update should be set to use 1.7, there are issues with this however, check the settings here:
+/admin/config/development/jquery_update
+
+If you want to use At.js you will need to download libraries, I refer you to the instructions for that module.
+

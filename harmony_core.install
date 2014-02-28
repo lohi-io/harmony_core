@@ -322,6 +322,9 @@ function harmony_core_schema() {
  * Implements hook_install().
  */
 function harmony_core_install() {
+  if (variable_get('jquery_update_jquery_version', '1.5') == '1.5') {
+    variable_set('jquery_update_jquery_version', '1.7');
+  }
 }
 
 /**
