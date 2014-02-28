@@ -2121,7 +2121,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
     $form_state['redirect'] = "post/$post->post_id";
   }
 
-  if ($post->batch_process) {
+  if (!empty($post->batch_process) && $post->batch_process) {
     batch_process($form_state['redirect']);
   }
 }
