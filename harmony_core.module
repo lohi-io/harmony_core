@@ -36,6 +36,16 @@ define('HARMONY_NOT_LOCKED', 0);
 define('HARMONY_LOCKED', 1);
 
 /**
+ * Thread is not hidden from listings.
+ */
+define('HARMONY_HIDDEN_IN_LIST', 1);
+
+/**
+ * Thread is not hidden from listings.
+ */
+define('HARMONY_NOT_HIDDEN_IN_LIST', 0);
+
+/**
  * Modules should return this value from hook_thread_access() to allow access
  * to a thread or post.
  */
@@ -1264,6 +1274,18 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
     ),
+    'harmony_core_thread_hide_action' => array(
+      'type' => 'harmony_thread',
+      'label' => t('Hide from listings'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
+    'harmony_core_thread_unhide_action' => array(
+      'type' => 'harmony_thread',
+      'label' => t('Unhide from listings'),
+      'configurable' => FALSE,
+      'behavior' => array('changes_property'),
+    ),
     'harmony_core_thread_save_action' => array(
       'type' => 'harmony_thread',
       'label' => t('Save thread'),
@@ -1420,6 +1442,38 @@ function harmony_core_thread_locked_action($thread, $context = array()) {
 function harmony_core_thread_unlock_action($thread, $context = array()) {
   $thread->locked = HARMONY_NOT_LOCKED;
   watchdog('action', 'Unlocked the thread %title.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the hidden property of a thread to 1 (hidden).
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_hide_action($thread, $context = array()) {
+  $thread->hidden = HARMONY_HIDDEN_IN_LIST;
+  watchdog('action', 'Hidden the thread %title.', array('%title' => $thread->title));
+}
+
+/**
+ * Sets the hidden property of a thread to 0 (unhidden).
+ *
+ * @param $thread
+ *   A thread object.
+ * @param $context
+ *   (optional) Array of additional information about what triggered the action.
+ *   Not used for this action.
+ *
+ * @ingroup actions
+ */
+function harmony_core_thread_unhide_action($thread, $context = array()) {
+  $thread->hidden = HARMONY_NOT_HIDDEN_IN_LIST;
+  watchdog('action', 'Unhidden the thread %title.', array('%title' => $thread->title));
 }
 
 /**
@@ -1816,6 +1870,11 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
     '#title' => t('Lock from replies and edits'),
     '#default_value' => $thread->locked,
   );
+  $form['options']['hidden'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide from listings'),
+    '#default_value' => $thread->hidden,
+  );
 
   // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
   $first_post_lang = $form['field_harmony_first_post']['#language'];
@@ -1870,6 +1929,7 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->pinned->set($form_state['values']['pinned']);
   $wrapper->locked->set($form_state['values']['locked']);
+  $wrapper->hidden->set($form_state['values']['hidden']);
 
   field_attach_submit('harmony_thread', $thread, $form, $form_state);
 

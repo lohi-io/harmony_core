@@ -18,6 +18,7 @@ function harmony_core_thread_add() {
     'updated' => REQUEST_TIME,
     'pinned' => THREAD_NOT_PINNED,
     'locked' => HARMONY_NOT_LOCKED,
+    'hidden' => HARMONY_NOT_HIDDEN_IN_LIST,
     'is_new' => TRUE,
   );
 
