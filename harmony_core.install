@@ -61,6 +61,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'hidden' => array(
+        'description' => 'Boolean indicating whether the thread is hidden in listings.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'favourites' => array(
         'description' => 'Number of times that the thread has been favourited.',
         'type' => 'int',

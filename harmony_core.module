@@ -227,6 +227,14 @@ function harmony_core_entity_property_info() {
     'schema field' => 'locked',
     'type' => 'boolean',
   );
+  $thread_properties['hidden'] = array(
+    'label' => t('Hidden'),
+    'description' => t('Whether the thread is hidden in listings.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'hidden',
+    'type' => 'boolean',
+  );
   $thread_properties['favourites'] = array(
     'label' => t('Favourites'),
     'description' => t('Number of times that the thread has been favourited.'),
@@ -2066,6 +2074,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
 function harmony_core_form_taxonomy_form_term_alter(&$form, &$form_state, $form_id) {
   // @todo restrict to only harmony_category vocab, duh.
   $form['field_harmony_thread_count']['#access'] = FALSE;
+  $form['field_harmony_post_count']['#access'] = FALSE;
 }
 
 /**
@@ -2217,7 +2226,7 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
 
         break;
       case 'decrement':
-        $count = $wrapper->{$field}->value() + $value;
+        $count = $wrapper->{$field}->value() - $value;
         $wrapper->{$field}->set($count);
 
         break;

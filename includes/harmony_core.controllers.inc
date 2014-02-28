@@ -78,6 +78,12 @@ class HarmonyThreadController extends EntityAPIController {
         // Increment the category thread count if the thread belongs to a category.
         if ($count_direction && $wrapper->field_harmony_category->value()) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), $count_direction);
+
+          // Also update the post count for categories if not new, as new threads
+          // will have a post count of 0.
+          if (!$entity->is_new) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), $count_direction, $wrapper->field_harmony_post_count->value());
+          }
         }
       }
 
@@ -183,6 +189,11 @@ class HarmonyThreadController extends EntityAPIController {
         // Decrement some thread counts.
         if ($entity->status == HARMONY_PUBLISHED && $wrapper->field_harmony_category->value()) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), 'decrement');
+
+          // Post counts for taxonomy terms as the link will be severed.
+          if ($wrapper->field_harmony_post_count->value() > 0) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), 'decrement', $wrapper->field_harmony_post_count->value());
+          }
         }
 
         // User thread count.
@@ -335,7 +346,15 @@ class HarmonyPostController extends EntityAPIController {
         $wrapper->field_harmony_thread->save();
 
         // Update the post count for the thread.
-        harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
+        if ($entity->is_new) {
+          harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
+
+          // Update the post count if the thread is in a category.
+          if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+            $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id);
+          }
+        }
       }
 
       // Update post counts elsewhere.
@@ -467,6 +486,12 @@ class HarmonyPostController extends EntityAPIController {
           // Update the post count on the thread.
           if ($thread_id) {
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
+
+            // Update the post count if the thread is in a category.
+            if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+              $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
+              harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, 'decrement');
+            }
           }
 
           // Update post count for the user.
