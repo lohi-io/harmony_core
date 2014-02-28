@@ -17,6 +17,7 @@ dependencies[] = entity
 dependencies[] = entity_quote
 dependencies[] = entity_token
 dependencies[] = entityreference
+dependencies[] = entityreference_prepopulate
 dependencies[] = features
 dependencies[] = field_permissions
 dependencies[] = file
