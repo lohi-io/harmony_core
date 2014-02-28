@@ -91,6 +91,7 @@ features[variable][] = pathauto_taxonomy_term_harmony_category_pattern
 features[views_view][] = harmony_administration_posts
 features[views_view][] = harmony_administration_threads
 features[views_view][] = harmony_category_sub_category_listing
+features[views_view][] = harmony_post_replies_to_post
 features[views_view][] = harmony_post_revisions
 features[views_view][] = harmony_thread_administer_posts
 features[views_view][] = harmony_thread_listing
