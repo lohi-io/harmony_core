@@ -462,7 +462,7 @@ class HarmonyPostController extends EntityAPIController {
       }
 
       // As we remove the first post, check the array isn't empty.
-      if (empty($ids)) {
+      if (!empty($ids)) {
         db_delete($this->entityInfo['base table'])
           ->condition($this->idKey, $ids, 'IN')
           ->execute();
