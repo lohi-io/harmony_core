@@ -1430,6 +1430,17 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['hidden']['table'] = 'harmony_thread';
   $handler->display->display_options['filters']['hidden']['field'] = 'hidden';
   $handler->display->display_options['filters']['hidden']['value'] = '0';
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Forum';
+  $handler->display->display_options['path'] = 'forum';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Forum';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
   $export['harmony_thread_listing'] = $view;
 
   $view = new view();
