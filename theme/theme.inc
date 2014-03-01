@@ -417,3 +417,13 @@ function template_preprocess_views_view_harmony_table(&$vars) {
     $vars['caption'] = '';
   }
 }
+
+/**
+ * Views listing header.
+ */
+function theme_harmony_listing_header($variables) {
+  $text = check_plain($variables['link_text']);
+  $attrs = !empty($variables['link_attrs']) && is_array($variables['link_attrs']) ? $variables['link_attrs'] : array();
+
+  return '<div class="harmony-listing-header clearfix text-right">' . l($text, 'thread/add', $attrs) . '</div>';
+}

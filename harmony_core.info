@@ -105,6 +105,7 @@ files[] = includes/harmony_core.pages.inc
 files[] = includes/harmony_core.pathauto.inc
 files[] = includes/harmony_core.context.inc
 files[] = plugins/entityreference/selection/HarmonyThreadSelectionPlugin.class.php
+files[] = views/handlers/harmony_core_views_handler_area_add_thread.inc
 files[] = views/handlers/harmony_core_views_handler_field_reverse_counter.inc
 files[] = views/handlers/harmony_core_views_handler_field_thread_read_history_timestamp.inc
 files[] = views/handlers/harmony_core_views_handler_filter_thread_read_history_timestamp.inc

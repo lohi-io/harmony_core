@@ -760,6 +760,14 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
+    'harmony_listing_header' => array(
+      'variables' => array(
+        'link_text' => NULL,
+        'link_attrs' => NULL,
+      ),
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
   );
 }
 
@@ -1841,6 +1849,11 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
 
   // Attach fields.
   field_attach_form('harmony_thread', $thread, $form, $form_state);
+
+  // Allow category to be preopulated.
+  if (!empty($_GET['field_harmony_category']) && is_numeric($_GET['field_harmony_category'])) {
+    $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $_GET['field_harmony_category'];
+  }
 
   // Options for administrators
   $form['options'] = array(

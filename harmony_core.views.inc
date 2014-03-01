@@ -12,7 +12,15 @@
  * entity API already provides data for our custom entity type.
  */
  function harmony_core_views_data_alter(&$data) {
-  // General fields.
+  // General fields & things.
+  $data['views']['harmony_listing_header'] = array(
+    'title' => t('Harmony listing header'),
+    'help' => t('Listing header which provides a link to add a new thread.'),
+    'area' => array(
+      'handler' => 'harmony_core_views_handler_area_add_thread',
+    ),
+  );
+
   $data['views']['reverse_counter'] = array(
     'title' => t('View result reverse counter'),
     'group' => t('Harmony'),
