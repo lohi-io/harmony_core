@@ -53,6 +53,7 @@ class harmony_core_views_handler_area_add_thread extends views_handler_area {
           );
         }
 
+        drupal_add_css(drupal_get_path('module', 'harmony_core') . '/css/harmony-core.css');
         return theme('harmony_listing_header', array('link_text' => $this->options['link_text'], 'link_attrs' => $attrs));
       }
     }
