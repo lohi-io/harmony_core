@@ -1329,6 +1329,11 @@ function harmony_core_views_default_views() {
       'meta_field' => 1,
     ),
   );
+  /* Header: Global: Harmony listing header */
+  $handler->display->display_options['header']['harmony_listing_header']['id'] = 'harmony_listing_header';
+  $handler->display->display_options['header']['harmony_listing_header']['table'] = 'views';
+  $handler->display->display_options['header']['harmony_listing_header']['field'] = 'harmony_listing_header';
+  $handler->display->display_options['header']['harmony_listing_header']['empty'] = TRUE;
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
