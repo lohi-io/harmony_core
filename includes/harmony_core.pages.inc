@@ -322,7 +322,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
     $links['edit']['query'] = $edit_query;
   }
-  if (user_access('create posts')) {
+  if (user_access('create harmony_posts')) {
     $links['reply'] = array(
       'title' => t('Reply'),
       'href' => 'post/add',
@@ -333,7 +333,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       ),
     );
   }
-  if (user_access('reply as new thread')) {
+  if (user_access('reply as new harmony_thread')) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',

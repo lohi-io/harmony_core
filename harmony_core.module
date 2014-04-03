@@ -90,7 +90,7 @@ function harmony_core_entity_info() {
         'admin' => array(
           'path' => 'admin/structure/harmony/thread',
           'real path' => 'admin/structure/harmony/thread',
-          'access arguments' => array('administer thread entity'),
+          'access arguments' => array('administer harmony_thread entity'),
         ),
       ),
     ),
@@ -126,7 +126,7 @@ function harmony_core_entity_info() {
         'admin' => array(
           'path' => 'admin/structure/harmony/post',
           'real path' => 'admin/structure/harmony/post',
-          'access arguments' => array('administer post entity'),
+          'access arguments' => array('administer harmony_post entity'),
         ),
       ),
     ),
@@ -166,7 +166,7 @@ function harmony_core_entity_info_alter(&$entity_info) {
 }
 
 function harmony_core_post_revision_access($op, $name, $entity = NULL, $account = NULL) {
-  return $op == 'view' ? user_access('view post revisions', $account) || user_access('bypass forum access control', $account) : user_access('administer forum content', $account);
+  return $op == 'view' ? user_access('view harmony_post revisions', $account) || user_access('bypass forum access control', $account) : user_access('administer forum content', $account);
 }
 
 /**
@@ -371,12 +371,12 @@ function harmony_core_permission() {
       'description' => t('Allows users to configure general settings for Harmony.'),
       'restrict access' => TRUE,
     ),
-    'administer thread entity' => array(
+    'administer harmony_thread entity' => array(
       'title' => t('Administer thread entity'),
       'description' => t('Allows users to configure the thread entity type and its fields.'),
       'restrict access' => TRUE,
     ),
-    'administer post entity' => array(
+    'administer harmony_post entity' => array(
       'title' => t('Administer post entity'),
       'description' => t('Allows users to configure the post entity type and its fields.'),
       'restrict access' => TRUE,
@@ -391,109 +391,109 @@ function harmony_core_permission() {
       'description' => t('Allows users to bypass access checks.'),
       'restrict access' => TRUE,
     ),
-    'view threads' => array(
+    'view harmony_threads' => array(
       'title' => t('View threads'),
       'description' => t('Allows users to view threads.'),
     ),
-    'view unpublished threads' => array(
+    'view unpublished harmony_threads' => array(
       'title' => t('View unpublished threads'),
       'description' => t('Allows users to view unpublished threads.'),
     ),
-    'view own unpublished threads' => array(
+    'view own unpublished harmony_threads' => array(
       'title' => t('View own unpublished threads'),
       'description' => t('Allows users to view unpublished threads that they have created.'),
     ),
-    'create threads' => array(
+    'create harmony_threads' => array(
       'title' => t('Create new threads'),
       'description' => t('Allows users to create threads.'),
     ),
-    'reply as new thread' => array(
+    'reply as new harmony_thread' => array(
       'title' => t('Reply as new thread'),
       'description' => t('Allows users to create threads.'),
     ),
-    'edit locked threads' => array(
+    'edit locked harmony_threads' => array(
       'title' => t('Edit locked threads'),
       'description' => t('Allows users to edit locked threads.'),
     ),
-    'edit any thread' => array(
+    'edit any harmony_thread' => array(
       'title' => t('Edit any thread'),
       'description' => t('Allows users to edit any thread.'),
       'restrict access' => TRUE,
     ),
-    'edit own threads' => array(
+    'edit own harmony_threads' => array(
       'title' => t('Edit own threads'),
       'description' => t('Allows users to edit their own threads.'),
       'restrict access' => TRUE,
     ),
-    'delete any thread' => array(
+    'delete any harmony_thread' => array(
       'title' => t('Delete any thread'),
       'description' => t('Allows users to delete any threads.'),
       'restrict access' => TRUE,
     ),
-    'delete own threads' => array(
+    'delete own harmony_threads' => array(
       'title' => t('Delete own threads'),
       'description' => t('Allows users to delete own threads.'),
     ),
-    'view posts' => array(
+    'view harmony_posts' => array(
       'title' => t('View posts'),
       'description' => t('Allows users to view posts.'),
     ),
-    'view unpublished posts' => array(
+    'view unpublished harmony_posts' => array(
       'title' => t('View unpublished posts'),
       'description' => t('Allows users to view unpublished posts.'),
     ),
-    'view own unpublished posts' => array(
+    'view own unpublished harmony_posts' => array(
       'title' => t('View own unpublished posts'),
       'description' => t('Allows users to view unpublished posts that they have created.'),
     ),
-    'view post revisions' => array(
+    'view harmony_post revisions' => array(
       'title' => t('View post revisions'),
       'description' => t('Allows users to view a posts revisions.'),
     ),
-    'revert any post revisions' => array(
+    'revert any harmony_post revisions' => array(
       'title' => t('Revert any post revisions'),
       'description' => t('Allows users to revert any post revisions.'),
     ),
-    'delete any post revisions' => array(
+    'delete any harmony_post revisions' => array(
       'title' => t('Delete any post revisions'),
       'description' => t('Allows users to delete any post revisions.'),
     ),
-    'view own post revisions' => array(
+    'view own harmony_post revisions' => array(
       'title' => t('View own post revisions'),
       'description' => t('Allows users to view their own posts revisions.'),
     ),
-    'revert own post revisions' => array(
+    'revert own harmony_post revisions' => array(
       'title' => t('Revert own post revisions'),
       'description' => t('Allows users to revert their own post revisions.'),
     ),
-    'delete own post revisions' => array(
+    'delete own harmony_post revisions' => array(
       'title' => t('Delete own post revisions'),
       'description' => t('Allows users to delete their own post revisions.'),
     ),
-    'create posts' => array(
+    'create harmony_posts' => array(
       'title' => t('Create new posts'),
       'description' => t('Allows users to create posts.'),
     ),
-    'edit locked posts' => array(
+    'edit locked harmony_posts' => array(
       'title' => t('Edit locked posts'),
       'description' => t('Allows users to edit locked posts.'),
     ),
-    'edit any post' => array(
+    'edit any harmony_post' => array(
       'title' => t('Edit any post'),
       'description' => t('Allows users to edit any post.'),
       'restrict access' => TRUE,
     ),
-    'edit own posts' => array(
+    'edit own harmony_posts' => array(
       'title' => t('Edit own posts'),
       'description' => t('Allows users to edit their own posts.'),
       'restrict access' => TRUE,
     ),
-    'delete any post' => array(
+    'delete any harmony_post' => array(
       'title' => t('Delete any post'),
       'description' => t('Allows users to delete any posts.'),
       'restrict access' => TRUE,
     ),
-    'delete own posts' => array(
+    'delete own harmony_posts' => array(
       'title' => t('Delete own posts'),
       'description' => t('Allows users to delete own posts.'),
     ),
@@ -524,7 +524,7 @@ function harmony_core_menu() {
 
   $items['admin/structure/harmony/thread'] = array(
     'title' => 'Thread settings',
-    'access arguments' => array('administer thread entity'),
+    'access arguments' => array('administer harmony_thread entity'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_thread_entity_form'),
     'file' => 'harmony_core.admin.inc',
@@ -540,7 +540,7 @@ function harmony_core_menu() {
 
   $items['admin/structure/harmony/post'] = array(
     'title' => 'Post settings',
-    'access arguments' => array('administer post entity'),
+    'access arguments' => array('administer harmony_post entity'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_post_entity_form'),
     'file' => 'harmony_core.admin.inc',
@@ -558,7 +558,7 @@ function harmony_core_menu() {
   $items['thread/add'] = array(
     'title' => 'Create thread',
     'page callback' => 'harmony_core_thread_add',
-    'access arguments' => array('create threads'),
+    'access arguments' => array('create harmony_threads'),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );
@@ -609,7 +609,7 @@ function harmony_core_menu() {
   $items['post/add'] = array(
     'title' => 'Create post',
     'page callback' => 'harmony_core_post_add',
-    'access arguments' => array('create posts'),
+    'access arguments' => array('create harmony_posts'),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
     'type' => MENU_CALLBACK,
@@ -1020,15 +1020,25 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
     $wrapper = entity_metadata_wrapper($entity_type, $entity);
 
     if ($wrapper->field_harmony_thread->value()) {
-      $thread = harmony_thread_load($wrapper->field_harmony_thread->value());
+      $thread = harmony_thread_load($wrapper->field_harmony_thread->thread_id->value());
 
-      if (harmony_core_thread_access_callback('view', $thread, $account) != HARMONY_ACCESS_ALLOW) {
+      // Access functions will return a boolean value.
+      if (harmony_core_thread_access_callback('view', $thread, $account) != TRUE) {
         $access = HARMONY_ACCESS_DENY;
+      }
+      else {
+        $access = HARMONY_ACCESS_ALLOW;
       }
     }
   }
 
   // The user should have access to view the thread.
+  if ($access === HARMONY_ACCESS_ALLOW) {
+    $rights[$account->uid][$cid][$op] = TRUE;
+    return TRUE;
+  }
+
+  // Or no they shouldn't.
   if ($access === HARMONY_ACCESS_DENY) {
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
@@ -1047,9 +1057,9 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
   $rights = &drupal_static(__FUNCTION__, array());
 
   $map = array(
-    'view' => 'view post revisions',
-    'update' => 'revert any post revisions',
-    'delete' => 'delete any post revisions',
+    'view' => 'view harmony_post revisions',
+    'update' => 'revert any harmony_post revisions',
+    'delete' => 'delete any harmony_post revisions',
   );
 
   if (!$post || !isset($map[$op])) {
@@ -1116,9 +1126,9 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
 
   // We're on to the path of $op "own", or more custom access control.
   $own_map = array(
-    'view' => 'view own post revisions',
-    'update' => 'revert own post revisions',
-    'delete' => 'delete own post revisions',
+    'view' => 'view own harmony_post revisions',
+    'update' => 'revert own harmony_post revisions',
+    'delete' => 'delete own harmony_post revisions',
   );
 
   if (user_access($own_map[$op], $account) && $post->uid === $account->uid) {

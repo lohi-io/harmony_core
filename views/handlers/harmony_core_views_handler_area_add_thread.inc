@@ -42,7 +42,7 @@ class harmony_core_views_handler_area_add_thread extends views_handler_area {
   function render($empty = FALSE) {
     if (!empty($this->options['link_text'])) {
       // @todo harmony_access stuff.
-      if (user_access('create threads')) {
+      if (user_access('create harmony_threads')) {
         // @todo this should grab tid value from view object.
         $attrs = array();
         if (arg(0) === 'taxonomy' && arg(1) === 'term' && is_numeric(arg(2))) {
