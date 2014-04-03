@@ -131,7 +131,7 @@ function harmony_core_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_harmony_last_user_to_reply',
     'field_permissions' => array(
-      'type' => 2,
+      'type' => 0,
     ),
     'foreign keys' => array(
       'users' => array(
@@ -331,7 +331,7 @@ function harmony_core_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_harmony_thread_cont_from',
     'field_permissions' => array(
-      'type' => 2,
+      'type' => 0,
     ),
     'foreign keys' => array(
       'harmony_post' => array(
@@ -375,7 +375,7 @@ function harmony_core_field_default_field_bases() {
     'entity_types' => array(),
     'field_name' => 'field_harmony_thread_count',
     'field_permissions' => array(
-      'type' => 2,
+      'type' => 0,
     ),
     'foreign keys' => array(),
     'indexes' => array(),
