@@ -336,7 +336,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   if (user_access('reply as new thread')) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
-      'href' => 'post/add',
+      'href' => 'thread/add',
       'attributes' => array('title' => t('Create a new thread as a reply to this post')),
       'query' => array(
         'field_harmony_thread_cont_from' => $post->post_id,
