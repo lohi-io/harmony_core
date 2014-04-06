@@ -54,21 +54,30 @@ class HarmonyThreadController extends EntityAPIController {
 
       $entity->batch_process = FALSE;
 
-      // Update counts.
+      // Hold on to your bootstraps! Lets update some counts.
+      // Only act if either we're dealing with a new entity, or if the
+      // published status has changed on an existing entity.
       $count_direction = NULL;
       if ($entity->is_new && $entity->status == HARMONY_PUBLISHED || !$entity->is_new && $entity->status != $entity->original->status) {
         // Determine the direction.
+        // Increment will be a new entity or an entity that was previously
+        // unpublished and is now published.
         if (
           $entity->is_new && $entity->status == HARMONY_PUBLISHED ||
           !$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED
         ) {
           $count_direction = 'increment';
         }
+        // Decrement, a pre-existing entity that's become unpublished.
+        // Pre-existing only as if it hasn't existed before, it won't
+        // have effected the count.
         elseif (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
           $count_direction = 'decrement';
         }
 
-        // Thread counts.
+        // Thread counts, act if we're incrementing or decrementing, it's
+        // possible that we won't do anything, in which case nothing
+        // should change.
         if ($count_direction) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, $count_direction);
         }
@@ -87,6 +96,9 @@ class HarmonyThreadController extends EntityAPIController {
         }
       }
 
+      // Lot's of things should flow down from the thread to its posts,
+      // this is where we compile the things that have changed and will
+      // be applied en masse.
       $post_properties_to_change = array();
       // If a thread title is changed, so should its posts.
       if (!$entity->is_new && $entity->title !== $entity->original->title) {
@@ -129,7 +141,7 @@ class HarmonyThreadController extends EntityAPIController {
         }
       }
 
-      // Update path alias.
+      // Update path alias for the thread.
       module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
       harmony_core_thread_update_alias($entity, $op);
 
@@ -331,13 +343,19 @@ class HarmonyPostController extends EntityAPIController {
         if (module_exists('harmony_access')) {
           // Update the post access table for this post.
           // @see node_save().
-          //harmont_access_acquire_grants($post, FALSE);
+          //harmony_access_acquire_grants($post, FALSE);
         }
       }
 
       // Update some details on the thread.
       if ($wrapper->field_harmony_thread->value()) {
         $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+      }
+      else {
+        $thread_id = NULL;
+      }
+
+      if ($thread_id) {
         // Set who last updated the thread.
         $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
         // Set the last time the thread was updated.
@@ -356,9 +374,39 @@ class HarmonyPostController extends EntityAPIController {
         }
       }
 
-      // Update post counts elsewhere.
-      if ($entity->is_new) {
-        harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid);
+
+
+
+
+      // Update counts.
+      $count_direction = NULL;
+      if ($entity->is_new && $entity->status == HARMONY_PUBLISHED || !$entity->is_new && $entity->status != $entity->original->status) {
+        // Determine the direction.
+        if (
+          $entity->is_new && $entity->status == HARMONY_PUBLISHED ||
+          !$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED
+        ) {
+          $count_direction = 'increment';
+        }
+        elseif (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
+          $count_direction = 'decrement';
+        }
+
+        // User count.
+        if ($count_direction) {
+          // Thread count.
+          if ($thread_id) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, $count_direction);
+          }
+
+          harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, $count_direction);
+        }
+
+        // Increment the category thread count if the thread belongs to a category.
+        if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+          $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
+          harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, $count_direction);
+        }
       }
 
       // Ignore slave server temporarily.
