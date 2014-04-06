@@ -78,6 +78,10 @@ class HarmonyThreadController extends EntityAPIController {
         // Thread counts, act if we're incrementing or decrementing, it's
         // possible that we won't do anything, in which case nothing
         // should change.
+        // In the case where a thread is being unpublished, it's posts will
+        // be too. We don't do anything as on unpublish of each post the
+        // users post count will be decremented, so we only do the thread
+        // count here.
         if ($count_direction) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, $count_direction);
         }
