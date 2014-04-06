@@ -16,7 +16,7 @@ function harmony_core_thread_add() {
     'status' => HARMONY_PUBLISHED,
     'created' => REQUEST_TIME,
     'updated' => REQUEST_TIME,
-    'pinned' => THREAD_NOT_PINNED,
+    'pinned' => HARMONY_NOT_PINNED,
     'locked' => HARMONY_NOT_LOCKED,
     'hidden' => HARMONY_NOT_HIDDEN,
     'is_new' => TRUE,
@@ -251,6 +251,8 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   $post->content = array();
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
   $thread_id = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->thread_id->value() : NULL;
+  // Load of this will be cached.
+  $thread_properties = $thread_id ? harmony_core_thread_get_properties($thread_id) : array();
 
   // Allow modules to change the view mode.
   $context = array(
@@ -295,7 +297,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     }
   }
   // Edit link.
-  if (harmony_core_post_access_callback('update', $post)) {
+  if (!empty($thread_properties) && !$thread_properties['is_locked'] && harmony_core_post_access_callback('update', $post)) {
     $links['edit'] = array(
       'title' => t('Edit'),
       'href' => "post/$post->post_id/edit",
@@ -323,7 +325,9 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
     $links['edit']['query'] = $edit_query;
   }
-  if (user_access('create harmony_posts')) {
+  // Reply links.
+  // Only show if this thread is open.
+  if (!empty($thread_properties) && $thread_properties['can_post_in'] && user_access('create harmony_posts')) {
     $links['reply'] = array(
       'title' => t('Reply'),
       'href' => 'post/add',

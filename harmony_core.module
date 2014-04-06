@@ -18,12 +18,12 @@ define('HARMONY_PUBLISHED', 1);
 /**
  * Thread is not pinned.
  */
-define('THREAD_NOT_PINNED', 0);
+define('HARMONY_NOT_PINNED', 0);
 
 /**
  * Thread is pinned at the top of listings.
  */
-define('THREAD_PINNED', 1);
+define('HARMONY_PINNED', 1);
 
 /**
  * Thread is not locked.
@@ -1418,7 +1418,7 @@ function harmony_core_thread_unpublish_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_make_pinned_action($thread, $context = array()) {
-  $thread->pinned = THREAD_PINNED;
+  $thread->pinned = HARMONY_PINNED;
   watchdog('action', 'Set thread %title to pinned.', array('%title' => $thread->title));
 }
 
@@ -1434,7 +1434,7 @@ function harmony_core_thread_make_pinned_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_make_unpinned_action($thread, $context = array()) {
-  $thread->pinned = THREAD_NOT_PINNED;
+  $thread->pinned = HARMONY_NOT_PINNED;
   watchdog('action', 'Set thread %title to unpinned.', array('%title' => $thread->title));
 }
 
@@ -2439,6 +2439,49 @@ function harmony_core_thread_mark($thread_id, $timestamp) {
   }
 
   return MARK_READ;
+}
+
+/**
+ * Gets a threads properties e.g. status, locked, hidden.
+ *
+ * @param $thread_id
+ *   A harmony_core_thread ID.
+ *
+ * @return
+ *   An array of properties, empty if the thread cannot be loaded.
+ */
+function harmony_core_thread_get_properties($thread_id, $thread = NULL) {
+  $thread_properties = &drupal_static(__FUNCTION__, array());
+
+  if (!isset($thread_properties[$thread_id])) {
+    if (!$thread) {
+      $thread = harmony_thread_load($thread_id);
+    }
+
+    if ($thread) {
+      $thread_properties[$thread_id] = array(
+        'status' => $thread->status,
+        'created' => $thread->created,
+        'updated' => $thread->updated,
+        'pinned' => $thread->pinned,
+        'locked' => $thread->locked,
+        'hidden' => $thread->hidden,
+        'favourites' => $thread->favourites,
+        'likes' => $thread->likes,
+        'views' => $thread->views,
+        'is_published' => $thread->status == HARMONY_PUBLISHED,
+        'is_pinned' => $thread->pinned == HARMONY_PINNED,
+        'is_locked' => $thread->locked == HARMONY_LOCKED,
+        'is_hidden' => $thread->hidden == HARMONY_HIDDEN,
+        'can_post_in' => $thread->status == HARMONY_PUBLISHED && $thread->locked == HARMONY_NOT_LOCKED && $thread->hidden == HARMONY_NOT_HIDDEN,
+      );
+    }
+    else {
+      $thread_properties[$thread_id] = array();
+    }
+  }
+
+  return $thread_properties[$thread_id];
 }
 
 function harmony_core_mass_update($type, $entities, $op, $properties = array(), $batch_title = NULL) {

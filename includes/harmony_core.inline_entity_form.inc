@@ -61,7 +61,9 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
 
       if ($wrapper->field_harmony_thread->value()) {
         // Prevent users from editing within a locked thread.
-        if ($wrapper->field_harmony_thread->locked->value()) {
+        $thread = harmony_thread_load($wrapper->field_harmony_thread->thread_id->value());
+
+        if ($thread->locked == HARMONY_LOCKED && !harmony_core_thread_access_callback('update', $thread)) {
           drupal_access_denied();
         }
       }

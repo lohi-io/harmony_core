@@ -28,12 +28,12 @@ class harmony_core_context_condition_thread extends context_condition {
       'pinned_true' => array(
         'title' => t('Pinned threads'),
         'property' => 'pinned',
-        'value' => THREAD_PINNED,
+        'value' => HARMONY_PINNED,
       ),
       'pinned_false' => array(
         'title' => t('Not pinned threads'),
         'property' => 'pinned',
-        'value' => THREAD_NOT_PINNED,
+        'value' => HARMONY_NOT_PINNED,
       ),
       'locked_true' => array(
         'title' => t('Locked threads'),
