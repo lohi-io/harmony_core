@@ -109,6 +109,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     if ($post->is_new) {
       $wrapper->first_post->set(TRUE);
     }
+    $wrapper->title->set($form_state['values']['title']);
     $wrapper->status->set($form_state['values']['status']);
     $wrapper->locked->set($form_state['values']['locked']);
 

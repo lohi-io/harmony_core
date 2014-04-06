@@ -281,6 +281,7 @@ class HarmonyPostController extends EntityAPIController {
       }
 
       $this->invoke('presave', $entity);
+      $wrapper = entity_metadata_wrapper('harmony_post', $entity);
 
       if ($entity->is_new) {
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
@@ -294,8 +295,19 @@ class HarmonyPostController extends EntityAPIController {
       else {
         // Update the base table if the entity doesn't have revisions or
         // we are updating the default revision.
-        $entity->is_new_revision = TRUE;
         $entity->default_revision = TRUE;
+
+        // Bear in mind the second save for a first post in a thread, the scond
+        // save occurs to set the thread entity reference field, we don't want
+        // a new revision for this save.
+        $entity->is_new_revision = TRUE;
+        if (!empty($entity->original)) {
+          $original_post_wrapper = entity_metadata_wrapper('harmony_post', $entity->original);
+
+          if (!$original_post_wrapper->field_harmony_thread->value() && $wrapper->field_harmony_thread->value()) {
+            $entity->is_new_revision = FALSE;
+          }
+        }
 
         if (!$this->revisionKey || !empty($entity->{$this->defaultRevisionKey})) {
           $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
@@ -324,7 +336,6 @@ class HarmonyPostController extends EntityAPIController {
       }
 
       // Update some details on the thread.
-      $wrapper = entity_metadata_wrapper('harmony_post', $entity);
       if ($wrapper->field_harmony_thread->value()) {
         $thread_id = $wrapper->field_harmony_thread->thread_id->value();
         // Set who last updated the thread.

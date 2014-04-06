@@ -1967,7 +1967,6 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   // Set various bits of data on the first post.
   // Other values are set in HarmonyPostInlineEntityFormController::entityFormSubmit().
   if ($is_new && $wrapper->field_harmony_first_post->value()) {
-    $wrapper->field_harmony_first_post->title->set($thread->title);
     $wrapper->field_harmony_first_post->field_harmony_thread->set($thread->thread_id);
     $wrapper->field_harmony_first_post->save();
   }
