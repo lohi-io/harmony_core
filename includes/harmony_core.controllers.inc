@@ -235,7 +235,7 @@ class HarmonyThreadController extends EntityAPIController {
         field_attach_delete($this->entityType, $entity);
 
         // Delete path alias.
-        pathauto_entity_path_delete_all('harmony_thread', $thread, "thread/{$thread->thread_id}");
+        pathauto_entity_path_delete_all('harmony_thread', $entity, "thread/{$entity->thread_id}");
 
         // Return the entity.
         return $entity;

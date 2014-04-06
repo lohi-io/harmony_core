@@ -2474,7 +2474,7 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
       $save_function = "{$type}_save";
       $save_function($entity);
 
-      break;
+      return $entity;
 
     case 'delete':
       $delete_function = "{$type}_delete";
@@ -2482,8 +2482,6 @@ function _harmony_core_mass_update_helper($type, $entity_id, $op, $properties) {
 
       break;
   }
-
-  return $entity;
 }
 
 /**
