@@ -201,18 +201,6 @@ class HarmonyThreadController extends EntityAPIController {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, 'decrement');
         }
 
-        // Unpublish and delete the posts in the thread.
-        // Also remove the first_post flag.
-        $unpublish_query = "UPDATE {harmony_post} AS hp
-        INNER JOIN {field_data_field_harmony_thread} as fdfht
-        SET hp.status = :unpublished, hp.first_post = '0'
-        WHERE fdfht.entity_type = 'harmony_post'
-        AND fdfht.field_harmony_thread_target_id = :thread_id";
-        db_query($unpublish_query, array(
-          ':unpublished' => HARMONY_NOT_PUBLISHED,
-          ':thread_id' => $id,
-        ));
-
         // Delete.
         $query = new EntityFieldQuery;
         $query_result = $query
@@ -456,8 +444,21 @@ class HarmonyPostController extends EntityAPIController {
       // Prevent any first posts in a thread getting deleted.
       foreach ($ids as $k => $entity_id) {
         if ($entities[$entity_id]->first_post) {
-          unset($ids[$k]);
-          unset($entities[$entity_id]);
+          $first_post_wrapper = entity_metadata_wrapper('harmony_post', $entities[$entity_id]);
+
+          // Attempt to load the thread, if we can then do not allow
+          // this node to be deleted.
+          if (!$first_post_wrapper->field_harmony_thread->value()) {
+            continue;
+          }
+          else {
+            $thread_id = $first_post_wrapper->field_harmony_thread->thread_id->value();
+
+            if (harmony_thread_load($thread_id)) {
+              unset($ids[$k]);
+              unset($entities[$entity_id]);
+            }
+          }
         }
       }
 
