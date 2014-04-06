@@ -355,28 +355,14 @@ class HarmonyPostController extends EntityAPIController {
         $thread_id = NULL;
       }
 
+      // If we're attached to a thread, update some things!
       if ($thread_id) {
         // Set who last updated the thread.
         $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
         $wrapper->field_harmony_thread->save();
-
-        // Update the post count for the thread.
-        if ($entity->is_new) {
-          harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id);
-
-          // Update the post count if the thread is in a category.
-          if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
-            $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
-            harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id);
-          }
-        }
       }
-
-
-
-
 
       // Update counts.
       $count_direction = NULL;
@@ -399,13 +385,15 @@ class HarmonyPostController extends EntityAPIController {
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, $count_direction);
           }
 
+          // Users post count.
           harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, $count_direction);
-        }
 
-        // Increment the category thread count if the thread belongs to a category.
-        if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
-          $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
-          harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, $count_direction);
+          // Increment the category thread count if the thread belongs to a category.
+          // @todo this makes stuff blow up for some reason.
+          /*if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+            $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, $count_direction);
+          }*/
         }
       }
 
