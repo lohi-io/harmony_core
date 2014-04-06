@@ -36,14 +36,14 @@ define('HARMONY_NOT_LOCKED', 0);
 define('HARMONY_LOCKED', 1);
 
 /**
- * Thread is not hidden from listings.
+ * Thread is hidden.
  */
-define('HARMONY_HIDDEN_IN_LIST', 1);
+define('HARMONY_HIDDEN', 1);
 
 /**
- * Thread is not hidden from listings.
+ * Thread is not hidden.
  */
-define('HARMONY_NOT_HIDDEN_IN_LIST', 0);
+define('HARMONY_NOT_HIDDEN', 0);
 
 /**
  * Modules should return this value from hook_thread_access() to allow access
@@ -327,6 +327,14 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'setter permission' => 'administer forum content',
     'schema field' => 'locked',
+    'type' => 'boolean',
+  );
+  $post_properties['hidden'] = array(
+    'label' => t('Hidden'),
+    'description' => t('Whether the post is hidden.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer forum content',
+    'schema field' => 'hidden',
     'type' => 'boolean',
   );
   $post_properties['replies'] = array(
@@ -1474,7 +1482,7 @@ function harmony_core_thread_unlock_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_hide_action($thread, $context = array()) {
-  $thread->hidden = HARMONY_HIDDEN_IN_LIST;
+  $thread->hidden = HARMONY_HIDDEN;
   watchdog('action', 'Hidden the thread %title.', array('%title' => $thread->title));
 }
 
@@ -1490,7 +1498,7 @@ function harmony_core_thread_hide_action($thread, $context = array()) {
  * @ingroup actions
  */
 function harmony_core_thread_unhide_action($thread, $context = array()) {
-  $thread->hidden = HARMONY_NOT_HIDDEN_IN_LIST;
+  $thread->hidden = HARMONY_NOT_HIDDEN;
   watchdog('action', 'Unhidden the thread %title.', array('%title' => $thread->title));
 }
 

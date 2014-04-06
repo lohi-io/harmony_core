@@ -118,13 +118,14 @@ class HarmonyThreadController extends EntityAPIController {
         $post_properties_to_change['locked'] = HARMONY_NOT_LOCKED;
       }
 
-      // If a thread becomes unpublished this should also flow through to the posts.
+      // If a thread becomes unpublished then we hide the posts from the site.
+      // This means that post counts can remain the same for threads
       if (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
-        $post_properties_to_change['status'] = HARMONY_NOT_PUBLISHED;
+        $post_properties_to_change['hidden'] = HARMONY_HIDDEN;
       }
       // Thread is now published, publish posts.
       elseif (!$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED) {
-        $post_properties_to_change['status'] = HARMONY_PUBLISHED;
+        $post_properties_to_change['hidden'] = HARMONY_NOT_HIDDEN;
       }
 
       // If changes are desired for a threads posts, do it!
@@ -370,22 +371,32 @@ class HarmonyPostController extends EntityAPIController {
 
       // Update counts.
       $count_direction = NULL;
-      if ($entity->is_new && $entity->status == HARMONY_PUBLISHED || !$entity->is_new && $entity->status != $entity->original->status) {
+      // The hidden flag has a different purpose for posts than it does threads.
+      // A post becomes hidden because it's parent thread is unpublished, using
+      // the hidden flag allows the thread to retain it's post count (which it
+      // should as the posts are still technically active). This is the only
+      // time when hidden is used, it is not exposed on any forms.
+      $hidden_changed = !$entity->is_new && $entity->hidden != $entity->original->hidden;
+      if ($entity->is_new && $entity->status == HARMONY_PUBLISHED || !$entity->is_new && $entity->status != $entity->original->status || $hidden_changed) {
         // Determine the direction.
         if (
           $entity->is_new && $entity->status == HARMONY_PUBLISHED ||
-          !$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED
+          !$entity->is_new && $entity->status == HARMONY_PUBLISHED && $entity->original->status == HARMONY_NOT_PUBLISHED ||
+          !$entity->is_new && $entity->hidden == HARMONY_NOT_HIDDEN && $entity->original->hidden == HARMONY_HIDDEN
         ) {
           $count_direction = 'increment';
         }
-        elseif (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
+        elseif (
+          !$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED ||
+          !$entity->is_new && $entity->status == HARMONY_HIDDEN && $entity->original->status == HARMONY_NOT_HIDDEN
+        ) {
           $count_direction = 'decrement';
         }
 
         // User count.
         if ($count_direction) {
           // Thread count.
-          if ($thread_id) {
+          if ($thread_id && !$hidden_changed) {
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, $count_direction);
           }
 

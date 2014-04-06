@@ -193,6 +193,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'hidden' => array(
+        'description' => 'Whether the post is hidden.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'replies' => array(
         'description' => 'Number of times that the post has been replied to.',
         'type' => 'int',
@@ -211,6 +217,7 @@ function harmony_core_schema() {
       'created' => array('created'),
       'updated' => array('updated'),
       'locked' => array('locked'),
+      'hidden' => array('hidden'),
       'replies' => array('replies'),
       'uid' => array('uid'),
     ),
@@ -281,6 +288,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'hidden' => array(
+        'description' => 'Whether the post is hidden.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'replies' => array(
         'description' => 'Number of times that the post has been replied to.',
         'type' => 'int',
@@ -299,6 +312,7 @@ function harmony_core_schema() {
       'status' => array('status'),
       'timestamp' => array('timestamp'),
       'locked' => array('locked'),
+      'hidden' => array('hidden'),
       'replies' => array('replies'),
       'uid' => array('uid'),
     ),

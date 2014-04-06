@@ -18,7 +18,7 @@ function harmony_core_thread_add() {
     'updated' => REQUEST_TIME,
     'pinned' => THREAD_NOT_PINNED,
     'locked' => HARMONY_NOT_LOCKED,
-    'hidden' => HARMONY_NOT_HIDDEN_IN_LIST,
+    'hidden' => HARMONY_NOT_HIDDEN,
     'is_new' => TRUE,
   );
 
@@ -161,7 +161,7 @@ function harmony_thread_delete_confirm_submit($form, &$form_state) {
     $thread = harmony_thread_load($form_state['values']['thread_id']);
     $deleted_thread = harmony_thread_delete($thread->thread_id);
 
-    if ($deleted_thread->batch_process) {
+    if (!empty($deleted_thread->batch_process) && $deleted_thread->batch_process) {
       // The delete process can result in batch operations for deleting
       // a posts thread, process!
       batch_process('<front>');
@@ -185,6 +185,7 @@ function harmony_core_post_add() {
     'created' => REQUEST_TIME,
     'updated' => REQUEST_TIME,
     'locked' => HARMONY_NOT_LOCKED,
+    'hidden' => HARMONY_NOT_HIDDEN,
     'is_new' => TRUE,
   );
 
