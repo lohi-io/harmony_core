@@ -36,9 +36,8 @@ class HarmonyThreadSelectionPlugin extends EntityReference_SelectionHandler_Gene
     // modules in use on the site. As long as one access control module is there,
     // it is supposed to handle this check.
     if ((!user_access('bypass forum access control') || !user_access('administer forum content')) && !count(module_implements('harmony_thread_grants'))) {
-      $base_table = $this->ensureBaseTable($query);
-      $query->condition("$base_table.status", HARMONY_PUBLISHED);
-      $query->condition("$base_table.locked", HARMONY_NOT_LOCKED);
+      $query->propertyCondition('status', HARMONY_PUBLISHED);
+      $query->propertyCondition('locked', HARMONY_NOT_LOCKED);
     }
 
     // Add the sort option.
