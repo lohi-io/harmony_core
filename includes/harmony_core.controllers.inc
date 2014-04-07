@@ -314,15 +314,33 @@ class HarmonyPostController extends EntityAPIController {
         // we are updating the default revision.
         $entity->default_revision = TRUE;
 
-        // Bear in mind the second save for a first post in a thread, the scond
-        // save occurs to set the thread entity reference field, we don't want
-        // a new revision for this save.
-        $entity->is_new_revision = TRUE;
+        // Only save a new revision if certain fields have been changed.
+        $entity->is_new_revision = FALSE;
         if (!empty($entity->original)) {
           $original_post_wrapper = entity_metadata_wrapper('harmony_post', $entity->original);
 
-          if (!$original_post_wrapper->field_harmony_thread->value() && $wrapper->field_harmony_thread->value()) {
-            $entity->is_new_revision = FALSE;
+          $trigger_fields = variable_get('harmony_core_post_revision_tigger_fields', array('field_harmony_text' => 'value'));
+
+          if (!empty($trigger_fields) && is_array($trigger_fields)) {
+            foreach ($trigger_fields as $field => $index) {
+              $original = $original_post_wrapper->{$field}->value();
+              $current = $wrapper->{$field}->value();
+
+              // If a specific index is specified use it, otherwise assume
+              // that the returned data should be compared.
+              if ($index != '' && isset($original[$index])) {
+                $original = $original[$index];
+                $current = $current[$index];
+              }
+
+              if ($original != $current) {
+                $entity->is_new_revision = TRUE;
+                break;
+              }
+            }
+          }
+          else {
+            watchdog('harmony_core', "Somehow an invalid value has gotten into the variable %var_name. This will prevent harmony_core from figuring out when new post revisions shouldn't be saved.", array('%var_name' => 'harmony_core_post_revision_tigger_fields'));
           }
         }
 
