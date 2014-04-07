@@ -924,9 +924,6 @@ function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type
  * hook_entity_access in case a module like that comes along one day.
  */
 function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
-  if (empty($entity->status)) {
-    watchdog('debug', print_r(debug_backtrace(), true));
-  }
   switch ($op) {
     case 'view':
       if (
