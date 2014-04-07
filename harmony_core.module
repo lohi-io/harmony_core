@@ -718,7 +718,7 @@ function harmony_core_menu() {
     'page callback' => 'harmony_core_ajax_post_replies',
     'page arguments' => array(2),
     'access callback' => 'harmony_core_post_access_callback',
-    'access arguments' => array('view', 1),
+    'access arguments' => array('view', 2),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
     'type' => MENU_CALLBACK,
@@ -924,6 +924,9 @@ function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type
  * hook_entity_access in case a module like that comes along one day.
  */
 function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
+  if (empty($entity->status)) {
+    watchdog('debug', print_r(debug_backtrace(), true));
+  }
   switch ($op) {
     case 'view':
       if (
