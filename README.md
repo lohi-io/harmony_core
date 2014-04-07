@@ -23,6 +23,13 @@ As I'm British, that's the language I've used. Being mindful of those who'd rath
 + Actions & Views bulk operations
 + Metatag module, thread & post.
 
+## Install instructions
+
+Turn it on and go!
+There's a sub module "Harmony - Default permissions" which should serve as an example of the sort of permissions you'll need to set for Harmony to behave properly. As a reminder, anonymous users cannot post in Harmony, this is an architectural choice (with enough demand could be changed) and not a permissions issue.
+
+In order for users to be able to view forum content they will need persmission to view both threads and posts.
+
 ## How do I use it?
 
 You can add new threads here:
