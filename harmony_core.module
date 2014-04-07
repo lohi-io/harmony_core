@@ -2006,6 +2006,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
 
     if ($wrapper->field_harmony_thread->value()) {
       $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+      $post->title = $wrapper->field_harmony_thread->title->value();
     }
   }
 
