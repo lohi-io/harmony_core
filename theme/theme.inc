@@ -76,11 +76,14 @@ function template_preprocess_harmony_post(&$variables) {
     $variables['direct_reply'] = l(t('In reply to @name', array('@name' => $replying_to_name)), "thread/$thread_id", array('fragment' => "post-$replying_to_post_id"));
   }
 
-  // Generate the revisions link if there's more than 1.
-  $revision_count = db_query('SELECT COUNT(vid) FROM {harmony_post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
+  // Generate the revisions link if the user has access and there's more
+  // than one.
   $variables['revisions'] = NULL;
-  if ($revision_count > 1) {
-    $variables['revisions'] = l(format_plural($revision_count, '1 edit', '@count edits'), "post/$post->post_id/revisions");
+  if (harmony_core_post_revision_access_callback('view', $post)) {
+    $revision_count = db_query('SELECT COUNT(vid) FROM {harmony_post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
+    if ($revision_count > 1) {
+      $variables['revisions'] = l(format_plural($revision_count, '1 edit', '@count edits'), "post/$post->post_id/revisions");
+    }
   }
 
   // Make the field variables available with the appropriate language.
