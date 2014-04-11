@@ -11,6 +11,7 @@ function harmony_core_thread_add() {
 
   $thread = (object) array(
     'title' => '',
+    'type' => 'harmony_thread',
     'uid' => $user->uid,
     'language' => LANGUAGE_NONE,
     'status' => HARMONY_PUBLISHED,

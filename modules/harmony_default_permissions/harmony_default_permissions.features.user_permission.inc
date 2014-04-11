@@ -48,9 +48,9 @@ function harmony_default_permissions_user_default_permissions() {
     'module' => 'harmony_core',
   );
 
-  // Exported permission: 'administer harmony_thread entity'.
-  $permissions['administer harmony_thread entity'] = array(
-    'name' => 'administer harmony_thread entity',
+  // Exported permission: 'administer harmony_thread_types'.
+  $permissions['administer harmony_thread_types'] = array(
+    'name' => 'administer harmony_thread_types',
     'roles' => array(
       'administrator' => 'administrator',
     ),

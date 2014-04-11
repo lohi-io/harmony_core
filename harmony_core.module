@@ -83,16 +83,20 @@ function harmony_core_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'thread_id',
+      'bundle' => 'type',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'type',
     ),
     'bundles' => array(
-      'harmony_thread' => array(
+      /*'harmony_thread' => array(
         'label' => t('Thread'),
         'admin' => array(
           'path' => 'admin/structure/harmony/thread',
           'real path' => 'admin/structure/harmony/thread',
           'access arguments' => array('administer harmony_thread entity'),
         ),
-      ),
+      ),*/
     ),
     'load hook' => 'harmony_thread_load',
     'view modes' => array(
@@ -106,6 +110,44 @@ function harmony_core_entity_info() {
     'module' => 'harmony_core',
     'access callback' => 'harmony_core_thread_access_callback',
     'metatags' => TRUE,
+  );
+
+  // Add bundle info but bypass entity_load() as we cannot use it here.
+  $types = db_select('harmony_thread_type', 'htt')
+    ->fields('htt')
+    ->execute()
+    ->fetchAllAssoc('type');
+
+  foreach ($types as $type => $info) {
+    $entities['harmony_thread']['bundles'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/structure/harmony/thread/%harmony_thread_type',
+        'real path' => 'admin/structure/harmony/thread/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer harmony_thread_types'),
+      ),
+    );
+  }
+
+  $entities['harmony_thread_type'] = array(
+    'label' => t('Thread Type'),
+    'controller class' => 'EntityAPIControllerExportable',
+    'base table' => 'harmony_thread_type',
+    'fieldable' => FALSE,
+    'bundle of' => 'harmony_thread',
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type',
+      'label' => 'label',
+    ),
+    'module' => 'harmony_core',
+    'admin ui' => array(
+      'path' => 'admin/structure/harmony/thread',
+      'controller class' => 'HarmonyThreadTypeUIController',
+    ),
+    'access callback' => 'harmony_core_thread_type_access_callback',
   );
 
   $entities['harmony_post'] = array(
@@ -180,6 +222,16 @@ function harmony_core_entity_property_info() {
     'label' => t('Thread ID'),
     'type' => 'integer',
     'description' => t('The unique thread ID.'),
+  );
+  $thread_properties['type'] = array(
+    'label' => t('Thread type'),
+    'type' => 'token',
+    'description' => t('The type of the thread.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'administer harmony_thread_types',
+    'options list' => 'harmony_core_get_thread_types_flat',
+    'required' => TRUE,
+    'schema field' => 'type',
   );
   $thread_properties['title'] = array(
     'label' => t('Title'),
@@ -379,11 +431,16 @@ function harmony_core_permission() {
       'description' => t('Allows users to configure general settings for Harmony.'),
       'restrict access' => TRUE,
     ),
-    'administer harmony_thread entity' => array(
+    'administer harmony_thread_types' => array(
+      'title' => t('Administer thread types'),
+      'description' => t('Allows users to create, edit and delete Thread types (bundles).'),
+      'restrict access' => TRUE,
+    ),
+    /*'administer harmony_thread entity' => array(
       'title' => t('Administer thread entity'),
       'description' => t('Allows users to configure the thread entity type and its fields.'),
       'restrict access' => TRUE,
-    ),
+    ),*/
     'administer harmony_post entity' => array(
       'title' => t('Administer post entity'),
       'description' => t('Allows users to configure the post entity type and its fields.'),
@@ -530,9 +587,9 @@ function harmony_core_menu() {
     'weight' => -10,
   );
 
-  $items['admin/structure/harmony/thread'] = array(
+  /*$items['admin/structure/harmony/thread'] = array(
     'title' => 'Thread settings',
-    'access arguments' => array('administer harmony_thread entity'),
+    'access arguments' => array('administer harmony_thread_types'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_thread_entity_form'),
     'file' => 'harmony_core.admin.inc',
@@ -544,7 +601,7 @@ function harmony_core_menu() {
     'title' => 'Edit',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
-  );
+  );*/
 
   $items['admin/structure/harmony/post'] = array(
     'title' => 'Post settings',
@@ -954,6 +1011,10 @@ function harmony_core_entity_access_check($op, $entity, $account, $entity_type) 
   return HARMONY_ACCESS_IGNORE;
 }
 
+function harmony_core_thread_type_access_callback($op, $entity = NULL, $account = NULL) {
+  return user_access('administer harmony_thread_types', $account);
+}
+
 /**
  * Determines whether the current user may perform the operation on the post.
  *
@@ -1197,6 +1258,18 @@ function harmony_thread_delete($thread_id) {
  */
 function harmony_thread_delete_multiple($thread_ids) {
   entity_delete_multiple('harmony_thread', $thread_ids);
+}
+
+/**
+ * Menu argument loader; Load a thread type by string.
+ *
+ * @param $type
+ *   The machine-readable name of a thread type to load.
+ * @return
+ *   A profile type array or FALSE if $type does not exist.
+ */
+function harmony_thread_type_load($type) {
+  return harmony_core_get_thread_types($type);
 }
 
 /**
@@ -1983,6 +2056,113 @@ function harmony_core_thread_form_submit($form, &$form_state) {
 
   if ($thread->batch_process) {
     batch_process($form_state['redirect']);
+  }
+}
+
+/**
+ * Return a list of thread types in an array, whole objects.
+ */
+function harmony_core_get_thread_types($type_name = NULL) {
+  $types = entity_load_multiple_by_name('harmony_thread_type', isset($type_name) ? array($type_name) : FALSE);
+
+  return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Function to return a flat array of thread types. Will be used
+ * in entity_metadata info and therefore views also.
+ */
+function harmony_core_get_thread_types_flat() {
+  $types = harmony_core_get_thread_types();
+
+  if (!empty($types)) {
+    $flat_types = array();
+    foreach ($types as $type => $info) {
+      $flat_types[$type] = $info->label;
+    }
+
+    return $flat_types;
+  }
+  else {
+    return array();
+  }
+}
+
+/**
+ * Form building function which provides the add/edit form for
+ * the thread_type entity.
+ */
+function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op = 'edit') {
+  if ($op == 'clone') {
+    $harmony_thread_type->label .= ' (cloned)';
+    $harmony_thread_type->type .= '_clone';
+  }
+
+  $form['label'] = array(
+    '#title' => t('Label'),
+    '#type' => 'textfield',
+    '#default_value' => isset($harmony_thread_type->label) ? $harmony_thread_type->label : '',
+  );
+
+  // Machine-readable type name.
+  $form['type'] = array(
+    '#type' => 'machine_name',
+    '#default_value' => isset($harmony_thread_type->type) ? $harmony_thread_type->type : '',
+    '#disabled' => !empty($harmony_thread_type->type) && $harmony_thread_type->type === 'harmony_thread',
+    '#machine_name' => array(
+      'exists' => 'harmony_core_get_thread_types',
+      'source' => array('label'),
+    ),
+    '#description' => t('A unique machine-readable name for this thread type. It must only contain lowercase letters, numbers, and underscores.'),
+  );
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save thread type'),
+    '#weight' => 40,
+  );
+
+  if ($op != 'add' && $op != 'clone' && $harmony_thread_type->type != 'harmony_thread') {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete thread type'),
+      '#weight' => 45,
+      '#limit_validation_errors' => array(),
+      '#submit' => array('harmony_thread_type_form_submit_delete')
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Form API submit callback for the type form.
+ */
+function harmony_thread_type_form_submit(&$form, &$form_state) {
+  $harmony_thread_type = entity_ui_form_submit_build_entity($form, $form_state);
+
+  // Save and redirect the user.
+  entity_save('harmony_thread_type', $harmony_thread_type);
+
+  $form_state['redirect'] = 'admin/structure/harmony/thread';
+}
+
+/**
+ * Form API submit callback for the delete button.
+ */
+function harmony_thread_type_form_submit_delete(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/structure/harmony/thread/' . $form_state['harmony_thread_type']->type . '/delete';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function harmony_core_form_harmony_thread_type_operation_form_alter(&$form, &$form_state, $form_id) {
+  // Prevent harmony_thread bundle from being deleted.
+  if (!empty($form_state['harmony_thread_type']->type) && $form_state['harmony_thread_type']->type === 'harmony_thread') {
+    $form['description']['#markup'] = t("Oh no you don't, deleting the harmony_thread type entity would cripple harmony_core, better off uninstalling the module.");
+    unset($form['actions']);
   }
 }
 

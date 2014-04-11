@@ -19,6 +19,13 @@ function harmony_core_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'type' => array(
+        'description' => 'The {harmony_thread}.type of this thread.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'title' => array(
         'description' => 'The title of the thread.',
         'type' => 'varchar',
@@ -100,6 +107,10 @@ function harmony_core_schema() {
       'thread_author' => array(
         'table' => 'users',
         'columns' => array('uid' => 'uid'),
+      ),
+      'type' => array(
+        'table' => 'harmony_thread_type',
+        'columns' => array('type' => 'type'),
       ),
     ),
     'primary key' => array('thread_id'),
@@ -237,6 +248,49 @@ function harmony_core_schema() {
     'primary key' => array('post_id'),
   );
 
+  $schema['harmony_thread_type'] = array(
+    'description' => 'Stores information about all defined {harmony_thread} types.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique {harmony_thread} type ID.',
+      ),
+      'type' => array(
+        'description' => 'The machine-readable name of this {harmony_thread} type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable name of this {harmony_thread} type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        // Set the default to ENTITY_CUSTOM without using the constant as it is
+        // not safe to use it at this point.
+        'default' => 0x01,
+        'size' => 'tiny',
+        'description' => 'The exportable status of the entity.',
+      ),
+      'module' => array(
+        'description' => 'The name of the providing module if the entity has been defined in code.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('type'),
+    ),
+  );
+
   $schema['harmony_post_revision'] = array(
     'description' => 'Stores information about each saved version of a {harmony_post}.',
     'fields' => array(
@@ -336,9 +390,17 @@ function harmony_core_schema() {
  * Implements hook_install().
  */
 function harmony_core_install() {
+  // Set jQuery version.
   if (variable_get('jquery_update_jquery_version', '1.5') == '1.5') {
     variable_set('jquery_update_jquery_version', '1.7');
   }
+
+  // Add in the standard Thread type.
+  $type = entity_create('harmony_thread_type', array(
+    'type' => 'harmony_thread',
+    'label' => t('Thread'),
+  ));
+  entity_save('harmony_thread_type', $type);
 }
 
 /**
