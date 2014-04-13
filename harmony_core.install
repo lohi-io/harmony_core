@@ -191,6 +191,13 @@ function harmony_core_schema() {
         'not null' => FALSE,
         'default' => NULL,
       ),
+      'language' => array(
+        'description' => 'The {languages}.language of this post.',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'title' => array(
         'description' => 'The title of the post.',
         'type' => 'varchar',
@@ -241,6 +248,19 @@ function harmony_core_schema() {
       ),
       'first_post' => array(
         'description' => 'Boolean indicating whether the post is the first within the thread.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tpost_id' => array(
+        'description' => 'The translation set id for this post, which equals the post id of the source post in each set.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'translate' => array(
+        'description' => 'A boolean indicating whether this translation page needs to be updated.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -329,6 +349,13 @@ function harmony_core_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'language' => array(
+        'description' => 'The {languages}.language of this post.',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'title' => array(
         'description' => 'The title of the post.',
         'type' => 'varchar',
@@ -379,6 +406,19 @@ function harmony_core_schema() {
       ),
       'first_post' => array(
         'description' => 'Boolean indicating whether the post is the first within the thread.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'tpost_id' => array(
+        'description' => 'The translation set id for this post, which equals the post id of the source post in each set.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'translate' => array(
+        'description' => 'A boolean indicating whether this translation page needs to be updated.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,

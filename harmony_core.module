@@ -81,13 +81,9 @@ function harmony_core_entity_info() {
     'controller class' => 'HarmonyThreadController',
     'base table' => 'harmony_thread',
     'fieldable' => TRUE,
-    /*'translation' => array(
-      'locale' => TRUE,
-    ),*/
     'entity keys' => array(
       'id' => 'thread_id',
       'bundle' => 'type',
-      //'language' => 'language',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
