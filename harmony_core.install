@@ -26,6 +26,13 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'language' => array(
+        'description' => 'The {languages}.language of this thread.',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'title' => array(
         'description' => 'The title of the thread.',
         'type' => 'varchar',
@@ -92,6 +99,19 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'tthread_id' => array(
+        'description' => 'The translation set id for this thread, which equals the thread id of the source post in each set.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'translate' => array(
+        'description' => 'A boolean indicating whether this translation page needs to be updated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'status' => array('status'),
@@ -102,6 +122,9 @@ function harmony_core_schema() {
       'likes' => array('likes'),
       'views' => array('views'),
       'uid' => array('uid'),
+      /*'tthread_id' => array('tthread_id'),
+      'translate' => array('translate'),
+      'language' => array('language'),*/
     ),
     'foreign keys' => array(
       'thread_author' => array(

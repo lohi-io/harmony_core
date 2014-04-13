@@ -81,22 +81,19 @@ function harmony_core_entity_info() {
     'controller class' => 'HarmonyThreadController',
     'base table' => 'harmony_thread',
     'fieldable' => TRUE,
+    /*'translation' => array(
+      'locale' => TRUE,
+    ),*/
     'entity keys' => array(
       'id' => 'thread_id',
       'bundle' => 'type',
+      //'language' => 'language',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
     ),
     'bundles' => array(
-      /*'harmony_thread' => array(
-        'label' => t('Thread'),
-        'admin' => array(
-          'path' => 'admin/structure/harmony/thread',
-          'real path' => 'admin/structure/harmony/thread',
-          'access arguments' => array('administer harmony_thread entity'),
-        ),
-      ),*/
+      // Supplied later.
     ),
     'load hook' => 'harmony_thread_load',
     'view modes' => array(
