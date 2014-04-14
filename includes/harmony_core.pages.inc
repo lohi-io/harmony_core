@@ -507,6 +507,9 @@ function harmony_core_post_revision_view($new_post, $vid, $js = NULL, $view_mode
     $title = harmony_core_post_revision_title($new_post);
     print ctools_modal_render($title, $output);
 
+    global $devel_shutdown;
+    $devel_shutdown = FALSE;
+
     drupal_exit();
   }
   else {

@@ -784,6 +784,50 @@ function harmony_core_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Devel integration.
+  if (module_exists('devel')) {
+    $devel_entities = array(
+      'harmony_thread' => array(
+        'label' => 'Thread',
+        'path' => 'thread/%harmony_thread',
+        'arg' => 1,
+      ),
+      'harmony_post' => array(
+        'label' => 'Post',
+        'path' => 'post/%harmony_post',
+        'arg' => 1,
+      ),
+    );
+
+    foreach ($devel_entities as $type => $entity) {
+      // Add devel tab menu.
+      $items[$entity['path'] . '/devel'] = array(
+        'title' => 'Devel',
+        'page callback' => 'harmony_core_entity_load_object',
+        'page arguments' => array($type, $entity['arg'], $entity['label']),
+        'access arguments' => array('access devel information'),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'harmony_core.devel.inc',
+        'file path' => $includes_dir,
+        'weight' => 100,
+      );
+      $items[$entity['path'] . '/devel/load'] = array(
+        'title' => 'Load',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+      );
+      $items[$entity['path'] . '/devel/render'] = array(
+        'title' => 'Render',
+        'page callback' => 'harmony_core_render_object',
+        'page arguments' => array($type, $entity['arg'], $entity['label']),
+        'access arguments' => array('access devel information'),
+        'file' => 'harmony_core.devel.inc',
+        'file path' => $includes_dir,
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 100,
+      );
+    }
+  }
+
   return $items;
 }
 
@@ -2964,6 +3008,9 @@ function harmony_core_thread_log_view($thread_id) {
   header('Cache-Control: pre-check=0');
   header('Content-Length: 0');
   header('Connection: close');
+
+  global $devel_shutdown;
+  $devel_shutdown = FALSE;
 
   // Bail out.
   drupal_exit();
