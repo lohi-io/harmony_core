@@ -419,7 +419,9 @@ class HarmonyPostController extends EntityAPIController {
           }
 
           // Users post count.
-          harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, $count_direction);
+          if ($entity->uid > 0) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, $count_direction);
+          }
 
           // Increment the category thread count if the thread belongs to a category.
           // @todo this makes stuff blow up for some reason.
@@ -446,9 +448,11 @@ class HarmonyPostController extends EntityAPIController {
   }
 
   protected function saveRevision($entity) {
-    // Update the reivion user to be the current person editing.
+    // Update the reivion user to be the current person editing if not anon.
+    // We don't allow anon to create threads or posts but things can happen
+    // via drush.
     global $user;
-    $entity->uid = $user->uid;
+    $entity->uid = $user->uid > 0 ? $user->uid : $entity->uid;
 
     // Convert the entity into an array as it might not have the same properties
     // as the entity, it is just a raw structure.
