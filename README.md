@@ -22,6 +22,7 @@ As I'm British, that's the language I've used. Being mindful of those who'd rath
 + Inline entity form
 + Actions & Views bulk operations
 + Metatag module, thread & post.
++ Devel & Devel Generate
 
 ## Install instructions
 
