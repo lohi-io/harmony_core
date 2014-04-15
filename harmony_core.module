@@ -465,6 +465,20 @@ function harmony_core_permission() {
       'title' => t('Create new Harmony threads'),
       'description' => t('Allows users to create threads.'),
     ),
+  );
+
+  $thread_types = harmony_core_get_thread_types();
+  unset($thread_types['harmony_thread']);
+  if (count($thread_types) > 0) {
+    foreach ($thread_types as $type => $info) {
+      $permissions['create ' . $type . ' harmony threads'] = array(
+        'title' => t('Create new @label Harmony threads', array('@label' => $info->label)),
+        'description' => t('Allows users to create new threads of this type.'),
+      );
+    }
+  }
+
+  $permissions += array(
     'reply as new harmony_thread' => array(
       'title' => t('Reply as new thread'),
       'description' => t('Allows users to create threads.'),
@@ -618,6 +632,7 @@ function harmony_core_menu() {
   $items['thread/add'] = array(
     'title' => 'Create thread',
     'page callback' => 'harmony_core_thread_add',
+    'page arguments' => array(2),
     'access arguments' => array('create harmony_thread harmony threads'),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
@@ -627,8 +642,21 @@ function harmony_core_menu() {
   $items['admin/content/threads/add'] = array(
     'title' => 'Add',
     'page callback' => 'harmony_core_thread_add_redirect',
-    'access arguments' =>
+    'page arguments' => array('harmony_thread'),
+    'access arguments' => array('create harmony_thread harmony threads'),
   );
+
+  $thread_types = harmony_core_get_thread_types();
+  if (count($thread_types) > 1) {
+    foreach ($thread_types as $type => $info) {
+      $items['admin/content/threads/add/' . str_replace('_', '-', $type)] = array(
+        'title' => check_plain($info->label),
+        'page callback' => 'harmony_core_thread_add_redirect',
+        'page arguments' => array($type),
+        'access arguments' => array("create $type harmony threads"),
+      );
+    }
+  }
 
   $items['thread/%harmony_thread'] = array(
     'title callback' => 'entity_label',
@@ -851,6 +879,11 @@ function harmony_core_menu() {
   }
 
   return $items;
+}
+
+function harmony_core_thread_add_redirect($type) {
+  $type = $type === 'harmony_thread' ? '' : '/' . str_replace('_', '-', $type);
+  drupal_goto("thread/add{$type}");
 }
 
 /**
@@ -2060,7 +2093,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   );
 
   // Get field language as per http://tinyurl.com/ohsjheh stack exchange post.
-  $first_post_lang = $form['field_harmony_first_post']['#language'];
+  $first_post_lang = !empty($form['field_harmony_first_post']['#language']) ? $form['field_harmony_first_post']['#language'] : LANGUAGE_NONE;
 
   // Remove the fielset.
   $form['field_harmony_first_post'][$first_post_lang]['#type'] = 'markup';

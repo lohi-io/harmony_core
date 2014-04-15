@@ -6,12 +6,22 @@
  * Page callbacks for adding, editing and deleting threads and posts.
  */
 
-function harmony_core_thread_add() {
+function harmony_core_thread_add($type) {
   global $user;
+
+  // Determine thread type.
+  if ($type == '') {
+    $type = 'harmony-thread';
+  }
+  $type = str_replace('-', '_', $type);
+  $thread_types = harmony_core_get_thread_types();
+  if (!in_array($type, array_keys($thread_types))) {
+    drupal_not_found();
+  }
 
   $thread = (object) array(
     'title' => '',
-    'type' => 'harmony_thread',
+    'type' => $type,
     'uid' => $user->uid,
     'language' => LANGUAGE_NONE,
     'status' => HARMONY_PUBLISHED,
