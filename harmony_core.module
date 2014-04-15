@@ -201,7 +201,7 @@ function harmony_core_entity_info_alter(&$entity_info) {
 }
 
 function harmony_core_post_revision_access($op, $name, $entity = NULL, $account = NULL) {
-  return $op == 'view' ? user_access('view harmony_post revisions', $account) || user_access('bypass forum access control', $account) : user_access('administer forum content', $account);
+  return $op == 'view' ? user_access('view harmony_post revisions', $account) || user_access('bypass harmony forum access control', $account) : user_access('administer forum content', $account);
 }
 
 /**
@@ -418,7 +418,7 @@ function harmony_core_entity_property_info() {
  * Implements hook_permission().
  */
 function harmony_core_permission() {
-  return array(
+  $permissions = array(
     'administer harmony settings' => array(
       'title' => t('Administer Harmony settings'),
       'description' => t('Allows users to configure general settings for Harmony.'),
@@ -444,7 +444,7 @@ function harmony_core_permission() {
       'description' => t('Allows users to create, edit and delete any forum threads or posts.'),
       'restrict access' => TRUE,
     ),
-    'bypass forum access control' => array(
+    'bypass harmony forum access control' => array(
       'title' => t('Bypass forum access control'),
       'description' => t('Allows users to bypass access checks.'),
       'restrict access' => TRUE,
@@ -461,8 +461,8 @@ function harmony_core_permission() {
       'title' => t('View own unpublished threads'),
       'description' => t('Allows users to view unpublished threads that they have created.'),
     ),
-    'create harmony_threads' => array(
-      'title' => t('Create new threads'),
+    'create harmony_thread harmony threads' => array(
+      'title' => t('Create new Harmony threads'),
       'description' => t('Allows users to create threads.'),
     ),
     'reply as new harmony_thread' => array(
@@ -560,6 +560,8 @@ function harmony_core_permission() {
       'description' => t('Allows access to the show direct replies links on posts.'),
     ),
   );
+
+  return $permissions;
 }
 
 /**
@@ -616,9 +618,16 @@ function harmony_core_menu() {
   $items['thread/add'] = array(
     'title' => 'Create thread',
     'page callback' => 'harmony_core_thread_add',
-    'access arguments' => array('create harmony_threads'),
+    'access arguments' => array('create harmony_thread harmony threads'),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
+  );
+
+  // Admin thread add links.
+  $items['admin/content/threads/add'] = array(
+    'title' => 'Add',
+    'page callback' => 'harmony_core_thread_add_redirect',
+    'access arguments' =>
   );
 
   $items['thread/%harmony_thread'] = array(
@@ -991,7 +1000,7 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
   }
 
   // Admin-ish access checks.
-  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+  if (user_access('bypass harmony forum access control', $account) || user_access('administer forum content', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
@@ -1124,7 +1133,7 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
   }
 
   // Admin-ish access checks.
-  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+  if (user_access('bypass harmony forum access control', $account) || user_access('administer forum content', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }
@@ -1224,7 +1233,7 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
   }
 
   // Admin-ish access checks.
-  if (user_access('bypass forum access control', $account) || user_access('administer forum content', $account)) {
+  if (user_access('bypass harmony forum access control', $account) || user_access('administer forum content', $account)) {
     $rights[$account->uid][$cid][$op] = TRUE;
     return TRUE;
   }

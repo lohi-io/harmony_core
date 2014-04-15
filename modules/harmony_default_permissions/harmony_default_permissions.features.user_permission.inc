@@ -57,9 +57,9 @@ function harmony_default_permissions_user_default_permissions() {
     'module' => 'harmony_core',
   );
 
-  // Exported permission: 'bypass forum access control'.
-  $permissions['bypass forum access control'] = array(
-    'name' => 'bypass forum access control',
+  // Exported permission: 'bypass harmony forum access control'.
+  $permissions['bypass harmony forum access control'] = array(
+    'name' => 'bypass harmony forum access control',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -75,9 +75,9 @@ function harmony_default_permissions_user_default_permissions() {
     'module' => 'harmony_core',
   );
 
-  // Exported permission: 'create harmony_threads'.
-  $permissions['create harmony_threads'] = array(
-    'name' => 'create harmony_threads',
+  // Exported permission: 'create harmony_thread harmony threads'.
+  $permissions['create harmony_thread harmony threads'] = array(
+    'name' => 'create harmony_thread harmony threads',
     'roles' => array(
       'authenticated user' => 'authenticated user',
     ),
