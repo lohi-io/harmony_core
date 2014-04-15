@@ -826,6 +826,19 @@ function harmony_core_menu() {
         'weight' => 100,
       );
     }
+
+    // Devel generate.
+    if (module_exists('devel_generate')) {
+      $items['admin/config/development/generate/harmony'] = array(
+        'title' => 'Generate Harmony entities',
+        'description' => 'Generate a given number of threads and posts. Optionally delete current menus.',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('harmony_core_devel_generate_form'),
+        'access arguments' => array('administer forum content'),
+        'file' => 'harmony_core.devel.inc',
+        'file path' => $includes_dir,
+      );
+    }
   }
 
   return $items;
@@ -1286,7 +1299,7 @@ function harmony_thread_save($thread) {
 /**
  * Delete a single thread.
  */
-function harmony_thread_delete($thread_id) {
+function harmony_thread_delete($thread_id, &$context = NULL) {
   harmony_thread_delete_multiple(array($thread_id));
 }
 
@@ -1295,6 +1308,26 @@ function harmony_thread_delete($thread_id) {
  */
 function harmony_thread_delete_multiple($thread_ids) {
   entity_delete_multiple('harmony_thread', $thread_ids);
+}
+
+/**
+ * Delete all threads of a specified type.
+ */
+function harmony_thread_delete_all_by_type($types) {
+  $ids = array();
+  $results = db_select('harmony_thread', 'ht')
+              ->fields('ht', array('thread_id'))
+              ->condition('type', $types, 'IN')
+              ->execute();
+
+  foreach ($results as $result) {
+    $ids[] = $result->nid;
+  }
+
+  if (!empty($ids)) {
+    harmony_thread_delete_multiple($ids);
+    drupal_set_message(t('Deleted %count threads.', array('%count' => count($ids))));
+  }
 }
 
 /**
