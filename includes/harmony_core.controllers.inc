@@ -82,7 +82,7 @@ class HarmonyThreadController extends EntityAPIController {
         // be too. We don't do anything as on unpublish of each post the
         // users post count will be decremented, so we only do the thread
         // count here.
-        if ($count_direction) {
+        if ($count_direction && $entity->uid > 0) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, $count_direction);
         }
 
@@ -214,7 +214,7 @@ class HarmonyThreadController extends EntityAPIController {
         }
 
         // User thread count.
-        if ($entity->status == HARMONY_PUBLISHED) {
+        if ($entity->status == HARMONY_PUBLISHED && $entity->uid > 0) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'user', $entity->uid, 'decrement');
         }
 
@@ -381,7 +381,9 @@ class HarmonyPostController extends EntityAPIController {
       // If we're attached to a thread, update some things!
       if ($thread_id) {
         // Set who last updated the thread.
-        $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
+        if ($entity->uid > 0) {
+          $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
+        }
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
         $wrapper->field_harmony_thread->save();
@@ -580,7 +582,9 @@ class HarmonyPostController extends EntityAPIController {
           }
 
           // Update post count for the user.
-          harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
+          if ($entity->uid > 0) {
+            harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
+          }
 
           // Remove the Likes from the thread associated with this post.
           if ($thread_id) {
