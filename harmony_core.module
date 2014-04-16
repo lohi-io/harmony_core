@@ -589,31 +589,17 @@ function harmony_core_menu() {
   // Administration menu items.
   $items['admin/structure/harmony'] = array(
     'title' => 'Harmony',
+    'description' => 'Manage the Harmony Thread, Thread Type &amp; Post entities.',
     'access arguments' => array('administer harmony settings'),
-    'page callback' => 'harmony_core_harmony_structure_settings',
-    'file' => 'harmony_core.admin.inc',
-    'file path' => $includes_dir,
+    'page callback' => 'system_admin_menu_block_page',
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
     'weight' => -10,
   );
-
-  /*$items['admin/structure/harmony/thread'] = array(
-    'title' => 'Thread settings',
-    'access arguments' => array('administer harmony_thread_types'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_thread_entity_form'),
-    'file' => 'harmony_core.admin.inc',
-    'file path' => $includes_dir,
-    'weight' => 0,
-  );
-
-  $items['admin/structure/harmony/thread/edit'] = array(
-    'title' => 'Edit',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );*/
 
   $items['admin/structure/harmony/post'] = array(
     'title' => 'Post settings',
+    'description' => 'Manage the Post entity.',
     'access arguments' => array('administer harmony_post entity'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_post_entity_form'),
