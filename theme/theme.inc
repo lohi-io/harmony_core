@@ -47,6 +47,7 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['title'] = check_plain($post->title);
   $variables['thread_url'] = url("thread/$thread_id");
   $variables['url'] = url("post/$post->post_id");
+  $variables['permalink_url'] = $variables['url'];
   $variables['created'] = format_date($post->created);
   $variables['updated'] = format_date($post->updated);
   $variables['is_page'] = arg(0) === 'post';

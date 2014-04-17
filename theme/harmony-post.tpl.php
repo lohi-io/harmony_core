@@ -35,7 +35,7 @@ $links = render($content['links']);
         <?php if ($is_page): ?>
         <?php print $created; ?>
         <?php else: ?>
-        <a href="<?php print $url; ?>" title="<?php print t('Permalink to this post'); ?>"><?php print $created; ?></a>
+        <a href="<?php print $permalink_url; ?>" title="<?php print t('Permalink to this post'); ?>"><?php print $created; ?></a>
         <?php endif; ?>
       </span>
       <?php if ($revisions): ?>
