@@ -49,6 +49,7 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['url'] = url("post/$post->post_id");
   $variables['created'] = format_date($post->created);
   $variables['updated'] = format_date($post->updated);
+  $variables['is_page'] = arg(0) === 'post';
 
   // Flatten the post object's member fields.
   $variables = array_merge((array) $post, $variables);
@@ -103,6 +104,9 @@ function template_preprocess_harmony_post(&$variables) {
   }
   if (!empty($post->field_harmony_post_is_reply_to)) {
     $variables['classes_array'][] = 'post-is-direct-reply';
+  }
+  if ($variables['is_page']) {
+    $variables['classes_array'][] = 'post-page';
   }
 
   // Suggest some templates, including default? What's going wrong here?

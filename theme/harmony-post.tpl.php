@@ -7,6 +7,7 @@
  * Available variables:
  *
  * - $post: The post entity itself.
+ * - $is_page: If on a standalone page and not on a thread page.
  *
  * Template suggestions available, listed from the most specific template to
  * the least. Drupal will use the most specific template it finds:
@@ -30,7 +31,13 @@ $links = render($content['links']);
     </div>
     <?php endif; ?>
     <div class="pull-right">
-      <span class="post-created"><?php print $created; ?></span>
+      <span class="post-created">
+        <?php if ($is_page): ?>
+        <?php print $created; ?>
+        <?php else: ?>
+        <a href="<?php print $url; ?>" title="<?php print t('Permalink to this post'); ?>"><?php print $created; ?></a>
+        <?php endif; ?>
+      </span>
       <?php if ($revisions): ?>
        <span class="post-revisions"><?php print $revisions; ?></span>
       <?php endif; ?>
@@ -54,3 +61,8 @@ $links = render($content['links']);
     </div>
   </div>
 </div>
+<?php if ($is_page): ?>
+<div class="post-return">
+  <a href="<?php print $thread_url; ?>"><?php print t('Return to thread'); ?></a>
+</div>
+<?php endif; ?>

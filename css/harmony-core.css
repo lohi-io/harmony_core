@@ -51,6 +51,11 @@
   margin-bottom: 20px;
 }
 
+.post-page {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
 .post-inline-reply {
   margin-top: 20px;
   border-top: 1px solid #ddd;
