@@ -2191,7 +2191,11 @@ function harmony_core_get_thread_types_flat() {
  * the thread_type entity.
  */
 function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op = 'edit') {
-  if ($op == 'clone') {
+  if ($op === 'add' || $op === 'clone') {
+    drupal_set_message(t('Fields will be cloned from the standard Thread type after save.'), 'warning');
+  }
+
+  if ($op === 'clone') {
     $harmony_thread_type->label .= ' (cloned)';
     $harmony_thread_type->type .= '_clone';
   }
@@ -2240,9 +2244,34 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
 function harmony_thread_type_form_submit(&$form, &$form_state) {
   $harmony_thread_type = entity_ui_form_submit_build_entity($form, $form_state);
 
-  // Save and redirect the user.
+  // Save the entity!
   entity_save('harmony_thread_type', $harmony_thread_type);
 
+  // Copy the standard fields from harmony_thread.
+  $target_fields = array(
+    'field_harmony_category',
+    'field_harmony_first_post',
+    'field_harmony_last_user_to_reply',
+    'field_harmony_post_count',
+    'field_harmony_post_listing',
+    'field_harmony_thread_cont_from',
+  );
+  $entity_types = entity_get_info();
+
+  foreach ($target_fields as $field_name) {
+    $field = field_info_field($field_name);
+    $instance = field_info_instance('harmony_thread', $field_name, 'harmony_thread');
+
+    $original_display = $instance['display'];
+
+    $instance = array_diff_key($instance, array_flip(array('id', 'field_id', 'bundle', 'deleted')));
+    $instance['display'] = array_intersect_key($original_display, $entity_types['harmony_thread']['view modes']);
+
+    $instance['bundle'] = $harmony_thread_type->type;
+    field_create_instance($instance);
+  }
+
+  // Redirect the user.
   $form_state['redirect'] = 'admin/structure/harmony/thread';
 }
 
