@@ -33,8 +33,6 @@ class HarmonyThreadController extends EntityAPIController {
       if ($entity->is_new) {
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
         $this->invoke('insert', $entity);
-
-        //field_attach_insert($this->entityType, $entity);
       }
       else {
         $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
@@ -43,13 +41,11 @@ class HarmonyThreadController extends EntityAPIController {
         $this->invoke('update', $entity);
 
         field_attach_update($this->entityType, $entity);
+      }
 
-        // Update thread access records.
-        if (module_exists('harmony_access')) {
-          // Update the thread access table for this thread.
-          // @see node_save().
-          //harmony_access_acquire_grants($thread, FALSE);
-        }
+      // Update thread access records.
+      if (module_exists('harmony_access')) {
+        harmony_access_acquire_records($entity);
       }
 
       $entity->batch_process = FALSE;

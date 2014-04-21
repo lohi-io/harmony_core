@@ -429,11 +429,6 @@ function harmony_core_permission() {
       'description' => t('Allows users to create, edit and delete Thread types (bundles).'),
       'restrict access' => TRUE,
     ),
-    /*'administer harmony_thread entity' => array(
-      'title' => t('Administer thread entity'),
-      'description' => t('Allows users to configure the thread entity type and its fields.'),
-      'restrict access' => TRUE,
-    ),*/
     'administer harmony_post entity' => array(
       'title' => t('Administer post entity'),
       'description' => t('Allows users to configure the post entity type and its fields.'),
@@ -1039,9 +1034,37 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
     return TRUE;
   }
 
-  /* @todo Implement thread access grants. */
-  if (module_exists('harmony_access')) {
+  // If harmony_access is in place then harmony_core_entity_access_check()
+  // will not be active for the view operation as access rules will be in
+  // place and should be respected.
+  if (count(module_implements('harmony_access_grants')) > 0) {
+    $query = db_select('harmony_access_records');
+    $query->addExpression('1');
+    $query->condition('grant_' . $op, 1, '>=');
+    $entity_ids = db_or()->condition('entity_id', $entity->thread_id);
+    if ($entity->status) {
+      $entity_ids->condition('entity_id', 0);
+    }
+    $query->condition($entity_ids);
+    $query->range(0, 1);
 
+    $grants = db_or();
+    foreach (harmony_access_grants($op, $account) as $realm => $gids) {
+      foreach ($gids as $gid) {
+        $grants->condition(db_and()
+          ->condition('gid', $gid)
+          ->condition('realm', $realm)
+        );
+      }
+    }
+    if (count($grants) > 0) {
+      $query->condition($grants);
+    }
+    $result = (bool) $query
+      ->execute()
+      ->fetchField();
+    $rights[$account->uid][$cid][$op] = $result;
+    return $result;
   }
 
   return FALSE;
@@ -1059,6 +1082,11 @@ function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type
  * hook_entity_access in case a module like that comes along one day.
  */
 function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
+  // If grants is active ignore the view permissions.
+  if ($op === 'view' && count(module_implements('harmony_access_grants')) > 0) {
+    return HARMONY_ACCESS_IGNORE;
+  }
+
   switch ($op) {
     case 'view':
       if (
