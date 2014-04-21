@@ -45,7 +45,7 @@ class HarmonyThreadController extends EntityAPIController {
 
       // Update thread access records.
       if (module_exists('harmony_access')) {
-        harmony_access_acquire_records($entity);
+        harmony_access_acquire_records($entity, 'harmony_thread');
       }
 
       $entity->batch_process = FALSE;
