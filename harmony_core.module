@@ -2246,6 +2246,16 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
     '#description' => t('A unique machine-readable name for this thread type. It must only contain lowercase letters, numbers, and underscores.'),
   );
 
+  // Check for existing content.
+  $content_count = 0;
+  if ($op != 'add' && $op != 'clone') {
+    $content_count = db_query('SELECT COUNT(*) FROM {harmony_thread} WHERE type = :type', array(':type' => $harmony_thread_type->type))->fetchField();
+
+    if ($content_count > 0) {
+      $form['existing_content'] = array('#markup' => t('<p><strong>Note:</strong> You cannot delete this type as content exists for it, remove the content first.</p>'));
+    }
+  }
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -2253,7 +2263,7 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
     '#weight' => 40,
   );
 
-  if ($op != 'add' && $op != 'clone' && $harmony_thread_type->type != 'harmony_thread') {
+  if ($op != 'add' && $op != 'clone' && $harmony_thread_type->type != 'harmony_thread' && $content_count < 1) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete thread type'),

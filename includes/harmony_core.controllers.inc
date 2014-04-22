@@ -665,6 +665,14 @@ class HarmonyPost extends Entity {
  * hook_entity_info is out.
  */
 class HarmonyThreadTypeUIController extends EntityDefaultUIController {
+  public function overviewForm($form, &$form_state) {
+    // By default just show a simple overview for all entities.
+    $form['table'] = $this->overviewTable();
+    $form['warnings'] = array('#markup' => t('<p>Thread types with content cannot be deleted, you must first remove all content of that type. The default "Thread" type cannot be deleted. Thread types with content will show an unlinked delete operation.</p>'));
+    $form['pager'] = array('#theme' => 'pager');
+    return $form;
+  }
+
   /**
    * Generates the row for the passed entity and may be overridden in order to
    * customize the rows.
@@ -722,7 +730,13 @@ class HarmonyThreadTypeUIController extends EntityDefaultUIController {
 
       if (empty($this->entityInfo['exportable']) || !entity_has_status($this->entityType, $entity, ENTITY_IN_CODE)) {
         if ($id != 'harmony_thread') {
-          $row[] = l(t('delete'), $this->path . '/manage/' . $id . '/delete', array('query' => drupal_get_destination()));
+          $content_count = db_query('SELECT COUNT(*) FROM {harmony_thread} WHERE type = :type', array(':type' => $id))->fetchField();
+          if ($content_count < 1) {
+            $row[] = l(t('delete'), $this->path . '/manage/' . $id . '/delete', array('query' => drupal_get_destination()));
+          }
+          else {
+            $row[] = t('delete');
+          }
         }
         else {
           $row[] = '';
