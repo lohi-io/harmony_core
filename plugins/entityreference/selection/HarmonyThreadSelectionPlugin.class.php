@@ -25,7 +25,7 @@ class HarmonyThreadSelectionPlugin extends EntityReference_SelectionHandler_Gene
     }
 
     // Add an access tag to the query.
-    $query->addTag('harmony_thread_access');
+    $query->addTag('harmony_access');
     $query->addTag('entityreference');
     $query->addMetaData('field', $this->field);
     $query->addMetaData('entityreference_selection_handler', $this);

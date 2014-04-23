@@ -2300,6 +2300,10 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
     $field = field_info_field($field_name);
     $instance = field_info_instance('harmony_thread', $field_name, 'harmony_thread');
 
+    if (!is_array($instance)) {
+      continue;
+    }
+
     $original_display = $instance['display'];
 
     $instance = array_diff_key($instance, array_flip(array('id', 'field_id', 'bundle', 'deleted')));
