@@ -2067,9 +2067,16 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   // Attach fields.
   field_attach_form('harmony_thread', $thread, $form, $form_state);
 
-  // Allow category to be preopulated.
+  // Allow category to be preopulated, also check access if
+  // harmony_access_forum is in place.
   if (!empty($_GET['field_harmony_category']) && is_numeric($_GET['field_harmony_category'])) {
-    $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $_GET['field_harmony_category'];
+    // Load up the term to check it exists and that it's in the correct vocab.
+    $term = taxonomy_term_load($_GET['field_harmony_category']);
+
+    // @ todo check access.
+    if ($term && $term->vocabulary_machine_name === 'harmony_category') {
+      $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $term->tid;
+    }
   }
 
   // Options for administrators
@@ -2218,14 +2225,15 @@ function harmony_core_get_thread_types_flat() {
  * Form building function which provides the add/edit form for
  * the thread_type entity.
  */
-function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op = 'edit') {
+function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op = 'edit', $entity_type = NULL) {
   if ($op === 'add' || $op === 'clone') {
     drupal_set_message(t('Fields will be cloned from the standard Thread type after save.'), 'warning');
   }
 
   if ($op === 'clone') {
+    // Only the label is carried over.
     $harmony_thread_type->label .= ' (cloned)';
-    $harmony_thread_type->type .= '_clone';
+    $harmony_thread_type->type =  $entity_type . '_clone';
   }
 
   $form['label'] = array(
@@ -2378,6 +2386,8 @@ function harmony_core_post_form($form, &$form_state, $post) {
   field_attach_form('harmony_post', $post, $form, $form_state);
 
   // Quoting integration with entity_quote.
+  // @todo rewrite so that we can take in quoting or reply as new thread, may
+  // take place in inline_entity_form integration.
   if ($post->is_new && !empty($_GET['quote']) && is_numeric($_GET['quote'])) {
     $post_to_quote_id = $_GET['quote'];
     $post_to_quote = entity_load_single('harmony_post', $post_to_quote_id);
