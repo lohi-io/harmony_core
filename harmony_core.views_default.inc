@@ -13,7 +13,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_administration_posts';
   $view->description = '';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_post';
   $view->human_name = 'Administration: Posts';
   $view->core = 7;
@@ -287,7 +287,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_administration_threads';
   $view->description = 'List and manage threads.';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_thread';
   $view->human_name = 'Administration: Threads';
   $view->core = 7;
@@ -671,7 +671,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_category_sub_category_listing';
   $view->description = 'Lists the sub-categories of the current category.';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'taxonomy_term_data';
   $view->human_name = 'Category sub-category listing';
   $view->core = 7;
@@ -737,7 +737,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_post_replies_to_post';
   $view->description = '';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_post';
   $view->human_name = 'Post: Replies to post';
   $view->core = 7;
@@ -784,7 +784,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_post_revisions';
   $view->description = '';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_post_revision';
   $view->human_name = 'Post revisions';
   $view->core = 7;
@@ -950,7 +950,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_thread_administer_posts';
   $view->description = '';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_post';
   $view->human_name = 'Thread: Administer posts';
   $view->core = 7;
@@ -1232,7 +1232,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_thread_listing';
   $view->description = 'Listing of threads belonging to a category,';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_thread';
   $view->human_name = 'Thread listing';
   $view->core = 7;
@@ -1247,6 +1247,9 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['access']['perm'] = 'view harmony_threads';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_tags'] = array(
+    0 => 'harmony_access',
+  );
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'load_more';
   $handler->display->display_options['pager']['options']['items_per_page'] = '30';
@@ -1446,7 +1449,7 @@ function harmony_core_views_default_views() {
   $view = new view();
   $view->name = 'harmony_thread_posts_listing';
   $view->description = '';
-  $view->tag = 'default';
+  $view->tag = 'harmony_core';
   $view->base_table = 'harmony_post';
   $view->human_name = 'Thread: Posts listing';
   $view->core = 7;
