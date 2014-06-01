@@ -372,6 +372,7 @@ function harmony_core_field_default_field_instances() {
   $field_instances['harmony_thread-harmony_thread-field_harmony_thread_cont_from'] = array(
     'bundle' => 'harmony_thread',
     'default_value' => NULL,
+    'default_value_function' => 'entityreference_prepopulate_field_default_value',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -390,6 +391,18 @@ function harmony_core_field_default_field_instances() {
     'label' => 'Thread continued from',
     'required' => 0,
     'settings' => array(
+      'behaviors' => array(
+        'prepopulate' => array(
+          'action' => 'hide',
+          'action_on_edit' => 1,
+          'fallback' => 'hide',
+          'providers' => array(
+            'url' => 1,
+          ),
+          'skip_perm' => 0,
+          'status' => 1,
+        ),
+      ),
       'user_register_form' => FALSE,
     ),
     'widget' => array(

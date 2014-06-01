@@ -2122,7 +2122,10 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   // Hide property-ish type fields that we don't want user 1 to see.
   $form['field_harmony_last_user_to_reply']['#access'] = FALSE;
   $form['field_harmony_post_count']['#access'] = FALSE;
-  $form['field_harmony_thread_cont_from']['#access'] = FALSE;
+
+  // Hide the continued from field if not populated.
+  if (!empty($_GET['field_harmony_thread_cont_from']) && is_numeric($_GET['field_harmony_thread_cont_from'])) {
+  }
 
   // Add the buttons.
   $form['actions'] = array('#type' => 'actions');
