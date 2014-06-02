@@ -2242,6 +2242,7 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
   $form['label'] = array(
     '#title' => t('Label'),
     '#type' => 'textfield',
+    '#required' => TRUE,
     '#default_value' => isset($harmony_thread_type->label) ? $harmony_thread_type->label : '',
   );
 
@@ -2255,6 +2256,20 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
       'source' => array('label'),
     ),
     '#description' => t('A unique machine-readable name for this thread type. It must only contain lowercase letters, numbers, and underscores.'),
+  );
+
+  // Bundle settings.
+  $form['reply_as_new_thread'] = array(
+    '#title' => t('When replying as a new thread'),
+    '#type' => 'radios',
+    '#options' => array(
+      1 => t('Quote the full original post'),
+      2 => t('Provide a link to the original post'),
+      0 => t('Do nothing'),
+    ),
+    '#required' => TRUE,
+    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread') : 0,
+    '#description' => t('What should the create new thread form be prepopulated with? To access this users must have permission to use "Reply as a new thread".'),
   );
 
   // Check for existing content.
@@ -2292,36 +2307,50 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
  */
 function harmony_thread_type_form_submit(&$form, &$form_state) {
   $harmony_thread_type = entity_ui_form_submit_build_entity($form, $form_state);
+  $is_new = !empty($harmony_thread_type->is_new);
 
   // Save the entity!
   entity_save('harmony_thread_type', $harmony_thread_type);
 
-  // Copy the standard fields from harmony_thread.
-  $target_fields = array(
-    'field_harmony_category',
-    'field_harmony_first_post',
-    'field_harmony_last_user_to_reply',
-    'field_harmony_post_count',
-    'field_harmony_post_listing',
-    'field_harmony_thread_cont_from',
+  // Save bundle settings.
+  $variables = array(
+    'reply_as_new_thread',
   );
-  $entity_types = entity_get_info();
 
-  foreach ($target_fields as $field_name) {
-    $field = field_info_field($field_name);
-    $instance = field_info_instance('harmony_thread', $field_name, 'harmony_thread');
-
-    if (!is_array($instance)) {
-      continue;
+  foreach ($variables as $variable) {
+    if (isset($form_state['values'][$variable])) {
+      variable_set('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread', $form_state['values'][$variable]);
     }
+  }
 
-    $original_display = $instance['display'];
+  // Copy the standard fields from harmony_thread if a new type.
+  if ($is_new) {
+    $target_fields = array(
+      'field_harmony_category',
+      'field_harmony_first_post',
+      'field_harmony_last_user_to_reply',
+      'field_harmony_post_count',
+      'field_harmony_post_listing',
+      'field_harmony_thread_cont_from',
+    );
+    $entity_types = entity_get_info();
 
-    $instance = array_diff_key($instance, array_flip(array('id', 'field_id', 'bundle', 'deleted')));
-    $instance['display'] = array_intersect_key($original_display, $entity_types['harmony_thread']['view modes']);
+    foreach ($target_fields as $field_name) {
+      $field = field_info_field($field_name);
+      $instance = field_info_instance('harmony_thread', $field_name, 'harmony_thread');
 
-    $instance['bundle'] = $harmony_thread_type->type;
-    field_create_instance($instance);
+      if (!is_array($instance)) {
+        continue;
+      }
+
+      $original_display = $instance['display'];
+
+      $instance = array_diff_key($instance, array_flip(array('id', 'field_id', 'bundle', 'deleted')));
+      $instance['display'] = array_intersect_key($original_display, $entity_types['harmony_thread']['view modes']);
+
+      $instance['bundle'] = $harmony_thread_type->type;
+      field_create_instance($instance);
+    }
   }
 
   // Redirect the user.
@@ -2332,7 +2361,7 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
  * Form API submit callback for the delete button.
  */
 function harmony_thread_type_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/structure/harmony/thread/' . $form_state['harmony_thread_type']->type . '/delete';
+  $form_state['redirect'] = 'admin/structure/harmony/thread/manage/' . $form_state['harmony_thread_type']->type . '/delete';
 }
 
 /**
@@ -2343,6 +2372,19 @@ function harmony_core_form_harmony_thread_type_operation_form_alter(&$form, &$fo
   if (!empty($form_state['harmony_thread_type']->type) && $form_state['harmony_thread_type']->type === 'harmony_thread') {
     $form['description']['#markup'] = t("Oh no you don't, deleting the harmony_thread type entity would cripple harmony_core, better off uninstalling the module.");
     unset($form['actions']);
+  }
+}
+
+/**
+ * Implements hook_harmony_thread_type_delete().
+ */
+function harmony_core_harmony_thread_type_delete($harmony_thread_type) {
+  $variables = array(
+    'reply_as_new_thread',
+  );
+
+  foreach ($variables as $variable) {
+    variable_del('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread');
   }
 }
 
