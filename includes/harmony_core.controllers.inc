@@ -315,7 +315,7 @@ class HarmonyPostController extends EntityAPIController {
         if (!empty($entity->original)) {
           $original_post_wrapper = entity_metadata_wrapper('harmony_post', $entity->original);
 
-          $trigger_fields = variable_get('harmony_core_post_revision_tigger_fields', array('field_harmony_text' => 'value'));
+          $trigger_fields = variable_get('harmony_core_post_revision_trigger_fields', array('field_harmony_text' => 'value'));
 
           if (!empty($trigger_fields) && is_array($trigger_fields)) {
             foreach ($trigger_fields as $field => $index) {
@@ -336,7 +336,7 @@ class HarmonyPostController extends EntityAPIController {
             }
           }
           else {
-            watchdog('harmony_core', "Somehow an invalid value has gotten into the variable %var_name. This will prevent harmony_core from figuring out when new post revisions shouldn't be saved.", array('%var_name' => 'harmony_core_post_revision_tigger_fields'));
+            watchdog('harmony_core', "Somehow an invalid value has gotten into the variable %var_name. This will prevent harmony_core from figuring out when new post revisions shouldn't be saved.", array('%var_name' => 'harmony_core_post_revision_trigger_fields'));
           }
         }
 

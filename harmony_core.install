@@ -476,5 +476,8 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_post_replies_view');
   variable_del('harmony_core_meta_summary_max_length');
   variable_del('harmony_core_mass_update_batch_threshold');
-  variable_del('harmony_core_post_revision_tigger_fields');
+  variable_del('harmony_core_post_revision_trigger_fields');
+
+  // Remove bundle settings vars.
+  db_query('DELETE FROM {variable} WHERE name LIKE "harmony_core_bundle__%"');
 }
