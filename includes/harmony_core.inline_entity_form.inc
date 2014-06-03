@@ -91,6 +91,46 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $form['field_harmony_text'][$text_lang][0]['#title_display'] = 'invisible';
     $form['field_harmony_text'][$text_lang][0]['#attributes']['placeholder'] = t('Type here.');
 
+    // Thread continued from stuff.
+    if ($post->is_new && !empty($_GET['field_harmony_thread_cont_from']) && is_numeric($_GET['field_harmony_thread_cont_from']) && user_access('reply as new harmony_thread')) {
+      $post_to_quote_id = $_GET['field_harmony_thread_cont_from'];
+      $post_to_quote = entity_load_single('harmony_post', $post_to_quote_id);
+
+      if ($post_to_quote && harmony_core_post_access_callback('view', $post_to_quote)) {
+        $post_to_quote_wrapper = entity_metadata_wrapper('harmony_post', $post_to_quote);
+
+        // Figure out the thread type to grab the "reply as a new thrad" setting.
+        $thread_type = $post_to_quote_wrapper->field_harmony_thread->type->value();
+        $quote_action = variable_get('harmony_core_bundle__' . $thread_type . '__reply_as_new_thread', 0);
+
+        if ($quote_action > 0) {
+          $content = NULL;
+
+          // Quote original post.
+          if ($quote_action == 1) {
+            $quote_content = $post_to_quote_wrapper->field_harmony_text->value();
+
+            if ($quote_content) {
+              $content = "[quote post={$post_to_quote_id}]" . $quote_content['value'] . '[/quote]' . "\n\n";
+            }
+          }
+          // Link back to the post.
+          elseif ($quote_action == 2) {
+            $content = t('This thread continues from a post in [@title](!url "View the post")', array(
+              '@title' => $post_to_quote_wrapper->field_harmony_thread->title->value(array('sanitize' => TRUE)),
+              '!url' => url('thread/' . $post_to_quote_wrapper->field_harmony_thread->thread_id->value(), array('absolute' => TRUE)),
+            )) . "\n\n";
+          }
+
+          if ($content) {
+            // Set default value.
+            $form['field_harmony_text'][$text_lang][0]['#default_value'] = $content . $form['field_harmony_text'][$text_lang][0]['#default_value'];
+            $form['field_harmony_text'][$text_lang][0]['#format'] = variable_get('harmony_core_default_input_format', 'harmony_filtered');
+          }
+        }
+      }
+    }
+
     // Hide the thread entity reference field.
     $form['field_harmony_thread']['#access'] = FALSE;
     // Hide the "Post is reply to" entity reference field.

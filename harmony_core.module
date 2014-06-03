@@ -476,7 +476,7 @@ function harmony_core_permission() {
   $permissions += array(
     'reply as new harmony_thread' => array(
       'title' => t('Reply as new thread'),
-      'description' => t('Allows users to create threads.'),
+      'description' => t('Allows users to create threads as a reply to a specific post.'),
     ),
     'edit locked harmony_threads' => array(
       'title' => t('Edit locked threads'),
@@ -2268,7 +2268,7 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
       0 => t('Do nothing'),
     ),
     '#required' => TRUE,
-    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread') : 0,
+    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread', 0) : 0,
     '#description' => t('What should the create new thread form be prepopulated with? To access this users must have permission to use "Reply as a new thread".'),
   );
 
@@ -2384,7 +2384,7 @@ function harmony_core_harmony_thread_type_delete($harmony_thread_type) {
   );
 
   foreach ($variables as $variable) {
-    variable_del('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread');
+    variable_del('harmony_core_bundle__' . $harmony_thread_type->type . '__' . $variable);
   }
 }
 
@@ -2442,11 +2442,11 @@ function harmony_core_post_form($form, &$form_state, $post) {
       $quote_content = $post_to_quote_wrapper->field_harmony_text->value();
 
       if ($quote_content) {
-        $quote = "[quote post={$post_to_quote_id}]" . $quote_content['value'] . '[/quote]';
+        $quote = "[quote post={$post_to_quote_id}]" . $quote_content['value'] . '[/quote]' . "\n\n";
 
         // Set default value.
         $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'] = $quote . $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'];
-        $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#format'] = 'harmony_filtered';
+        $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#format'] = variable_get('harmony_core_default_input_format', 'harmony_filtered');
       }
     }
   }
