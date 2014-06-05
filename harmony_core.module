@@ -311,6 +311,14 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'views',
   );
+  // Added so that Search API can get at a threads posts.
+  $thread_properties['posts'] = array(
+    'label' => t('Posts'),
+    'description' => t('Posts within the thread.'),
+    'type' => 'list<harmony_post>',
+    'getter callback' => 'harmony_core_get_thread_posts',
+    'computed' => TRUE,
+  );
 
   // Post entity properties.
   $post_properties = &$info['harmony_post']['properties'];
@@ -3255,4 +3263,24 @@ function harmony_post_get_replies($post_id) {
   }
 
   return $results;
+}
+
+/**
+ * Helper function to grab an array of post ids when passed a thread id.
+ */
+function harmony_core_get_thread_posts($thread, array $options, $name = NULL, $entity_type = NULL) {
+  $post_ids = array();
+
+  // Get a list of posts in the current thread.
+  $query = new EntityFieldQuery;
+  $query_result = $query
+    ->entityCondition('entity_type', 'harmony_post')
+    ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
+    ->execute();
+
+  if (!empty($query_result['harmony_post'])) {
+    $post_ids = array_keys($query_result['harmony_post']);
+  }
+
+  return $post_ids;
 }
