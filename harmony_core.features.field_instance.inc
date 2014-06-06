@@ -462,6 +462,45 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'taxonomy_term-harmony_category-field_harmony_machine_name'
+  $field_instances['taxonomy_term-harmony_category-field_harmony_machine_name'] = array(
+    'bundle' => 'harmony_category',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'machine_name',
+        'settings' => array(),
+        'type' => 'machine_name_default',
+        'weight' => 3,
+      ),
+      'full' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'taxonomy_term',
+    'field_name' => 'field_harmony_machine_name',
+    'label' => 'Machine name',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'machine_name',
+      'settings' => array(
+        'size' => 128,
+      ),
+      'type' => 'machine_name_default',
+      'weight' => 6,
+    ),
+  );
+
   // Exported field_instance: 'taxonomy_term-harmony_category-field_harmony_post_count'
   $field_instances['taxonomy_term-harmony_category-field_harmony_post_count'] = array(
     'bundle' => 'harmony_category',

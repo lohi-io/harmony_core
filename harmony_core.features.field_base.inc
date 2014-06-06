@@ -167,6 +167,33 @@ function harmony_core_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_harmony_machine_name'
+  $field_bases['field_harmony_machine_name'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_harmony_machine_name',
+    'field_permissions' => array(
+      'type' => 0,
+    ),
+    'foreign keys' => array(),
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'machine_name',
+    'settings' => array(
+      'max_length' => 128,
+      'replace' => '_',
+      'replace_pattern' => '[^a-z0-9_]+',
+    ),
+    'translatable' => 0,
+    'type' => 'machine_name',
+  );
+
   // Exported field_base: 'field_harmony_post_count'
   $field_bases['field_harmony_post_count'] = array(
     'active' => 1,
