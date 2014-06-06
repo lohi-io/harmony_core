@@ -1227,12 +1227,6 @@ function harmony_core_post_access_callback($op, $entity, $account = NULL) {
     return FALSE;
   }
 
-  // Allow custom access rules to jump in.
-  /* @todo Implement post access grants. */
-  if (module_exists('harmony_access')) {
-
-  }
-
   return FALSE;
 }
 
