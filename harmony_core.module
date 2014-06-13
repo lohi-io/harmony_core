@@ -1105,8 +1105,10 @@ function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type
  * hook_entity_access in case a module like that comes along one day.
  */
 function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
-  // If grants is active ignore the view permissions.
-  if ($op === 'view' && count(module_implements('harmony_access_grants')) > 0) {
+  // If a thread and grants are active ignore the view permissions.
+  // We don't worry about the post as access to the thread is checked
+  // down the line as well.
+  if ($entity_type === 'harmony_thread' && $op === 'view' && count(module_implements('harmony_access_grants')) > 0) {
     return HARMONY_ACCESS_IGNORE;
   }
 
