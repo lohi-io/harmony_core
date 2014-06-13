@@ -36,6 +36,19 @@ function harmony_core_pathauto($op) {
         $languages = array(LANGUAGE_NONE => t('language neutral')) + locale_language_list('name');
       }
 
+      foreach (harmony_core_get_thread_types() as $type => $info) {
+        // @todo i18n support.
+        /*if (count($languages) && variable_get('language_content_type_' . $node_type, 0)) {
+          $settings['patternitems'][$node_type] = t('Default path pattern for @node_type (applies to all @node_type content types with blank patterns below)', array('@node_type' => $node_name));
+          foreach ($languages as $lang_code => $lang_name) {
+            $settings['patternitems'][$node_type . '_' . $lang_code] = t('Pattern for all @language @node_type paths', array('@node_type' => $node_name, '@language' => $lang_name));
+          }
+        }
+        else {*/
+          $settings['patternitems'][$type] = t('Pattern for all @thread_type paths', array('@thread_type' => $info->label));
+        //}
+      }
+
       return (object) $settings;
   }
 }
@@ -101,7 +114,7 @@ function harmony_core_thread_update_alias($thread, $op, array $options = array()
 
   module_load_include('inc', 'pathauto');
   $uri = entity_uri('harmony_thread', $thread);
-  pathauto_create_alias('harmony_core', $op, $uri['path'], array('harmony_thread' => $thread), '', $options['language']);
+  pathauto_create_alias('harmony_core', $op, $uri['path'], array('harmony_thread' => $thread), $thread->type, $options['language']);
 }
 
 /**
