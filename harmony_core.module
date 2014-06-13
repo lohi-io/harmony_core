@@ -423,6 +423,20 @@ function harmony_core_entity_property_info() {
 }
 
 /**
+ * Implements hook_entity_property_info_alter().
+ */
+function harmony_core_entity_property_info_alter(&$info) {
+  // Machine name will be missing from the metadata info, supply it.
+  $term_properties = &$info['taxonomy_term']['bundles']['harmony_category']['properties'];
+
+  if (!isset($term_properties['field_harmony_machine_name'])) {
+    $term_properties['field_harmony_machine_name'] = $term_properties['field_harmony_colour'];
+    $term_properties['field_harmony_machine_name']['label'] = t('Machine name');
+    $term_properties['field_harmony_machine_name']['description'] = t('Machine name of the taxonomy term.');
+  }
+}
+
+/**
  * Implements hook_permission().
  */
 function harmony_core_permission() {
@@ -1057,6 +1071,7 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
     $query->range(0, 1);
 
     $grants = db_or();
+
     foreach (harmony_access_grants($op, $account) as $realm => $gids) {
       foreach ($gids as $gid) {
         $grants->condition(db_and()
@@ -2261,6 +2276,13 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
   );
 
   // Bundle settings.
+  $form['show_anon_reply_links'] = array(
+    '#title' => t('Show anonymous users reply links'),
+    '#type' => 'checkbox',
+    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__show_anon_reply_links', 0) : 0,
+    '#description' => t('Should "Reply" links be shown on posts in threads of this type. Anonymous users cannot create Harmony content but will instead be redirected to login.'),
+  );
+
   $form['reply_as_new_thread'] = array(
     '#title' => t('When replying as a new thread'),
     '#type' => 'radios',
@@ -2316,12 +2338,13 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
 
   // Save bundle settings.
   $variables = array(
+    'show_anon_reply_links',
     'reply_as_new_thread',
   );
 
   foreach ($variables as $variable) {
     if (isset($form_state['values'][$variable])) {
-      variable_set('harmony_core_bundle__' . $harmony_thread_type->type . '__reply_as_new_thread', $form_state['values'][$variable]);
+      variable_set('harmony_core_bundle__' . $harmony_thread_type->type . '__' . $variable, $form_state['values'][$variable]);
     }
   }
 
@@ -2867,6 +2890,7 @@ function harmony_core_thread_get_properties($thread_id, $thread = NULL) {
 
     if ($thread) {
       $thread_properties[$thread_id] = array(
+        'type' => $thread->type,
         'status' => $thread->status,
         'created' => $thread->created,
         'updated' => $thread->updated,

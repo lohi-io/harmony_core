@@ -254,6 +254,7 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
 }
 
 function harmony_core_post_build_content($post, $view_mode = 'full', $langcode = NULL) {
+  global $user;
   if (!isset($langcode)) {
     $langcode = $GLOBALS['language_content']->language;
   }
@@ -338,7 +339,8 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   }
   // Reply links.
   // Only show if this thread is open.
-  if (!empty($thread_properties) && $thread_properties['can_post_in'] && user_access('create harmony_posts')) {
+  $show_reply_to_anon = !empty($thread_properties) ? variable_get('harmony_core_bundle__' . $thread_properties['type'] . '__show_anon_reply_links', 0) : 0;
+  if (!empty($thread_properties) && $thread_properties['can_post_in'] && (user_access('create harmony_posts') || $show_reply_to_anon)) {
     $links['reply'] = array(
       'title' => t('Reply'),
       'href' => 'post/add',
@@ -348,8 +350,18 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
         'field_harmony_post_is_reply_to' => $post->post_id,
       ),
     );
+
+    // For anonymous ask them to login first!
+    if (!$user->uid) {
+      $reply_url = url($links['reply']['href'], $links['reply']);
+
+      $links['reply']['href'] = 'user';
+      $links['reply']['query'] = array(
+        'destination' => $reply_url,
+      );
+    }
   }
-  if (user_access('reply as new harmony_thread')) {
+  if (user_access('reply as new harmony_thread') || $show_reply_to_anon) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',
@@ -358,6 +370,16 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
         'field_harmony_thread_cont_from' => $post->post_id,
       ),
     );
+
+    // For anonymous ask them to login first!
+    if (!$user->uid) {
+      $reply_as_new_url = url($links['reply_as_new_thread']['href'], $links['reply_as_new_thread']);
+
+      $links['reply_as_new_thread']['href'] = 'user';
+      $links['reply_as_new_thread']['query'] = array(
+        'destination' => $reply_as_new_url,
+      );
+    }
   }
   $post->content['links']['post'] = array(
     '#theme' => 'links__post__post',

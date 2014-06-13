@@ -474,7 +474,7 @@ function harmony_core_field_default_field_instances() {
         'module' => 'machine_name',
         'settings' => array(),
         'type' => 'machine_name_default',
-        'weight' => 3,
+        'weight' => 1,
       ),
       'full' => array(
         'label' => 'above',
@@ -497,7 +497,7 @@ function harmony_core_field_default_field_instances() {
         'size' => 128,
       ),
       'type' => 'machine_name_default',
-      'weight' => 6,
+      'weight' => 1,
     ),
   );
 
