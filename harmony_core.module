@@ -3278,6 +3278,8 @@ function harmony_post_get_replies($post_id) {
     ->propertyOrderBy('created')
     ->execute();
 
+    /* @todo add access tag. also caching post_reply_count:$rid:$post_id */
+
   if (!empty($reply_posts['harmony_post'])) {
     $results = array_keys($reply_posts['harmony_post']);
   }
