@@ -360,13 +360,14 @@ class HarmonyPostController extends EntityAPIController {
 
         // Update post access records.
         if (module_exists('harmony_access')) {
+          // @todo
           // Update the post access table for this post.
           // @see node_save().
           //harmony_access_acquire_grants($post, FALSE);
         }
       }
 
-      // Update some details on the thread.
+      // Grab some details on the thread.
       if ($wrapper->field_harmony_thread->value()) {
         $thread_id = $wrapper->field_harmony_thread->thread_id->value();
       }
@@ -383,6 +384,12 @@ class HarmonyPostController extends EntityAPIController {
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
         $wrapper->field_harmony_thread->save();
+
+        // Attach the thread type to the post.
+        $post->thread_type = $thread_id = $wrapper->field_harmony_thread->type->value();
+
+        // Invoke post saved, thread updated.
+        module_invoke_all('harmony_thread_new_post', $thread_id, $post);
       }
 
       // Update counts.
