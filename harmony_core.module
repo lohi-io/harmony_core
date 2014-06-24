@@ -1574,6 +1574,16 @@ function harmony_core_action_info() {
       'behavior' => array('changes_property'),
       'vbo_configurable' => TRUE,
     ),
+    // This action is only intended for use on the thread moderation
+    // page as we attempt to prepopulate the new thread title and user
+    // id from the first selected post.
+    /*'harmony_core_post_split_action' => array(
+      'type' => 'harmony_post',
+      'label' => t('Split post(s) in to a new thread'),
+      'configurable' => TRUE,
+      'behavior' => array('changes_property'),
+      'vbo_configurable' => TRUE,
+    ),*/
   );
 
   // @todo "delete" actions.
@@ -1978,6 +1988,7 @@ function harmony_core_post_reassign_action_submit($form, &$form_state) {
 function harmony_core_post_reassign_action(&$post, $context) {
   // We can't re-assign the first post otherwise there wouldn't be
   // anything in the thread, instead recommend merging threads.
+  // @todo code to allow re-assigning of first post.
   if ($post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
@@ -2026,6 +2037,107 @@ function harmony_core_post_reassign_action(&$post, $context) {
     // Inform the user.
     drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot;.', $message_vars));
   }
+}
+
+function harmony_core_post_split_action_form($settings, $vbo = array()) {
+  global $user;
+  $form = array();
+
+  // Build a standard thread object.
+  $thread = (object) array(
+    'title' => '',
+    'type' => 'harmony_thread',
+    'uid' => $user->uid,
+    'language' => LANGUAGE_NONE,
+    'status' => HARMONY_PUBLISHED,
+    'created' => REQUEST_TIME,
+    'updated' => REQUEST_TIME,
+    'pinned' => HARMONY_NOT_PINNED,
+    'locked' => HARMONY_NOT_LOCKED,
+    'hidden' => HARMONY_NOT_HIDDEN,
+    'is_new' => TRUE,
+  );
+
+  // Attempt to grab the first selected post which will be the base of
+  // information for the new thread.
+  if (!empty($vbo['selection']) && is_array($vbo['selection'])) {
+    // Attempt to load the entity.
+    $post_id = reset($vbo['selection']);
+    $post = harmony_post_load($post_id);
+
+    if ($post) {
+      $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+      $thread->title = $wrapper->field_harmony_thread->title->value();
+      $thread->type = $wrapper->field_harmony_thread->type->value();
+      /*$author = $wrapper->field_harmony_thread->uid->name->value();
+      $status = $wrapper->field_harmony_thread->status->value();
+      $pinned = $wrapper->field_harmony_thread->pinned->value();
+      $locked = $wrapper->field_harmony_thread->locked->value();
+      $hidden = $wrapper->field_harmony_thread->hidden->value();*/
+    }
+  }
+
+  $form = drupal_get_form('harmony_core_thread_form', $thread);
+
+  // Kill off a bunch of stuff we don't want.
+  unset($form['field_harmony_first_post']);
+  unset($form['#validate']);
+  unset($form['#submit']);
+
+  // Add in help text and an author field for re-assigning.
+  $form['guidance_text'] = array(
+    '#markup' => t('<p>To split posts in to another thread, we must create a new thread. Please complete the form below.'),
+    '#weight' => -100,
+  );
+
+  $form['author'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Thread author'),
+    '#default_value' => $user->name,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#maxlength' => '60',
+  );
+
+  // Prepopulate values.
+  if (!empty($post)) {
+    $form['author']['#default_value'] = $wrapper->field_harmony_thread->uid->name->value();
+
+    // Taxonomy if the bundle has that field.
+    if (!empty($form['field_harmony_category']) && $wrapper->field_harmony_thread->field_harmony_category->value()) {
+      $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $wrapper->field_harmony_thread->field_harmony_category->value();
+    }
+  }
+
+  return $form;
+}
+
+function harmony_core_post_split_action_validate($form, &$form_state) {
+  field_attach_form_validate('harmony_thread', $form_state['values']['thread'], $form, $form_state);
+}
+
+function harmony_core_post_split_action_submit($form, &$form_state) {
+  $thread = $form_state['values']['thread'];
+  $is_new = $thread->is_new;
+  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+  $wrapper->title->set($form_state['values']['title']);
+
+  $wrapper->status->set($form_state['values']['status']);
+  $wrapper->pinned->set($form_state['values']['pinned']);
+  $wrapper->locked->set($form_state['values']['locked']);
+  $wrapper->hidden->set($form_state['values']['hidden']);
+
+  field_attach_submit('harmony_thread', $thread, $form, $form_state);
+
+  $thread = harmony_thread_save($thread);
+
+  // Pass on the thread id for later use.
+
+}
+
+function harmony_core_post_split_action(&$post, $context) {
+
 }
 
 /**
