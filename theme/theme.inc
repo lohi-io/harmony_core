@@ -84,7 +84,8 @@ function template_preprocess_harmony_post(&$variables) {
   if (harmony_core_post_revision_access_callback('view', $post)) {
     $revision_count = db_query('SELECT COUNT(vid) FROM {harmony_post_revision} WHERE post_id = :post_id', array(':post_id' => $post->post_id))->fetchField();
     if ($revision_count > 1) {
-      $variables['revisions'] = l(format_plural($revision_count, '1 edit', '@count edits'), "post/$post->post_id/revisions");
+      // Reduce the count by one as we don't count the original revision.
+      $variables['revisions'] = l(format_plural($revision_count - 1, '1 edit', '@count edits'), "post/$post->post_id/revisions");
     }
   }
 
