@@ -131,6 +131,33 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
       }
     }
 
+  // Add in the log for revisions, if not new.
+  if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
+    $form['revisions'] = array(
+      '#type' => 'fieldset',
+      '#access' => user_access('administer forum content'),
+      '#title' => t('Revision options'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#group' => 'additional_settings',
+      '#attributes' => array(
+        'class' => array('post-form-options'),
+      ),
+    );
+
+    $form['revisions']['log'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Reason for edit'),
+      '#rows' => 4,
+    );
+  }
+  else {
+    $form['log'] = array(
+      '#type' => 'value',
+      '#value' => NULL,
+    );
+  }
+
     // Hide the thread entity reference field.
     $form['field_harmony_thread']['#access'] = FALSE;
     // Hide the "Post is reply to" entity reference field.
@@ -154,6 +181,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $wrapper->title->set($form_state['values']['title']);
     $wrapper->status->set($form_state['values']['status']);
     $wrapper->locked->set($form_state['values']['locked']);
+    $wrapper->log->set($form_state['values']['log']);
 
     field_attach_submit('harmony_post', $post, $form, $form_state);
   }
