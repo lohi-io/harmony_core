@@ -188,11 +188,12 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     if ($post->is_new) {
       $wrapper->first_post->set(TRUE);
     }
+
     $wrapper->title->set($form_state['values']['title']);
     $wrapper->status->set($form_state['values']['status']);
     $wrapper->locked->set($form_state['values']['locked']);
-    $wrapper->log->set($form_state['values']['log']);
-    $wrapper->log_show->set($form_state['values']['log_show']);
+    $wrapper->log->set($post->revisions['log']);
+    $wrapper->log_show->set($post->revisions['log_show']);
 
     field_attach_submit('harmony_post', $post, $form, $form_state);
   }
