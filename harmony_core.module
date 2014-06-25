@@ -411,6 +411,13 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'access callback' => 'harmony_core_post_revision_access',
   );
+  $post_properties['log_show'] = array(
+    'label' => t('Show revision log message'),
+    'type' => 'text',
+    'description' => t('If a log message has been added it can be shown to the public on the post entity display.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'access callback' => 'harmony_core_post_revision_access',
+  );
   $post_properties['revision'] = array(
     'label' => t('Creates revision'),
     'type' => 'boolean',
@@ -2633,11 +2640,20 @@ function harmony_core_post_form($form, &$form_state, $post) {
       '#title' => t('Reason for edit'),
       '#rows' => 4,
     );
+    $form['options']['log_show'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show reason for edit to the public?'),
+      '#default_value' => 0,
+    );
   }
   else {
     $form['options']['log'] = array(
       '#type' => 'value',
       '#value' => NULL,
+    );
+    $form['options']['log_show'] = array(
+      '#type' => 'value',
+      '#value' => 0,
     );
   }
 
@@ -2680,6 +2696,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->log->set($form_state['values']['log']);
+  $wrapper->log_show->set($form_state['values']['log_show']);
   unset($wrapper);
 
   field_attach_submit('harmony_post', $post, $form, $form_state);

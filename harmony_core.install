@@ -369,6 +369,12 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'size' => 'big',
       ),
+      'log_show' => array(
+        'description' => 'Whether or not to show the log entry to the public.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'uid' => array(
         'description' => 'ID of Drupal user creator.',
         'type' => 'int',
@@ -481,4 +487,18 @@ function harmony_core_uninstall() {
 
   // Remove bundle settings vars.
   db_query('DELETE FROM {variable} WHERE name LIKE :pattern', array(':pattern' => db_like('harmony_core_bundle__') . '%'));
+}
+
+/**
+ * Add in the log show Boolean field to the post revision table.
+ */
+function harmony_core_update_7100() {
+  if (!db_field_exists('harmony_post_revision', 'log_show')) {
+    db_add_field('harmony_post_revision', 'log_show', array(
+      'description' => 'Whether or not to show the log entry to the public.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ));
+  }
 }

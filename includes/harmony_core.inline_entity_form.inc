@@ -150,11 +150,21 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
       '#title' => t('Reason for edit'),
       '#rows' => 4,
     );
+
+    $form['revisions']['log_show'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show reason for edit to the public?'),
+      '#default_value' => 0,
+    );
   }
   else {
     $form['log'] = array(
       '#type' => 'value',
       '#value' => NULL,
+    );
+    $form['log_show'] = array(
+      '#type' => 'value',
+      '#value' => 0,
     );
   }
 
@@ -182,6 +192,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     $wrapper->status->set($form_state['values']['status']);
     $wrapper->locked->set($form_state['values']['locked']);
     $wrapper->log->set($form_state['values']['log']);
+    $wrapper->log_show->set($form_state['values']['log_show']);
 
     field_attach_submit('harmony_post', $post, $form, $form_state);
   }
