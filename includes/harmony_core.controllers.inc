@@ -386,7 +386,7 @@ class HarmonyPostController extends EntityAPIController {
         $wrapper->field_harmony_thread->save();
 
         // Attach the thread type to the post.
-        $post->thread_type = $thread_id = $wrapper->field_harmony_thread->type->value();
+        $post->thread_type = $wrapper->field_harmony_thread->type->value();
 
         // Invoke post saved, thread updated.
         module_invoke_all('harmony_thread_new_post', $thread_id, $post);
