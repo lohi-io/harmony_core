@@ -158,11 +158,11 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     );
   }
   else {
-    $form['log'] = array(
+    $form['revisions']['log'] = array(
       '#type' => 'value',
       '#value' => NULL,
     );
-    $form['log_show'] = array(
+    $form['revisions']['log_show'] = array(
       '#type' => 'value',
       '#value' => 0,
     );
