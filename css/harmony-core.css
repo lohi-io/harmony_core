@@ -62,7 +62,8 @@
   padding-top: 20px;
 }
 
-.post-header {
+.post-header,
+.post-revision-log {
   margin-bottom: 10px;
 }
 
