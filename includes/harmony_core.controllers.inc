@@ -275,6 +275,128 @@ class HarmonyPostController extends EntityAPIController {
    *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
    *   in their transaction object.
    */
+  public function load($ids = array(), $conditions = array()) {
+    $entities = array();
+
+    // Revisions are not statically cached, and require a different query to
+    // other conditions, so separate the revision id into its own variable.
+    if ($this->revisionKey && isset($conditions[$this->revisionKey])) {
+      $revision_id = $conditions[$this->revisionKey];
+      unset($conditions[$this->revisionKey]);
+    }
+    else {
+      $revision_id = FALSE;
+    }
+
+    // Create a new variable which is either a prepared version of the $ids
+    // array for later comparison with the entity cache, or FALSE if no $ids
+    // were passed. The $ids array is reduced as items are loaded from cache,
+    // and we need to know if it's empty for this reason to avoid querying the
+    // database when all requested entities are loaded from cache.
+    $passed_ids = !empty($ids) ? array_flip($ids) : FALSE;
+
+    // Try to load entities from the static cache.
+    if ($this->cache && !$revision_id) {
+      $entities = $this->cacheGet($ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      if ($passed_ids) {
+        $ids = array_keys(array_diff_key($passed_ids, $entities));
+      }
+    }
+
+    // Support the entitycache module if activated.
+    if (!empty($this->entityInfo['entity cache']) && !$revision_id && $ids && !$conditions) {
+      $cached_entities = EntityCacheControllerHelper::entityCacheGet($this, $ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      $ids = array_diff($ids, array_keys($cached_entities));
+      $entities += $cached_entities;
+
+      // Add loaded entities to the static cache if we are not loading a
+      // revision.
+      if ($this->cache && !empty($cached_entities) && !$revision_id) {
+        $this->cacheSet($cached_entities);
+      }
+    }
+
+    // Load any remaining entities from the database. This is the case if $ids
+    // is set to FALSE (so we load all entities), if there are any ids left to
+    // load or if loading a revision.
+    if (!($this->cacheComplete && $ids === FALSE && !$conditions) && ($ids === FALSE || $ids || $revision_id)) {
+      $queried_entities = array();
+      foreach ($this->query($ids, $conditions, $revision_id) as $record) {
+        // Skip entities already retrieved from cache.
+        if (isset($entities[$record->{$this->idKey}])) {
+          continue;
+        }
+
+        // For DB-based entities take care of serialized columns.
+        if (!empty($this->entityInfo['base table'])) {
+          $schema = drupal_get_schema($this->entityInfo['base table']);
+
+          foreach ($schema['fields'] as $field => $info) {
+            if (!empty($info['serialize']) && isset($record->$field)) {
+              $record->$field = unserialize($record->$field);
+              // Support automatic merging of 'data' fields into the entity.
+              if (!empty($info['merge']) && is_array($record->$field)) {
+                foreach ($record->$field as $key => $value) {
+                  $record->$key = $value;
+                }
+                unset($record->$field);
+              }
+            }
+          }
+        }
+
+        $queried_entities[$record->{$this->idKey}] = $record;
+      }
+    }
+
+    // When loading a post, if revisions are involved we switch back and forth
+    // the uid of the editor and author.
+    if (!empty($queried_entities)) {
+      foreach ($queried_entities as $entity_id => $entity) {
+        $queried_entities[$entity_id]->editor = $entity->uid;
+        $queried_entities[$entity_id]->uid = $entity->author_uid;
+        unset($queried_entities[$entity_id]->author_uid);
+      }
+    }
+
+    // Pass all entities loaded from the database through $this->attachLoad(),
+    // which attaches fields (if supported by the entity type) and calls the
+    // entity type specific load callback, for example hook_node_load().
+    if (!empty($queried_entities)) {
+      $this->attachLoad($queried_entities, $revision_id);
+      $entities += $queried_entities;
+    }
+
+    // Entitycache module support: Add entities to the entity cache if we are
+    // not loading a revision.
+    if (!empty($this->entityInfo['entity cache']) && !empty($queried_entities) && !$revision_id) {
+      EntityCacheControllerHelper::entityCacheSet($this, $queried_entities);
+    }
+
+    if ($this->cache) {
+      // Add entities to the cache if we are not loading a revision.
+      if (!empty($queried_entities) && !$revision_id) {
+        $this->cacheSet($queried_entities);
+
+        // Remember if we have cached all entities now.
+        if (!$conditions && $ids === FALSE) {
+          $this->cacheComplete = TRUE;
+        }
+      }
+    }
+    // Ensure that the returned array is ordered the same as the original
+    // $ids array if this was passed in and remove any invalid ids.
+    if ($passed_ids && $passed_ids = array_intersect_key($passed_ids, $entities)) {
+      foreach ($passed_ids as $id => $value) {
+        $passed_ids[$id] = $entities[$id];
+      }
+      $entities = $passed_ids;
+    }
+    return $entities;
+  }
+
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     $transaction = isset($transaction) ? $transaction : db_transaction();
 
@@ -453,7 +575,7 @@ class HarmonyPostController extends EntityAPIController {
   }
 
   protected function saveRevision($entity) {
-    // Update the reivion user to be the current person editing if not anon.
+    // Update the revision user to be the current person editing if not anon.
     // We don't allow anon to create threads or posts but things can happen
     // via drush.
     global $user;
@@ -503,6 +625,8 @@ class HarmonyPostController extends EntityAPIController {
     // the current revision or not.
     $query = parent::buildQuery($ids, $conditions, $revision_id);
     $query->addField('base', 'vid', 'current_vid');
+    // @todo is there sometihng going wrong here?
+    $query->addField('base', 'uid', 'author_uid');
 
     return $query;
   }

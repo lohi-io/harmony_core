@@ -234,6 +234,7 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   // We don't need duplicate rendering info in post->content.
   unset($post->content);
 
+  // Add more to the build object.
   $build += array(
     '#theme' => 'harmony_post',
     '#post' => $post,
@@ -245,6 +246,19 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
       ),
     ),
   );
+
+  // Extra fields.
+  $extra_fields = field_info_extra_fields('harmony_post', 'harmony_post', 'display');
+
+  if (isset($extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) && $extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) {
+    $revision_log = harmony_core_post_revision_display_log($post, $view_mode);
+
+    if (!empty($revision_log)) {
+      $build['harmony_core_post_revision_display_log'] = array(
+        '#markup' => $revision_log,
+      );
+    }
+  }
 
   // Allow modules to modify the structured post.
   $type = 'harmony_post';

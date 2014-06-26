@@ -25,6 +25,26 @@ function theme_harmony_post_diff_inline_metadata($variables) {
 }
 
 /**
+ * Field extra field callback which provides the revision log message
+ * if it's filled in and set to display to the user.
+ */
+function harmony_core_post_revision_display_log($post, $view_mode) {
+  $output = NULL;
+
+  if (trim($post->log) != '' && $post->log_show) {
+    $user = user_load($post->editor);
+    $text = t('Edited on @date by !editor, @reason', array(
+      '@date' => format_date($post->updated),
+      '!editor' => theme('username', array('account' => $user)),
+      '@reason' => $post->log,
+    ));
+    $output = '<div class="post-revision-log text-small">' . $text . '</div>';
+  }
+
+  return $output;
+}
+
+/**
  * Processes variables for harmony-post.tpl.php
  *
  * The $variables array contains the following arguments:

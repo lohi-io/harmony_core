@@ -2759,6 +2759,7 @@ function _harmony_core_post_form_alter(&$form) {
  * Implements hook_field_extra_fields().
  */
 function harmony_core_field_extra_fields() {
+  // User.
   $extra['user']['user'] = array(
     'form' => array(),
     'display' => array(
@@ -2771,6 +2772,18 @@ function harmony_core_field_extra_fields() {
         'label' => t('User Picture'),
         'description' => t('Display the users picture/avatar using the sizing specified in the site user settings.'),
         'weight' => 10,
+      ),
+    ),
+  );
+
+  // Posts.
+  $extra['harmony_post']['harmony_post'] = array(
+    'form' => array(),
+    'display' => array(
+      'harmony_core_post_revision_display_log' => array(
+        'label' => t('Revision log message'),
+        'description' => t('If the current post revision has a log message and is set to be displayed to the public, it will be shown through this field.'),
+        'weight' => 5,
       ),
     ),
   );
