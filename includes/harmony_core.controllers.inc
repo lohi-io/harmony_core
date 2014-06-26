@@ -355,7 +355,7 @@ class HarmonyPostController extends EntityAPIController {
     // the uid of the editor and author.
     if (!empty($queried_entities)) {
       foreach ($queried_entities as $entity_id => $entity) {
-        $queried_entities[$entity_id]->editor = $entity->uid;
+        $queried_entities[$entity_id]->revision_uid = $entity->uid;
         $queried_entities[$entity_id]->uid = $entity->author_uid;
         unset($queried_entities[$entity_id]->author_uid);
       }

@@ -32,7 +32,7 @@ function harmony_core_post_revision_display_log($post, $view_mode) {
   $output = NULL;
 
   if (trim($post->log) != '' && $post->log_show) {
-    $user = user_load($post->editor);
+    $user = user_load($post->revision_uid);
     $text = t('Edited on @date by !editor, @reason', array(
       '@date' => format_date($post->updated),
       '!editor' => theme('username', array('account' => $user)),
