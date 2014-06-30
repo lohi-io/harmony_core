@@ -28,7 +28,8 @@ function theme_harmony_post_diff_inline_metadata($variables) {
  * Field extra field callback which provides the revision log message
  * if it's filled in and set to display to the user.
  */
-function harmony_core_post_revision_display_log($post, $view_mode) {
+function theme_harmony_post_revision_display_log($variables) {
+  extract($variables);
   $output = NULL;
 
   if (trim($post->log) != '' && $post->log_show) {

@@ -922,6 +922,14 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
+    'harmony_post_revision_display_log' => array(
+      'arguments' => array(
+        'post' => NULL,
+        'view_mode' => NULL,
+      ),
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
     'harmony_core_views_style_plugin_harmony_table_ui' => array(
       'render element' => 'form',
       'file' => 'theme.inc',
@@ -1004,7 +1012,7 @@ function harmony_core_context_registry() {
  * @return
  *   TRUE if the operation may be performed, FALSE otherwise.
  */
-function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
+function harmony_core_thread_access_callback($op, $entity, $account = NULL, $thread_type = NULL) {
   $rights = &drupal_static(__FUNCTION__, array());
 
   // Check that the operation is valid.
@@ -1040,6 +1048,11 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL) {
   // Don't allow anon to create content, putting here so it's very obvious! @todo
   if ($op == 'create' && !$account->uid) {
     return FALSE;
+  }
+
+  // If type isn't defined then set to default.
+  if (!$thread_type) {
+    $thread_type = 'harmony_thread';
   }
 
   // Admin-ish access checks.
@@ -1111,7 +1124,7 @@ function harmony_core_harmony_thread_access($op, $entity, $account, $entity_type
  * A way for us to check access to an entity. Avoid the name
  * hook_entity_access in case a module like that comes along one day.
  */
-function harmony_core_entity_access_check($op, $entity, $account, $entity_type) {
+function harmony_core_entity_access_check($op, $entity, $account, $entity_type, $bundle = NULL) {
   // If a thread and grants are active ignore the view permissions.
   // We don't worry about the post as access to the thread is checked
   // down the line as well.
@@ -2148,6 +2161,62 @@ function harmony_core_post_split_action(&$post, $context) {
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function harmony_core_block_info() {
+  $blocks = array();
+
+  $blocks['reply_form'] = array(
+    'info' => t('Thread reply form'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function harmony_core_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'reply_form':
+      // Check that we're on a thread page.
+      if (arg(0) === 'thread' && is_numeric(arg(1)) && user_access('create harmony_posts')) {
+        $thread = harmony_thread_load(arg(1));
+
+        if ($thread && harmony_core_thread_access_callback('create', $thread)) {
+          $block['subject'] = t('Post a reply');
+          $block['content'] = harmony_core_get_reply_form($thread);
+        }
+      }
+
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Generate a reply to thread/create new post in thread form.
+ */
+function harmony_core_get_reply_form($thread) {
+  $thread_id = !empty($thread->thread_id) ? $thread->thread_id : NULL;
+
+  // If we can't determine the thread id then bail out.
+  if (!$thread_id) {
+    return FALSE;
+  }
+
+  // This makes me cry, @todo work out how to set default value on entity ref.
+  $_GET['field_harmony_thread'] = $thread_id;
+  $form = harmony_core_post_add(FALSE);
+
+  return $form;
+}
+
+/**
  * Implements hook_cron_queue_info().
  */
 function harmony_core_cron_queue_info() {
@@ -2326,6 +2395,10 @@ function harmony_core_thread_form_submit($form, &$form_state) {
     $wrapper->field_harmony_first_post->save();
   }
 
+  // Hooks ahoy.
+  module_invoke_all('harmony_thread_save_finalised', $thread);
+
+  // Setup redirects.
   $form_state['redirect'] = "thread/$thread->thread_id";
 
   if ($thread->batch_process) {

@@ -185,7 +185,7 @@ function harmony_thread_delete_confirm_submit($form, &$form_state) {
   $form_state['redirect'] = '<front>';
 }
 
-function harmony_core_post_add() {
+function harmony_core_post_add($is_page = TRUE) {
   global $user;
 
   $post = (object) array(
@@ -200,7 +200,9 @@ function harmony_core_post_add() {
     'is_new' => TRUE,
   );
 
-  drupal_set_title(t('Create post'), PASS_THROUGH);
+  if ($is_page) {
+    drupal_set_title(t('Create post'), PASS_THROUGH);
+  }
   $output = drupal_get_form('harmony_core_post_form', $post);
 
   return $output;
@@ -251,7 +253,7 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   $extra_fields = field_info_extra_fields('harmony_post', 'harmony_post', 'display');
 
   if (isset($extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) && $extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) {
-    $revision_log = harmony_core_post_revision_display_log($post, $view_mode);
+    $revision_log = theme('harmony_post_revision_display_log', array('post' => $post, 'view_mode' => $view_mode));
 
     if (!empty($revision_log)) {
       $build['harmony_core_post_revision_display_log'] = array(
