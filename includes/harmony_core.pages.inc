@@ -438,11 +438,18 @@ function harmony_post_delete_confirm($form, &$form_state, $post) {
   // Check that this isn't the first post in a thread. If it is, prevent deletion.
   if ($post->first_post) {
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
-    $form['text']['#markup'] = '<p>' . t("You cannot delete this post as it's the first in a thread. You must delete the thread.") . '</p>';
+    $thread_id = NULL;
 
     if ($wrapper->field_harmony_thread->value()) {
       $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    }
+
+    if ($thread_id) {
+      $form['text']['#markup'] = '<p>' . t('You cannot delete this post as it\'s the first in a thread. You must <a href="!thread_delete_url">delete the thread</a>.', array('!thread_delete_url' => url("thread/$thread_id/delete"))) . '</p>';
       $form['text']['#markup'] .= '<p>' . l(t('Return to thread'), "thread/$thread_id") . '</p>';
+    }
+    else {
+      $form['text']['#markup'] = '<p>' . t("You cannot delete this post as it's the first in a thread. You must delete the thread.") . '</p>';
     }
   }
   else {

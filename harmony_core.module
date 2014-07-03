@@ -2183,7 +2183,7 @@ function harmony_core_block_view($delta = '') {
   switch ($delta) {
     case 'reply_form':
       // Check that we're on a thread page.
-      if (arg(0) === 'thread' && is_numeric(arg(1)) && user_access('create harmony_posts')) {
+      if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2) && user_access('create harmony_posts')) {
         $thread = harmony_thread_load(arg(1));
 
         if ($thread && harmony_core_thread_access_callback('create', $thread)) {
