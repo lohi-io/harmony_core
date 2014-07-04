@@ -2269,6 +2269,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
       'placeholder' => t('Thread title'),
     ),
     '#title_display' => 'invisible',
+    '#maxlength' => 255,
   );
 
   // Attach fields.
