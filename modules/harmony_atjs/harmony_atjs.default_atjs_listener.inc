@@ -41,6 +41,7 @@ function harmony_atjs_default_atjs_listener() {
     'data' => 0,
     'field_harmony_post_count' => 0,
     'field_harmony_thread_count' => 0,
+    'og_user_node' => 0,
   );
   $listener->query_limit = TRUE;
   $listener->max_length = TRUE;

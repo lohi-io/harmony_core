@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Code for the Harmony - Atjs feature.
+ */
+
+include_once 'harmony_atjs.features.inc';
 
 /**
  * @file
