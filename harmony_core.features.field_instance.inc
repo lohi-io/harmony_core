@@ -120,7 +120,7 @@ function harmony_core_field_default_field_instances() {
     'widget' => array(
       'active' => 1,
       'module' => 'text',
-      'settings' => array(),
+      'settings' => array(
         'rows' => 3,
       ),
       'type' => 'text_textarea',
