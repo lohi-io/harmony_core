@@ -1,0 +1,11 @@
+name = Harmony - Atjs
+description = Provides core functionality for Harmony!
+core = 7.x
+package = Harmony
+project = harmony_atjs
+dependencies[] = atjs
+dependencies[] = features
+dependencies[] = features_override
+dependencies[] = harmony_core
+features[atjs_listener][] = harmony_users
+features[ctools][] = atjs:default_atjs_listener:1
