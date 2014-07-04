@@ -170,15 +170,6 @@ br,span,em,strong,cite,code,blockquote,ul,ol,li,dl,dt,dd,h1,h2,h3,h4,h5,h6,del',
           'rule_style_urls' => array(),
         ),
       ),
-      'atjs' => array(
-        'weight' => -44,
-        'status' => 1,
-        'settings' => array(
-          'atjs_listeners' => array(
-            'harmony_users' => 'harmony_users',
-          ),
-        ),
-      ),
       'entity_quote' => array(
         'weight' => -42,
         'status' => 1,

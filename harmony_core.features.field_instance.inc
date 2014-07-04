@@ -120,13 +120,7 @@ function harmony_core_field_default_field_instances() {
     'widget' => array(
       'active' => 1,
       'module' => 'text',
-      'settings' => array(
-        'atjs_fieldset' => array(
-          'atjs' => 1,
-          'atjs_listeners' => array(
-            'harmony_users' => 'harmony_users',
-          ),
-        ),
+      'settings' => array(),
         'rows' => 3,
       ),
       'type' => 'text_textarea',
