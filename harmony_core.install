@@ -470,6 +470,9 @@ function harmony_core_install() {
     'label' => t('Thread'),
   ));
   entity_save('harmony_thread_type', $type);
+
+  // Set the thread pathauto pattern.
+  variable_set('pathauto_harmony_core_pattern', 'thread/[harmony_thread:thread-id]/[harmony_thread:title]');
 }
 
 /**
