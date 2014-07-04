@@ -8,9 +8,6 @@
  * Implements hook_ctools_plugin_api().
  */
 function harmony_core_ctools_plugin_api($module = NULL, $api = NULL) {
-  if ($module == "atjs" && $api == "default_atjs_listener") {
-    return array("version" => "1");
-  }
   if ($module == "context" && $api == "context") {
     return array("version" => "3");
   }
