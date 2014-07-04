@@ -24,6 +24,12 @@ function harmony_core_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 3,
       ),
+      'full' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
     ),
     'entity_type' => 'harmony_post',
     'field_name' => 'field_harmony_post_is_reply_to',
@@ -703,6 +709,7 @@ function harmony_core_field_default_field_instances() {
   t('Colour');
   t('First post');
   t('Last user to post a reply');
+  t('Machine name');
   t('Post count');
   t('Post is reply to');
   t('Post listing');
