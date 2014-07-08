@@ -2472,10 +2472,17 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
 
   // Bundle settings.
   $form['show_anon_reply_links'] = array(
-    '#title' => t('Show anonymous users reply links'),
+    '#title' => t('Show anonymous users reply link'),
     '#type' => 'checkbox',
     '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__show_anon_reply_links', 0) : 0,
-    '#description' => t('Should "Reply" links be shown on posts in threads of this type. Anonymous users cannot create Harmony content but will instead be redirected to login.'),
+    '#description' => t('Should the "Reply" link be shown on posts in threads of this type. Anonymous users cannot create Harmony content but will instead be redirected to login.'),
+  );
+
+  $form['show_anon_reply_as_links'] = array(
+    '#title' => t('Show anonymous users reply as new thread link'),
+    '#type' => 'checkbox',
+    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__show_anon_reply_as_links', 0) : 0,
+    '#description' => t('Should "Reply as a new thread" links be shown on posts in threads of this type. Anonymous users cannot create Harmony content but will instead be redirected to login.'),
   );
 
   $form['reply_as_new_thread'] = array(

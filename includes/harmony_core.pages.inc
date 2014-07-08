@@ -356,6 +356,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
   // Reply links.
   // Only show if this thread is open.
   $show_reply_to_anon = !empty($thread_properties) ? variable_get('harmony_core_bundle__' . $thread_properties['type'] . '__show_anon_reply_links', 0) : 0;
+  $show_reply_as_to_anon = !empty($thread_properties) ? variable_get('harmony_core_bundle__' . $thread_properties['type'] . '__show_anon_reply_as_links', 0) : 0;
   if (!empty($thread_properties) && $thread_properties['can_post_in'] && (user_access('create harmony_posts') || $show_reply_to_anon)) {
     $links['reply'] = array(
       'title' => t('Reply'),
@@ -377,7 +378,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       );
     }
   }
-  if (user_access('reply as new harmony_thread') || $show_reply_to_anon) {
+  if (user_access('reply as new harmony_thread') || $show_reply_as_to_anon) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',
