@@ -2754,6 +2754,24 @@ function harmony_core_post_form($form, &$form_state, $post) {
       '#submit' => array('harmony_post_delete_submit'),
     );
   }
+  // Add cancel link if on the create post URL.
+  if (arg(0) === 'post' && arg(1) === 'add') {
+    // Prepare cancel link.
+    $path = '<front>';
+    if (isset($_GET['field_harmony_thread']) && is_numeric($_GET['field_harmony_thread'])) {
+      $options = drupal_parse_url('thread/' . $_GET['field_harmony_thread']);
+    }
+    else {
+      $options = array('path' => $path);
+    }
+    $form['actions']['cancel'] = array(
+      '#type' => 'link',
+      '#title' => t('Cancel'),
+      '#href' => $options['path'],
+      '#options' => $options,
+      '#weight' => 20,
+    );
+  }
 
   return $form;
 }
