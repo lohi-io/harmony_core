@@ -43,8 +43,8 @@ function harmony_atjs_default_atjs_listener() {
     'field_harmony_thread_count' => 0,
     'og_user_node' => 0,
   );
-  $listener->query_limit = TRUE;
-  $listener->max_length = TRUE;
+  $listener->query_limit = 5;
+  $listener->max_length = 10;
   $export['harmony_users'] = $listener;
 
   return $export;
