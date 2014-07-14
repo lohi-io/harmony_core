@@ -1842,7 +1842,6 @@ function harmony_core_thread_move_category_action(&$thread, $context) {
   // Check that the thread has the category field.
   if ($wrapper->__isset('field_harmony_category')) {
     $wrapper->field_harmony_category->set($context['term_id']);
-    $wrapper->save();
   }
 }
 
