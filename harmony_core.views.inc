@@ -121,6 +121,32 @@
     ),
   );
 
+  // Post ID.
+  $data['harmony_post']['post_id'] = array(
+    'title' => t('Post ID'),
+    'help' => t('The internal ID of the post revision.'),
+    'relationship' => array(
+      'title' => t('Post ID'),
+      'base' => 'harmony_post',
+      'field' => 'post_id',
+      'label' => t('post'),
+    ),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
   // Add in post vid.
   $data['harmony_post']['vid'] = array(
     'title' => t('Current revision ID'),
