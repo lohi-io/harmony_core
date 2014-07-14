@@ -1392,6 +1392,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
+    'pinned' => 'title',
     'title' => 'title',
     'field_harmony_category' => 'field_harmony_category',
     'field_harmony_post_count' => 'field_harmony_post_count',
@@ -1402,11 +1403,20 @@ function harmony_core_views_default_views() {
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
-    'title' => array(
+    'pinned' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
+    ),
+    'title' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => ' ',
       'empty_column' => 0,
       'cell_class' => 'tl-title',
       'meta_field' => 0,
@@ -1482,6 +1492,20 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['relationships']['uid']['id'] = 'uid';
   $handler->display->display_options['relationships']['uid']['table'] = 'harmony_thread';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
+  /* Field: Thread: Pinned */
+  $handler->display->display_options['fields']['pinned']['id'] = 'pinned';
+  $handler->display->display_options['fields']['pinned']['table'] = 'harmony_thread';
+  $handler->display->display_options['fields']['pinned']['field'] = 'pinned';
+  $handler->display->display_options['fields']['pinned']['label'] = '';
+  $handler->display->display_options['fields']['pinned']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['pinned']['alter']['text'] = '<span class="harmony-pinned">[pinned]</span>';
+  $handler->display->display_options['fields']['pinned']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['pinned']['element_default_classes'] = FALSE;
+  $handler->display->display_options['fields']['pinned']['hide_empty'] = TRUE;
+  $handler->display->display_options['fields']['pinned']['empty_zero'] = TRUE;
+  $handler->display->display_options['fields']['pinned']['type'] = 'custom';
+  $handler->display->display_options['fields']['pinned']['type_custom_true'] = 'Pinned';
+  $handler->display->display_options['fields']['pinned']['not'] = 0;
   /* Field: Thread: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'harmony_thread';
