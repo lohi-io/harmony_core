@@ -1498,6 +1498,19 @@ function harmony_post_revision_delete($revision_id) {
 }
 
 /**
+ * Get the first version of a posts vid.
+ */
+function harmony_post_get_first_vid($post_id) {
+  $harmony_post_vids = &drupal_static(__FUNCTION__, array());
+
+  if (!isset($harmony_post_vids[$post_id])) {
+    $harmony_post_vids[$post_id] = db_query('SELECT vid FROM {harmony_post_revision} WHERE post_id = :post_id ORDER BY vid ASC', array(':post_id' => $post_id))->fetchField();
+  }
+
+  return isset($harmony_post_vids[$post_id]) ? $harmony_post_vids[$post_id] : 0;
+}
+
+/**
  * Implements hook_action_info().
  */
 function harmony_core_action_info() {
