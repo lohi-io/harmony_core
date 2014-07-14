@@ -1569,6 +1569,12 @@ function harmony_core_action_info() {
       'configurable' => FALSE,
       'triggers' => array(),
     ),
+    'harmony_core_thread_move_category_action' => array(
+      'type' => 'harmony_thread',
+      'label' => t('Move thread(s) to a different category'),
+      'configurable' => TRUE,
+      'behavior' => array('changes_property'),
+    ),
     'harmony_core_post_publish_action' => array(
       'type' => 'harmony_post',
       'label' => t('Publish'),
@@ -1774,6 +1780,70 @@ function harmony_core_thread_unhide_action($thread, $context = array()) {
 function harmony_core_thread_save_action($thread) {
   harmony_thread_save($thread);
   watchdog('action', 'Saved thread %title', array('%title' => $thread->title));
+}
+
+/**
+ * Move thread to a category form callback.
+ */
+function harmony_core_thread_move_category_action_form($settings) {
+  global $user;
+  $form = array();
+  $form_state = array();
+
+  $thread = (object) array(
+    'title' => '',
+    'type' => 'harmony_thread',
+    'uid' => $user->uid,
+    'language' => LANGUAGE_NONE,
+    'status' => HARMONY_PUBLISHED,
+    'created' => REQUEST_TIME,
+    'updated' => REQUEST_TIME,
+    'pinned' => HARMONY_NOT_PINNED,
+    'locked' => HARMONY_NOT_LOCKED,
+    'hidden' => HARMONY_NOT_HIDDEN,
+    'is_new' => TRUE,
+  );
+
+  field_attach_form('harmony_thread', $thread, $form, $form_state, NULL, array('field_name' => 'field_harmony_category'));
+
+  $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#title'] = t('Category to move threads to');
+  $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#required'] = TRUE;
+
+  // Allow other modules to mess with the options for access control reasons.
+  drupal_alter('harmony_category_options', $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#options']);
+  $options = $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#options'];
+  // If empty, hide and throw out a helpful message.
+  if (empty($options) || !empty($options) && count($options) === 1 && isset($options['_none'])) {
+    $form['field_harmony_category']['#access'] = FALSE;
+    $form['guidance_text'] = t("<p>You don't have access to any categories or there aren't any categories.</p>");
+  }
+
+  return $form;
+}
+
+/**
+ * Action form, form submit.
+ */
+function harmony_core_thread_move_category_action_submit($form, &$form_state) {
+  $return = array();
+  $lang = !empty($form['#entity']->language) ? $form['#entity']->language : LANGUAGE_NONE;
+
+  $return['term_id'] = $form_state['values']['field_harmony_category'][$lang][0]['tid'];
+
+  return $return;
+}
+
+/**
+ * Action for moving a thread to a category.
+ */
+function harmony_core_thread_move_category_action(&$thread, $context) {
+  $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+  // Check that the thread has the category field.
+  if ($wrapper->__isset('field_harmony_category')) {
+    $wrapper->field_harmony_category->set($context['term_id']);
+    $wrapper->save();
+  }
 }
 
 /**
