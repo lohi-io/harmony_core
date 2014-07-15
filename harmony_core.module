@@ -2268,9 +2268,13 @@ function harmony_core_block_view($delta = '') {
       if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2) && user_access('create harmony_posts')) {
         $thread = harmony_thread_load(arg(1));
 
-        if ($thread && harmony_core_thread_access_callback('create', $thread)) {
-          $block['subject'] = t('Post a reply');
-          $block['content'] = harmony_core_get_reply_form($thread);
+        if ($thread) {
+          $thread_properties = harmony_core_thread_get_properties(arg(1), $thread);
+
+          if ($thread_properties['can_post_in'] && harmony_core_thread_access_callback('create', $thread)) {
+            $block['subject'] = t('Post a reply');
+            $block['content'] = harmony_core_get_reply_form($thread);
+          }
         }
       }
 
@@ -3201,6 +3205,8 @@ function harmony_core_thread_mark($thread_id, $timestamp) {
  *
  * @param $thread_id
  *   A harmony_core_thread ID.
+ * @param $thread
+ *   A harmony thread object.
  *
  * @return
  *   An array of properties, empty if the thread cannot be loaded.
