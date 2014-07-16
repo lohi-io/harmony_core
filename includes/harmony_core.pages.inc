@@ -364,7 +364,10 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     $links['reply'] = array(
       'title' => t('Reply'),
       'href' => 'post/add',
-      'attributes' => array('title' => t('Reply directly to this post')),
+      'attributes' => array(
+        'title' => t('Reply directly to this post'),
+        'class' => array('reply-link'),
+      ),
       'query' => array(
         'field_harmony_thread' => $thread_id,
         'field_harmony_post_is_reply_to' => $post->post_id,
@@ -379,13 +382,17 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       $links['reply']['query'] = array(
         'destination' => $reply_url,
       );
+      $links['reply']['attributes']['class'][0] = 'login-link';
     }
   }
   if (user_access('reply as new harmony_thread') || $show_reply_as_to_anon) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',
-      'attributes' => array('title' => t('Create a new thread as a reply to this post')),
+      'attributes' => array(
+        'title' => t('Create a new thread as a reply to this post'),
+        'class' => array('reply-link'),
+      ),
       'query' => array(
         'field_harmony_thread_cont_from' => $post->post_id,
       ),
@@ -399,6 +406,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       $links['reply_as_new_thread']['query'] = array(
         'destination' => $reply_as_new_url,
       );
+      $links['reply_as_new_thread']['attributes']['class'][0] = 'login-link';
     }
   }
   $post->content['links']['post'] = array(

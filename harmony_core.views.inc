@@ -52,6 +52,13 @@
       'handler' => 'harmony_core_views_handler_thread_field_link_delete',
     ),
   );
+  $data['harmony_thread']['reply_link'] = array(
+    'field' => array(
+      'title' => t('Reply to thread link'),
+      'help' => t('Provide a link to the reply form for the thread.'),
+      'handler' => 'harmony_core_views_handler_thread_field_reply_link',
+    ),
+  );
   // Provide taxonomy with representative thread.
   /*$data['taxonomy_term_data']['tid_representative_thread'] = array(
     'relationship' => array(

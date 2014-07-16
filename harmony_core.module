@@ -656,7 +656,6 @@ function harmony_core_menu() {
     'access arguments' => array('create harmony_thread harmony threads'),
   );
 
-  $thread_types = harmony_core_get_thread_types();
   if (count($thread_types) > 1) {
     foreach ($thread_types as $type => $info) {
       $items['admin/content/threads/add/' . str_replace('_', '-', $type)] = array(
