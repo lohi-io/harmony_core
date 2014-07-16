@@ -85,8 +85,7 @@ function template_preprocess_harmony_post(&$variables) {
   // Add in the user profile, this is controlled via field ui
   // so you can easily add/remove things. Display suite is
   // recommended for as much control as possible.
-  $account = user_load($post->uid);
-  $variables['account'] = $account;
+  $account = $post->author;
   $user_view = user_view($account, 'harmony_user_post_profile');
   $variables['user_profile'] = drupal_render($user_view);
 
@@ -456,4 +455,25 @@ function theme_harmony_listing_header($variables) {
   $attrs = !empty($variables['link_attrs']) && is_array($variables['link_attrs']) ? $variables['link_attrs'] : array();
 
   return '<div class="harmony-listing-header clearfix">' . l($text, 'thread/add', $attrs) . '</div>';
+}
+
+/**
+ * Build up the title meta things for a thread.
+ */
+function theme_harmony_core_thread_title_meta($variables) {
+  extract($variables);
+
+  if (!$thread_properties['locked'] && !$thread_properties['pinned']) {
+    return NULL;
+  }
+
+  $output = array();
+  if ($thread_properties['locked']) {
+    $output[] = '<span class="harmony-meta-item harmony-thread-locked" title="' . t('This thread has been locked from edits.') . '">' . t('Locked') . '</span>';
+  }
+  if ($thread_properties['pinned']) {
+    $output[] = '<span class="harmony-meta-item harmony-thread-locked" title="' . t('This thread has been pinned and will appear at the top of listings.') . '">' . t('Pinned') . '</span>';
+  }
+
+  return '<span class="harmony-title-meta">' . implode(' ', $output) . '</span>';
 }

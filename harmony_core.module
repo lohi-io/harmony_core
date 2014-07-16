@@ -943,6 +943,14 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
+    'harmony_core_thread_title_meta' => array(
+      'variables' => array(
+        'thread' => NULL,
+        'thread_properties' => NULL,
+      ),
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
   );
 }
 
@@ -2282,6 +2290,36 @@ function harmony_core_block_view($delta = '') {
   }
 
   return $block;
+}
+
+/**
+ * Implements template_preprocess_html().
+ *
+ * Add body classes!
+ */
+function harmony_core_preprocess_html(&$variables) {
+  if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2)) {
+    $thread = harmony_thread_load(arg(1));
+    $variables['classes_array'][] = 'harmony-thread';
+    $variables['classes_array'][] = 'harmony-thread-' . drupal_html_class($thread->type);
+  }
+}
+
+/**
+ * Implements template_preprocess_page().
+ */
+function harmony_core_preprocess_page(&$variables) {
+  if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2) && variable_get('harmony_core_thread_page_output_title_meta', TRUE)) {
+    $thread = harmony_thread_load(arg(1));
+    $thread_properties = harmony_core_thread_get_properties(arg(1), $thread);
+    if ($thread_properties['locked'] || $thread_properties['pinned']) {
+      $variables['title_prefix'][] = array(
+        '#theme' => 'harmony_core_thread_title_meta',
+        '#thread' => $thread,
+        '#thread_properties' => $thread_properties,
+      );
+    }
+  }
 }
 
 /**

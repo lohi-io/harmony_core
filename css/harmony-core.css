@@ -259,3 +259,17 @@ ul.post-links {
 .harmony-listing-header {
   margin: 10px 0;
 }
+
+.harmony-title-meta {
+  float: left;
+  margin-right: 10px;
+  line-height: 2em;
+}
+
+.harmony-meta-item {
+  margin-left: 5px;
+}
+
+.harmony-meta-item:first-child {
+  margin-left: 0;
+}
