@@ -229,11 +229,11 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
     $langcode = $GLOBALS['language_content']->language;
   }
 
-  // Populate $post->content with a render() array.
-  harmony_core_post_build_content($post, $view_mode, $langcode);
-
   // Load up the author entity so it's available when theming.
   $post->author = user_load($post->uid);
+
+  // Populate $post->content with a render() array.
+  harmony_core_post_build_content($post, $view_mode, $langcode);
 
   $build = $post->content;
   // We don't need duplicate rendering info in post->content.
