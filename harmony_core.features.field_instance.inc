@@ -221,7 +221,7 @@ function harmony_core_field_default_field_instances() {
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 5,
+        'weight' => 6,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -248,6 +248,46 @@ function harmony_core_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_last_post'
+  $field_instances['harmony_thread-harmony_thread-field_harmony_last_post'] = array(
+    'bundle' => 'harmony_thread',
+    'default_value' => NULL,
+    'default_value_function' => '',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 3,
+      ),
+    ),
+    'entity_type' => 'harmony_thread',
+    'field_name' => 'field_harmony_last_post',
+    'label' => 'Last post',
+    'required' => 0,
+    'settings' => array(
+      'behaviors' => array(
+        'prepopulate' => array(
+          'status' => 0,
+        ),
+      ),
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
   // Exported field_instance: 'harmony_thread-harmony_thread-field_harmony_last_user_to_reply'
   $field_instances['harmony_thread-harmony_thread-field_harmony_last_user_to_reply'] = array(
     'bundle' => 'harmony_thread',
@@ -259,7 +299,7 @@ function harmony_core_field_default_field_instances() {
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 4,
+        'weight' => 5,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -297,7 +337,7 @@ function harmony_core_field_default_field_instances() {
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 3,
+        'weight' => 4,
       ),
     ),
     'entity_type' => 'harmony_thread',
@@ -316,7 +356,7 @@ function harmony_core_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 2,
+      'weight' => 4,
     ),
   );
 
@@ -414,7 +454,7 @@ function harmony_core_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 6,
     ),
   );
 
@@ -702,6 +742,7 @@ function harmony_core_field_default_field_instances() {
   t('Category');
   t('Colour');
   t('First post');
+  t('Last post');
   t('Last user to post a reply');
   t('Machine name');
   t('Post count');
