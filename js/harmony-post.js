@@ -1,3 +1,8 @@
+/**
+ * @file
+ * JavaScript for the show replies links on full post entities.
+ */
+
 (function($) {
   function harmony_post_toggle_replies() {
     var post_id = $(this).attr('data-post-id');

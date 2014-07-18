@@ -978,7 +978,7 @@ function harmony_core_ctools_plugin_directory($module, $plugin) {
 function harmony_core_context_plugins() {
   $plugins['harmony_core_context_condition_thread'] = array(
     'handler' => array(
-      'path' => drupal_get_path('module', 'harmony_core') .'/includes',
+      'path' => drupal_get_path('module', 'harmony_core') . '/includes',
       'file' => 'harmony_core.context.inc',
       'class' => 'harmony_core_context_condition_thread',
       'parent' => 'context_condition',

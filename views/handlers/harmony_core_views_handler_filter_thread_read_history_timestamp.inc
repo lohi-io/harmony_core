@@ -31,7 +31,7 @@ class harmony_core_views_handler_filter_thread_read_history_timestamp extends vi
     // specifying the default value via the views UI is meaningless.
     if (!empty($form_state['exposed'])) {
       if (isset($this->options['expose']['label'])) {
-        $label = $this->options['expose']['label'];
+        $label = check_plain($this->options['expose']['label']);
       }
       else {
         $label = t('Has new content');

@@ -220,7 +220,7 @@ function harmony_core_devel_generate_batch_post_add(&$context) {
 
   // Determine if we're replying to another post within this thread,
   // chances are 1 in 4.
-  if (!empty($context['results']['last_thread']->post_ids) && rand(1,4) === 1) {
+  if (!empty($context['results']['last_thread']->post_ids) && rand(1, 4) === 1) {
     $thread_post_ids = $context['results']['last_thread']->post_ids;
     $post_wrapper->field_harmony_post_is_reply_to->set($thread_post_ids[array_rand($thread_post_ids)]);
   }

@@ -467,7 +467,7 @@ function harmony_core_install() {
   // Add in the standard Thread type.
   $type = entity_create('harmony_thread_type', array(
     'type' => 'harmony_thread',
-    'label' => t('Thread'),
+    'label' => st('Thread'),
   ));
   entity_save('harmony_thread_type', $type);
 
