@@ -502,6 +502,7 @@ class HarmonyPostController extends EntityAPIController {
         // Set who last updated the thread.
         if ($entity->uid > 0) {
           $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
+          $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
         }
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);

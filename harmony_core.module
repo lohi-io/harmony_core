@@ -2196,6 +2196,7 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
 
   // Kill off a bunch of stuff we don't want.
   unset($form['field_harmony_first_post']);
+  unset($form['field_harmony_last_post']);
   unset($form['#validate']);
   unset($form['#submit']);
 
@@ -2456,6 +2457,7 @@ function harmony_core_thread_form($form, &$form_state, $thread) {
   $form['field_harmony_first_post'][$first_post_lang]['#type'] = 'markup';
 
   // Hide property-ish type fields that we don't want user 1 to see.
+  $form['field_harmony_last_post']['#access'] = FALSE;
   $form['field_harmony_last_user_to_reply']['#access'] = FALSE;
   $form['field_harmony_post_count']['#access'] = FALSE;
 
@@ -2683,6 +2685,7 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
     $target_fields = array(
       'field_harmony_category',
       'field_harmony_first_post',
+      'field_harmony_last_post',
       'field_harmony_last_user_to_reply',
       'field_harmony_post_count',
       'field_harmony_post_listing',
@@ -2776,12 +2779,6 @@ function harmony_core_post_form($form, &$form_state, $post) {
     );
   }
 
-  $form['title'] = array(
-    '#type' => 'value',
-    '#title' => t('Post title'),
-    '#default_value' => $post->title,
-  );
-
   // Attach fields.
   field_attach_form('harmony_post', $post, $form, $form_state);
 
@@ -2803,10 +2800,18 @@ function harmony_core_post_form($form, &$form_state, $post) {
   // a thread id at this point then bail out as we don't want to create an
   // orphaned post.
   $bail_out = FALSE;
+  $thread = NULL;
   $thread_properties = array();
   if ($thread_id) {
-    $thread_properties = harmony_core_thread_get_properties($thread_id);
-    if (empty($thread_properties) || isset($thread_properties['can_post_in']) && !$thread_properties['can_post_in']) {
+    $thread = harmony_thread_load($thread_id);
+
+    if ($thread) {
+      $thread_properties = harmony_core_thread_get_properties($thread_id, $thread);
+      if (isset($thread_properties['can_post_in']) && !$thread_properties['can_post_in']) {
+        $bail_out = TRUE;
+      }
+    }
+    else {
       $bail_out = TRUE;
     }
   }
@@ -2822,6 +2827,13 @@ function harmony_core_post_form($form, &$form_state, $post) {
       ),
     );
   }
+
+  // We have a thread!
+  $form['title'] = array(
+    '#type' => 'value',
+    '#title' => t('Post title'),
+    '#default_value' => $thread->title,
+  );
 
   // Quoting integration with entity_quote.
   // @todo rewrite so that we can take in quoting or reply as new thread, may
@@ -2958,6 +2970,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $post = $form_state['values']['post'];
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+  $wrapper->title->set($form_state['values']['title']);
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->log->set($form_state['values']['log']);
