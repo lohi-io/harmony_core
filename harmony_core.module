@@ -84,6 +84,7 @@ function harmony_core_entity_info() {
     'entity keys' => array(
       'id' => 'thread_id',
       'bundle' => 'type',
+      'label' => 'title',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
@@ -98,7 +99,6 @@ function harmony_core_entity_info() {
         'custom settings' => FALSE,
       ),
     ),
-    'label callback' => 'harmony_core_thread_label',
     'uri callback' => 'harmony_core_thread_uri',
     'module' => 'harmony_core',
     'access callback' => 'harmony_core_thread_access_callback',
@@ -1370,13 +1370,6 @@ function harmony_core_post_revision_access_callback($op, $post, $account = NULL)
   }
 
   return FALSE;
-}
-
-/**
- * Implements callback_entity_info_label().
- */
-function harmony_core_thread_label($entity, $entity_type) {
-  return empty($entity->title) ? t('Untitled thread') : $entity->title;
 }
 
 /**
