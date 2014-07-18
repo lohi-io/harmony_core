@@ -3260,7 +3260,15 @@ function harmony_core_thread_mark($thread_id, $timestamp) {
  * @return
  *   An array of properties, empty if the thread cannot be loaded.
  */
-function harmony_core_thread_get_properties($thread_id, $thread = NULL) {
+function harmony_core_thread_get_properties($thread_id = NULL, $thread = NULL) {
+  if (!$thread_id && !$thread) {
+    return array();
+  }
+
+  if (!$thread_id && !empty($thread->thread_id)) {
+    $thread_id = $thread->thread_id;
+  }
+
   $thread_properties = &drupal_static(__FUNCTION__, array());
 
   if (!isset($thread_properties[$thread_id])) {

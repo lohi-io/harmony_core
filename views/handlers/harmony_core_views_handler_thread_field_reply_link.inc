@@ -17,6 +17,12 @@ class harmony_core_views_handler_thread_field_reply_link extends harmony_core_vi
       return;
     }
 
+    // Check that the thread is open.
+    $thread_properties = harmony_core_thread_get_properties(NULL, $thread);
+    if (!empty($thread_properties['can_post_in']) && !$thread_properties['can_post_in']) {
+      return;
+    }
+
     $this->options['alter']['make_link'] = TRUE;
     $return_link = FALSE;
 
