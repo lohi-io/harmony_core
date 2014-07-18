@@ -202,6 +202,14 @@
       'handler' => 'harmony_core_views_handler_post_field_link_delete',
     ),
   );
+  // Quick view post content link.
+  $data['harmony_post']['post_view_text'] = array(
+    'field' => array(
+      'title' => t('Link to view or AJAX load the posts text'),
+      'help' => t('Provide a link to view the content of the post in a modal window if JavaScript is enabled.'),
+      'handler' => 'harmony_core_views_handler_post_field_view_text',
+    ),
+  );
 
   // Override the title field slightly to use our custom views field handler
   // which has the "link to post" functionality.

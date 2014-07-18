@@ -676,3 +676,34 @@ function harmony_core_post_revision_delete_confirm_submit($form, &$form_state) {
     drupal_set_message(t('Failed to delete revision.'), 'error');
   }
 }
+
+/**
+ * Page callback to grab the text from a post and output it.
+ */
+function harmony_core_post_view_text($post, $js = NULL) {
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+  $text = $wrapper->field_harmony_text->value(array('sanitize' => TRUE));
+
+  $output = !empty($text['safe_value']) ? $text['safe_value'] : NULL;
+
+  // Return in the method you are accustomed to.
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+
+    $title = $post->title;
+    if ($title == '') {
+      $title = $wrapper->field_harmony_thread->title->value();
+    }
+
+    print ctools_modal_render(check_plain($title), $output);
+
+    global $devel_shutdown;
+    $devel_shutdown = FALSE;
+
+    drupal_exit();
+  }
+  else {
+    return $output;
+  }
+}

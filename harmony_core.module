@@ -809,6 +809,17 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
+  $items['post/%harmony_post/view-text/%ctools_js'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('harmony_post', 1),
+    'page callback' => 'harmony_core_post_view_text',
+    'page arguments' => array(1, 3),
+    'access callback' => 'harmony_core_post_access_callback',
+    'access arguments' => array('view', 1),
+    'file' => 'harmony_core.pages.inc',
+    'file path' => $includes_dir,
+  );
+
   $items['ajax/post-replies/%harmony_post'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('harmony_post', 2),
