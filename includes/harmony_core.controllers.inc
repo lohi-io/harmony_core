@@ -419,6 +419,9 @@ class HarmonyPostController extends EntityAPIController {
       $wrapper = entity_metadata_wrapper('harmony_post', $entity);
 
       if ($entity->is_new) {
+        // Set last_post.
+        $wrapper->last_post->set(1);
+
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
         if ($this->revisionKey) {
           $this->saveRevision($entity);
@@ -502,7 +505,17 @@ class HarmonyPostController extends EntityAPIController {
         // Set who last updated the thread.
         if ($entity->uid > 0) {
           $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
-          $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
+
+          // Update last post if this post is new.
+          if ($entity->is_new) {
+            $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->value();
+            if ($previous_last_post_id != $entity->post_id) {
+              $wrapper->field_harmony_thread->field_harmony_last_post->last_post->set(0);
+              $wrapper->field_harmony_thread->field_harmony_last_post->save();
+            }
+
+            $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
+          }
         }
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
@@ -661,7 +674,7 @@ class HarmonyPostController extends EntityAPIController {
           $first_post_wrapper = entity_metadata_wrapper('harmony_post', $entities[$entity_id]);
 
           // Attempt to load the thread, if we can then do not allow
-          // this node to be deleted.
+          // this post to be deleted.
           if (!$first_post_wrapper->field_harmony_thread->value()) {
             continue;
           }
@@ -696,6 +709,30 @@ class HarmonyPostController extends EntityAPIController {
           $thread_id = NULL;
           if ($wrapper->field_harmony_thread->value()) {
             $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+          }
+
+          // If this is the last post in a thread then correct that.
+          if ($thread_id && $post->last_post) {
+            $dummy_thread = new stdClass();
+            $dummy_thread->thread_id = $thread_id;
+            $thread_posts = harmony_core_get_thread_posts($dummy_thread);
+
+            if (($key = array_search($entity->post_id, $thread_posts)) !== FALSE) {
+              unset($thread_posts[$key]);
+            }
+
+            // Get last item in the array.
+            $new_last_post_id = array_pop($thread_posts);
+
+            // Update the field on the thread.
+            $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
+            $wrapper->field_harmony_thread->save();
+
+            // Update the last post property on the new last post.
+            $new_last_post = harmony_post_load($new_last_post_id);
+            $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
+            $new_last_post_wrapper->last_post->set(1);
+            $new_last_post_wrapper->save();
           }
 
           // Update the post count on the thread.

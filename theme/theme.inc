@@ -124,6 +124,9 @@ function template_preprocess_harmony_post(&$variables) {
   if ($variables['first_post']) {
     $variables['classes_array'][] = 'post-first-in-thread';
   }
+  if ($variables['last_post']) {
+    $variables['classes_array'][] = 'post-last-in-thread';
+  }
   if (!empty($post->field_harmony_post_is_reply_to)) {
     $variables['classes_array'][] = 'post-is-direct-reply';
   }

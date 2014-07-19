@@ -404,6 +404,13 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'first_post',
   );
+  $post_properties['last_post'] = array(
+    'label' => t('Is last post in thread'),
+    'description' => t('Boolean indicating whether the post is the last within the thread.'),
+    'type' => 'boolean',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'last_post',
+  );
   $post_properties['log'] = array(
     'label' => t('Revision log message'),
     'type' => 'text',
@@ -2020,6 +2027,7 @@ function harmony_core_thread_merge_action(&$thread, $context) {
       $post_ids = array_keys($query_result['harmony_post']);
       $posts = harmony_post_load_multiple($post_ids);
       $posts_count = count($posts);
+      $post_ids_created = array();
 
       if (!empty($posts)) {
         foreach ($posts as $post) {
@@ -2038,6 +2046,13 @@ function harmony_core_thread_merge_action(&$thread, $context) {
             $wrapper->first_post->set(0);
           }
 
+          // Unset last post if found as we'll just set this later on.
+          $wrapper->last_post->set(0);
+
+          // Save the post ids to an array which we'll sort to determine
+          // which post is the last.
+          $post_ids_created[$post->post_id] = $wrapper->created->value();
+
           // Save changes.
           $wrapper->save();
         }
@@ -2049,7 +2064,15 @@ function harmony_core_thread_merge_action(&$thread, $context) {
         $first_post_wrapper->save();
       }
 
-      // Set the post count  & likes to 0, and delete.
+      // Work out the last post and set.
+      asort($post_ids_created);
+      $last_post_id = array_pop($post_ids_created);
+      $last_post = harmony_post_load($last_post_id);
+      $last_post_wrapper = entity_metadata_wrapper('harmony_post', $last_post);
+      $last_post_wrapper->last_post->set(1);
+      $last_post_wrapper->save();
+
+      // Set the post count & likes to 0, and delete.
       $likes_count = $thread_wrapper->likes->value();
       $thread_wrapper->field_harmony_post_count->set(0);
       $thread_wrapper->likes->set(0);
@@ -2062,6 +2085,7 @@ function harmony_core_thread_merge_action(&$thread, $context) {
       $target_thread_wrapper->field_harmony_post_count->set($new_post_count);
       $new_likes_count = $target_thread_wrapper->likes->value() + $likes_count;
       $target_thread_wrapper->likes->set($new_likes_count);
+      $target_thread_wrapper->field_harmony_last_post->set($last_post_id);
       $target_thread_wrapper->save();
 
       $message_vars = array(
@@ -2126,14 +2150,43 @@ function harmony_core_post_reassign_action(&$post, $context) {
       $wrapper->field_harmony_thread->save();
     }
 
-    // Set new values.
+    // Setup the new values, save a little later.
     $wrapper->title->set($context['thread_title']);
     $wrapper->field_harmony_thread->set($context['thread_id']);
-    $wrapper->save();
+
     $message_vars = array(
       '@post_id' => $post->post_id,
       '%thread_title' => $context['thread_title'],
     );
+
+    // Is this post the last in the old thread? If so update the old thread.
+    if ($wrapper->last_post->value()) {
+      $old_thread = harmony_thread_load($old_thread_id);
+      $old_thread_posts = harmony_core_get_thread_posts($old_thread);
+
+      // Get last item in the array.
+      $new_last_post_id = array_pop($thread_posts);
+
+      // Update the thread.
+      $old_thread_wrapper = entity_metadata_wrapper('harmony_thread', $old_thread);
+      $old_thread_wrapper->field_harmony_last_post->set($new_last_post_id);
+      $old_thread_wrapper->save();
+
+      // Update the post.
+      if ($post->post_id == $new_last_post_id) {
+        $wrapper->last_post->set(1);
+      }
+      else {
+        // Update the last post property on the new last post.
+        $new_last_post = harmony_post_load($new_last_post_id);
+        $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
+        $new_last_post_wrapper->last_post->set(1);
+        $new_last_post_wrapper->save();
+      }
+    }
+
+    // Save the current post.
+    $wrapper->save();
 
     // Update the new thread's likes.
     if ($post_likes) {
@@ -3696,6 +3749,7 @@ function harmony_core_get_thread_posts($thread, array $options, $name = NULL, $e
   $query_result = $query
     ->entityCondition('entity_type', 'harmony_post')
     ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
+    ->propertyOrderBy('created')
     ->execute();
 
   if (!empty($query_result['harmony_post'])) {

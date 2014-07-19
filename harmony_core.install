@@ -10,6 +10,49 @@
 function harmony_core_schema() {
   $schema = array();
 
+  $schema['harmony_thread_type'] = array(
+    'description' => 'Stores information about all defined {harmony_thread} types.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique {harmony_thread} type ID.',
+      ),
+      'type' => array(
+        'description' => 'The machine-readable name of this {harmony_thread} type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable name of this {harmony_thread} type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        // Set the default to ENTITY_CUSTOM without using the constant as it is
+        // not safe to use it at this point.
+        'default' => 0x01,
+        'size' => 'tiny',
+        'description' => 'The exportable status of the entity.',
+      ),
+      'module' => array(
+        'description' => 'The name of the providing module if the entity has been defined in code.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('type'),
+    ),
+  );
+
   $schema['harmony_thread'] = array(
     'description' => 'The base table for threads.',
     'fields' => array(
@@ -252,6 +295,13 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'last_post' => array(
+        'description' => 'Boolean indicating whether the post is the last within the thread.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
       'tpost_id' => array(
         'description' => 'The translation set id for this post, which equals the post id of the source post in each set.',
         'type' => 'int',
@@ -289,49 +339,6 @@ function harmony_core_schema() {
       ),
     ),
     'primary key' => array('post_id'),
-  );
-
-  $schema['harmony_thread_type'] = array(
-    'description' => 'Stores information about all defined {harmony_thread} types.',
-    'fields' => array(
-      'id' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'description' => 'Primary Key: Unique {harmony_thread} type ID.',
-      ),
-      'type' => array(
-        'description' => 'The machine-readable name of this {harmony_thread} type.',
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-      ),
-      'label' => array(
-        'description' => 'The human-readable name of this {harmony_thread} type.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'status' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        // Set the default to ENTITY_CUSTOM without using the constant as it is
-        // not safe to use it at this point.
-        'default' => 0x01,
-        'size' => 'tiny',
-        'description' => 'The exportable status of the entity.',
-      ),
-      'module' => array(
-        'description' => 'The name of the providing module if the entity has been defined in code.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => FALSE,
-      ),
-    ),
-    'primary key' => array('id'),
-    'unique keys' => array(
-      'type' => array('type'),
-    ),
   );
 
   $schema['harmony_post_revision'] = array(
@@ -415,6 +422,13 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+      ),
+      'last_post' => array(
+        'description' => 'Boolean indicating whether the post is the last within the thread.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
       ),
       'tpost_id' => array(
         'description' => 'The translation set id for this post, which equals the post id of the source post in each set.',
@@ -503,6 +517,28 @@ function harmony_core_update_7100() {
       'type' => 'int',
       'not null' => TRUE,
       'default' => 0,
+    ));
+  }
+}
+
+/**
+ * Add in a "last_post" field to {harmony_post} and {harmony_post_revision}.
+ */
+function harmony_core_update_7101() {
+  if (!db_field_exists('harmony_post', 'last_post')) {
+    db_add_field('harmony_post', 'last_post', array(
+      'description' => 'Boolean indicating whether the post is the last within the thread.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+      'size' => 'tiny',
+    ));
+    db_add_field('harmony_post_revision', 'last_post', array(
+      'description' => 'Boolean indicating whether the post is the last within the thread.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+      'size' => 'tiny',
     ));
   }
 }
