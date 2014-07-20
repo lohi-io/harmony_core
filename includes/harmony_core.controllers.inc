@@ -508,10 +508,14 @@ class HarmonyPostController extends EntityAPIController {
 
           // Update last post if this post is new.
           if ($entity->is_new) {
-            $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->value();
+            $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->post_id->value();
             if ($previous_last_post_id != $entity->post_id) {
-              $wrapper->field_harmony_thread->field_harmony_last_post->last_post->set(0);
-              $wrapper->field_harmony_thread->field_harmony_last_post->save();
+              // Entity metadata wrapper dies here when trying to set a
+              // property through the entity ref.
+              $previous_last_post = harmony_post_load($previous_last_post_id);
+              $previous_last_post_wrapper = entity_metadata_wrapper('harmony_post', $previous_last_post);
+              $previous_last_post_wrapper->field_harmony_thread->field_harmony_last_post->last_post->set(0);
+              $previous_last_post_wrapper->field_harmony_thread->field_harmony_last_post->save();
             }
 
             $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
