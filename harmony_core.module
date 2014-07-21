@@ -971,6 +971,10 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
+    'harmony_anonymous_user_post_profile' => array(
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
   );
 }
 

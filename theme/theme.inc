@@ -85,16 +85,20 @@ function template_preprocess_harmony_post(&$variables) {
   // Add in the user profile, this is controlled via field ui
   // so you can easily add/remove things. Display suite is
   // recommended for as much control as possible.
-  $account = !empty($post->author) && !empty($post->author->uid) ? $post->author : user_load($post->uid);
-
-  $user_view = user_view($account, 'harmony_user_post_profile');
-  $variables['user_profile'] = drupal_render($user_view);
+  if ($post->author) {
+    $account = $post->author;
+    $user_view = user_view($account, 'harmony_user_post_profile');
+    $variables['user_profile'] = drupal_render($user_view);
+  }
+  else {
+    $variables['user_profile'] = theme('harmony_anonymous_user_post_profile');
+  }
 
   // Add the "Direct reply" link.
   $variables['direct_reply'] = NULL;
   if ($wrapper->field_harmony_post_is_reply_to->value()) {
     $replying_to_post_id = $wrapper->field_harmony_post_is_reply_to->post_id->value();
-    $replying_to_name = $wrapper->field_harmony_post_is_reply_to->uid->name->value();
+    $replying_to_name = $wrapper->field_harmony_post_is_reply_to->uid->value() > 0 ? $wrapper->field_harmony_post_is_reply_to->uid->name->value() : variable_get('anonymous', t('Anonymous'));
 
     $variables['direct_reply'] = l(t('In reply to @name', array('@name' => $replying_to_name)), "thread/$thread_id", array('fragment' => "post-$replying_to_post_id"));
   }
@@ -480,4 +484,11 @@ function theme_harmony_core_thread_title_meta($variables) {
   }
 
   return '<span class="harmony-title-meta">' . implode(' ', $output) . '</span>';
+}
+
+/**
+ * Return some markup for a deleted user for use in the post profile area.
+ */
+function theme_harmony_anonymous_user_post_profile() {
+  return '<span class="grey">' . t('Deleted user') . '</span>';
 }
