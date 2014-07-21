@@ -3208,6 +3208,11 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
     return;
   }
 
+  // Prevent attempts to update anon.
+  if ($entity_type === 'user' && $entity_id == 0) {
+    watchdog('harmony_core', 'Something is trying to update the meta count for the following fields for user 0: %fields.', array('%fields' => implode(', ', $fields)));
+  }
+
   // Reload the entity not from cache so that entity metadata
   // wrapper is working from the latest data.
   // Would use entity_load_single if it had the params we need.
