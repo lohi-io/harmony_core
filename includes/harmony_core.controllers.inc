@@ -25,7 +25,9 @@ class HarmonyThreadController extends EntityAPIController {
       }
 
       $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
-      $entity->updated = REQUEST_TIME;
+      // May come back to this, we don't want to change this value unless a
+      // new post or other action has happened in the thread.
+      //$entity->updated = REQUEST_TIME;
 
       $this->invoke('presave', $entity);
       $op = $entity->is_new ? 'insert' : 'update';
@@ -115,7 +117,7 @@ class HarmonyThreadController extends EntityAPIController {
       }
 
       // If a thread becomes unpublished then we hide the posts from the site.
-      // This means that post counts can remain the same for threads
+      // This means that post counts can remain the same for threads.
       if (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
         $post_properties_to_change['hidden'] = HARMONY_HIDDEN;
       }
@@ -556,6 +558,18 @@ class HarmonyPostController extends EntityAPIController {
           $count_direction = 'decrement';
         }
 
+        // Also likes.
+
+        // Check on and update the last post if unpublishing and the thread is
+        // unpublished, this is typical of the user cancel process.
+        // @todo consider implications.
+        if (!$entity->is_new && $entity->status == HARMONY_NOT_PUBLISHED && $entity->original->status == HARMONY_PUBLISHED) {
+          if ($thread_id && $entity->last_post && $wrapper->field_harmony_thread->status->value() == HARMONY_PUBLISHED) {
+            // Update the last post as it's not this one anymore.
+            $this->updateLastPost($thread_id, $entity->post_id, $wrapper);
+          }
+        }
+
         // User count.
         if ($count_direction) {
           // Thread count.
@@ -570,10 +584,10 @@ class HarmonyPostController extends EntityAPIController {
 
           // Increment the category thread count if the thread belongs to a category.
           // @todo this makes stuff blow up for some reason.
-          /*if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
+          if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
             $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, $count_direction);
-          }*/
+          }
         }
       }
 
@@ -715,54 +729,37 @@ class HarmonyPostController extends EntityAPIController {
             $thread_id = $wrapper->field_harmony_thread->thread_id->value();
           }
 
-          // If this is the last post in a thread then correct that.
-          if ($thread_id && $entity->last_post) {
-            $dummy_thread = new stdClass();
-            $dummy_thread->thread_id = $thread_id;
-            $thread_posts = harmony_core_get_thread_posts($dummy_thread);
-
-            if (($key = array_search($entity->post_id, $thread_posts)) !== FALSE) {
-              unset($thread_posts[$key]);
+          if ($thread_id && $entity->status == HARMONY_PUBLISHED && $entity->hidden == HARMONY_NOT_HIDDEN) {
+            // If this is the last post in a thread then correct that.
+            if ($entity->last_post) {
+              $this->updateLastPost($thread_id, $entity->post_id, $wrapper);
             }
 
-            // Get last item in the array.
-            $new_last_post_id = array_pop($thread_posts);
+            // Update the post count on the thread.
+            if ($thread_id) {
+              harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
 
-            // Update the field on the thread.
-            $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
-            $wrapper->field_harmony_thread->save();
-
-            // Update the last post property on the new last post.
-            $new_last_post = harmony_post_load($new_last_post_id);
-            $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
-            $new_last_post_wrapper->last_post->set(1);
-            $new_last_post_wrapper->save();
-          }
-
-          // Update the post count on the thread.
-          if ($thread_id) {
-            harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
-
-            // Update the post count if the thread is in a category.
-            if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
-              $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
-              harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, 'decrement');
+              // Update the post count if the thread is in a category.
+              if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
+                $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
+                harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, 'decrement');
+              }
             }
-          }
 
-          // Update post count for the user.
-          if ($entity->uid > 0) {
-            harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
-          }
+            // Update post count for the user.
+            if ($entity->uid > 0) {
+              harmony_core_update_meta_count(array('field_harmony_post_count'), 'user', $entity->uid, 'decrement');
+            }
 
-          // Remove the Likes from the thread associated with this post.
-          if ($thread_id) {
-            $likes = flag_get_counts('harmony_post', $id);
-            if (!empty($likes['harmony_likes'])) {
-              $post_likes = $likes['harmony_likes'];
-              $thread_likes = $wrapper->field_harmony_thread->likes->value();
-              $wrapper->field_harmony_thread->likes->set($thread_likes - $post_likes);
-              $wrapper->field_harmony_thread->save();
+            // Remove the Likes from the thread associated with this post.
+            if ($thread_id) {
+              $likes = flag_get_counts('harmony_post', $id);
+              if (!empty($likes['harmony_likes'])) {
+                $post_likes = $likes['harmony_likes'];
+                $thread_likes = $wrapper->field_harmony_thread->likes->value();
+                $wrapper->field_harmony_thread->likes->set($thread_likes - $post_likes);
+                $wrapper->field_harmony_thread->save();
+              }
             }
           }
 
@@ -821,6 +818,29 @@ class HarmonyPostController extends EntityAPIController {
     }
 
     return FALSE;
+  }
+
+  public function updateLastPost($thread_id, $post_id, $wrapper) {
+    $dummy_thread = new stdClass();
+    $dummy_thread->thread_id = $thread_id;
+    $thread_posts = harmony_core_get_thread_posts($dummy_thread);
+
+    if (($key = array_search($post_id, $thread_posts)) !== FALSE) {
+      unset($thread_posts[$key]);
+    }
+
+    // Get last item in the array.
+    $new_last_post_id = array_pop($thread_posts);
+
+    // Update the field on the thread.
+    $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
+    $wrapper->field_harmony_thread->save();
+
+    // Update the last post property on the new last post.
+    $new_last_post = harmony_post_load($new_last_post_id);
+    $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
+    $new_last_post_wrapper->last_post->set(1);
+    $new_last_post_wrapper->save();
   }
 }
 
