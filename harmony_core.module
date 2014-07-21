@@ -841,13 +841,15 @@ function harmony_core_menu() {
   );
 
   // Thread views counter.
-  $items['thread/view/%'] = array(
-    'title' => 'Thread view count logger',
-    'page callback' => 'harmony_core_thread_log_view',
-    'page arguments' => array(2),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
+  if (variable_get('harmony_core_thread_views_counter_enabled', TRUE)) {
+    $items['thread/view/%'] = array(
+      'title' => 'Thread view count logger',
+      'page callback' => 'harmony_core_thread_log_view',
+      'page arguments' => array(2),
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+    );
+  }
 
   // Devel integration.
   if (module_exists('devel')) {
@@ -3632,29 +3634,31 @@ function harmony_core_metatag_config_default() {
  * View tracking for threads and anonymous users.
  */
 function harmony_core_page_alter(&$page) {
-  global $user;
-  global $_harmony;
+  if (variable_get('harmony_core_thread_views_counter_enabled', TRUE)) {
+    global $user;
+    global $_harmony;
 
-  // Only track thread pages, also check for a global do not track flag.
-  if (!(arg(0) == 'thread' && is_numeric(arg(1)) && !arg(2)) || isset($_harmony['thread_do_not_track'])) {
-    return;
-  }
+    // Only track thread pages, also check for a global do not track flag.
+    if (!(arg(0) == 'thread' && is_numeric(arg(1)) && !arg(2)) || isset($_harmony['thread_do_not_track'])) {
+      return;
+    }
 
-  // Load the thread and check access.
-  $thread = harmony_thread_load(arg(1));
-  $can_access_thread = $thread && harmony_core_thread_access_callback('view', $thread);
+    // Load the thread and check access.
+    $thread = harmony_thread_load(arg(1));
+    $can_access_thread = $thread && harmony_core_thread_access_callback('view', $thread);
 
-  if (!$can_access_thread) {
-    return;
-  }
+    if (!$can_access_thread) {
+      return;
+    }
 
-  // Track the thread view immediately for authenticated users.
-  if ($user->uid) {
-    harmony_core_thread_track_view($thread->thread_id);
-  }
-  // For anonymous use the tracking image method due to page caching.
-  else {
-    $page['page_bottom']['harmony_core']['thread_view']['#markup'] = '<div class="element-hidden"><img src="' . url('thread/view/' . arg(1)) . '" alt="" /></div>';
+    // Track the thread view immediately for authenticated users.
+    if ($user->uid) {
+      harmony_core_thread_track_view($thread->thread_id);
+    }
+    // For anonymous use the tracking image method due to page caching.
+    else {
+      $page['page_bottom']['harmony_core']['thread_view']['#markup'] = '<div class="element-hidden"><img src="' . url('thread/view/' . arg(1)) . '" alt="" /></div>';
+    }
   }
 }
 
