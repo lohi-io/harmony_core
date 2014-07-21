@@ -85,7 +85,8 @@ function template_preprocess_harmony_post(&$variables) {
   // Add in the user profile, this is controlled via field ui
   // so you can easily add/remove things. Display suite is
   // recommended for as much control as possible.
-  $account = $post->author;
+  $account = !empty($post->author) && !empty($post->author->uid) ? $post->author : user_load($post->uid);
+
   $user_view = user_view($account, 'harmony_user_post_profile');
   $variables['user_profile'] = drupal_render($user_view);
 
