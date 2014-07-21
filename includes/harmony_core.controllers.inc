@@ -5,7 +5,57 @@
  * Class definitions for the Thread and Post entity.
  */
 
-class HarmonyThreadController extends EntityAPIController {
+class HarmonyController extends EntityAPIController {
+  /**
+   * Implements EntityAPIControllerInterface.
+   *
+   * @param $transaction
+   *   Optionally a DatabaseTransaction object to use. Allows overrides to pass
+   *   in their transaction object.
+   */
+
+  /*
+   * This function is meant for quick saves of typically meta information such
+   * as post count, likes. It will bypass hooks and the checking for things
+   * like "last_post", "status", "hidden" properties. This will help avoid
+   * recursive saves and speed things up a little bit.
+   */
+  public function metaSave($entity, DatabaseTransaction $transaction = NULL) {
+    $transaction = isset($transaction) ? $transaction : db_transaction();
+
+    try {
+      // We shouldn't ever get new entities to deal with but hey, why not.
+      $entity->is_new = !empty($entity->is_new) || empty($entity->{$this->idKey});
+      $op = $entity->is_new ? 'insert' : 'update';
+
+      // Note that we're not invoking any insert or update hooks, this isn't
+      // the place for that!
+      if ($entity->is_new) {
+        $return = drupal_write_record($this->entityInfo['base table'], $entity);
+      }
+      else {
+        $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
+        $this->resetCache(array($entity->{$this->idKey}));
+        field_attach_update($this->entityType, $entity);
+      }
+
+      // Ignore slave server temporarily.
+      db_ignore_slave();
+      unset($entity->is_new);
+      unset($entity->original);
+
+      // Return the entity.
+      return $entity;
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception($this->entityType, $e);
+      throw $e;
+    }
+  }
+}
+
+class HarmonyThreadController extends HarmonyController {
   /**
    * Implements EntityAPIControllerInterface.
    *
@@ -269,7 +319,7 @@ class HarmonyThread extends Entity {
   }*/
 }
 
-class HarmonyPostController extends EntityAPIController {
+class HarmonyPostController extends HarmonyController {
   /**
    * Implements EntityAPIControllerInterface.
    *

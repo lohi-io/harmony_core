@@ -1417,6 +1417,14 @@ function harmony_thread_save($thread) {
 }
 
 /**
+ * Save a thread quickly. This function bypass hooks and checks around status
+ * changes which affect post and thread counts and so on.
+ */
+function harmony_thread_meta_save($thread) {
+  return entity_get_controller('harmony_thread')->metaSave($thread);
+}
+
+/**
  * Delete a single thread.
  */
 function harmony_thread_delete($thread_id, &$context = NULL) {
@@ -1499,6 +1507,14 @@ function harmony_post_load_multiple($post_ids = array(), $conditions = array(), 
  */
 function harmony_post_save($post) {
   return entity_get_controller('harmony_post')->save($post);
+}
+
+/**
+ * Save a post quickly. This function bypass hooks and checks around status
+ * changes which affect post and thread counts and so on.
+ */
+function harmony_post_meta_save($post) {
+  return entity_get_controller('harmony_post')->metaSave($post);
 }
 
 /**
@@ -2588,7 +2604,7 @@ function harmony_core_thread_form_submit($form, &$form_state) {
 
     // Set the last post whilst we're at it.
     $wrapper->field_harmony_last_post->set($post_id);
-    $wrapper->save();
+    $thread = harmony_thread_meta_save($thread);
   }
 
   // Hooks ahoy.
