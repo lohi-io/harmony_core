@@ -544,7 +544,9 @@ function harmony_core_field_default_field_instances() {
   // Exported field_instance: 'taxonomy_term-harmony_category-field_harmony_post_count'
   $field_instances['taxonomy_term-harmony_category-field_harmony_post_count'] = array(
     'bundle' => 'harmony_category',
-    'default_value' => NULL,
+    'default_value' => array(
+      0 => array(),
+    ),
     'deleted' => 0,
     'description' => '',
     'display' => array(
