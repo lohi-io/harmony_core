@@ -85,7 +85,7 @@ class HarmonyThreadController extends EntityAPIController {
         $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
 
         // Increment the category thread count if the thread belongs to a category.
-        if ($count_direction && $wrapper->field_harmony_category->value()) {
+        if ($count_direction && $wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_category->value()) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), $count_direction);
 
           // Also update the post count for categories if not new, as new threads
@@ -200,7 +200,7 @@ class HarmonyThreadController extends EntityAPIController {
         $wrapper = entity_metadata_wrapper('harmony_thread', $entity);
 
         // Decrement some thread counts.
-        if ($entity->status == HARMONY_PUBLISHED && $wrapper->field_harmony_category->value()) {
+        if ($entity->status == HARMONY_PUBLISHED && $wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_category->value()) {
           harmony_core_update_meta_count(array('field_harmony_thread_count'), 'taxonomy_term', $wrapper->field_harmony_category->tid->value(), 'decrement');
 
           // Post counts for taxonomy terms as the link will be severed.
@@ -507,7 +507,7 @@ class HarmonyPostController extends EntityAPIController {
           $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
 
           // Update last post if this post is new.
-          if ($entity->is_new) {
+          if ($entity->is_new && $wrapper->field_harmony_thread->__isset('field_harmony_last_post') && $wrapper->field_harmony_thread->field_harmony_last_post->value()) {
             $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->post_id->value();
             if ($previous_last_post_id != $entity->post_id) {
               // Entity metadata wrapper dies here when trying to set a
@@ -570,7 +570,7 @@ class HarmonyPostController extends EntityAPIController {
 
           // Increment the category thread count if the thread belongs to a category.
           // @todo this makes stuff blow up for some reason.
-          /*if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+          /*if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
             $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, $count_direction);
           }*/
@@ -716,7 +716,7 @@ class HarmonyPostController extends EntityAPIController {
           }
 
           // If this is the last post in a thread then correct that.
-          if ($thread_id && $post->last_post) {
+          if ($thread_id && $entity->last_post) {
             $dummy_thread = new stdClass();
             $dummy_thread->thread_id = $thread_id;
             $thread_posts = harmony_core_get_thread_posts($dummy_thread);
@@ -744,7 +744,7 @@ class HarmonyPostController extends EntityAPIController {
             harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $thread_id, 'decrement');
 
             // Update the post count if the thread is in a category.
-            if ($wrapper->field_harmony_thread->field_harmony_category->value()) {
+            if ($wrapper->__isset('field_harmony_category') && $wrapper->field_harmony_thread->field_harmony_category->value()) {
               $term_id = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
               harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $term_id, 'decrement');
             }

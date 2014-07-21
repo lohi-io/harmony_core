@@ -483,15 +483,18 @@ function harmony_post_delete_confirm($form, &$form_state, $post) {
  * @see harmony_post_delete_confirm()
  */
 function harmony_post_delete_confirm_submit($form, &$form_state) {
+  $post = harmony_post_load($form_state['values']['post_id']);
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+  $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+
   if ($form_state['values']['confirm']) {
-    $post = harmony_post_load($form_state['values']['post_id']);
     harmony_post_delete($post->post_id);
 
     watchdog('harmony', 'Post: deleted %title.', array('%title' => $post->title));
     drupal_set_message(t('The post %title has been deleted.', array('%title' => $post->title)));
   }
 
-  $form_state['redirect'] = '<front>';
+  $form_state['redirect'] = "thread/$thread_id";
 }
 
 /**

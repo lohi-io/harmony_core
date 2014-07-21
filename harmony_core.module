@@ -2572,13 +2572,19 @@ function harmony_core_thread_form_submit($form, &$form_state) {
     $wrapper->field_harmony_last_user_to_reply->set($thread->uid);
   }
 
+  // Save so that we get a thread id.
   $thread = harmony_thread_save($thread);
 
   // Set various bits of data on the first post.
   // Other values are set in HarmonyPostInlineEntityFormController::entityFormSubmit().
   if ($is_new && $wrapper->field_harmony_first_post->value()) {
+    $post_id = $wrapper->field_harmony_first_post->post_id->value();
     $wrapper->field_harmony_first_post->field_harmony_thread->set($thread->thread_id);
     $wrapper->field_harmony_first_post->save();
+
+    // Set the last post whilst we're at it.
+    $wrapper->field_harmony_last_post->set($post_id);
+    $wrapper->save();
   }
 
   // Hooks ahoy.
@@ -3745,7 +3751,7 @@ function harmony_post_get_replies($post_id) {
 /**
  * Helper function to grab an array of post ids when passed a thread id.
  */
-function harmony_core_get_thread_posts($thread, array $options, $name = NULL, $entity_type = NULL) {
+function harmony_core_get_thread_posts($thread, array $options = array(), $name = NULL, $entity_type = NULL) {
   $post_ids = array();
 
   // Get a list of posts in the current thread.
