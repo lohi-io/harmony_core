@@ -3537,7 +3537,7 @@ function harmony_core_user_cancel($edit, $account, $method) {
       harmony_core_mass_update('harmony_thread', $threads, 'update', array('status' => HARMONY_NOT_PUBLISHED));
 
       // Unpublish posts.
-      $posts = db_select('harmony_posts', 'p')
+      $posts = db_select('harmony_post', 'p')
         ->fields('p', array('post_id'))
         ->condition('uid', $account->uid)
         ->execute()
@@ -3555,7 +3555,7 @@ function harmony_core_user_cancel($edit, $account, $method) {
       harmony_core_mass_update('harmony_thread', $threads, 'update', array('uid' => 0));
 
       // Anonymise posts & revisions.
-      $posts = db_select('harmony_posts', 'p')
+      $posts = db_select('harmony_post', 'p')
         ->fields('p', array('post_id'))
         ->condition('uid', $account->uid)
         ->execute()
