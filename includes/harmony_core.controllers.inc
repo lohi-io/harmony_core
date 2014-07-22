@@ -573,6 +573,7 @@ class HarmonyPostController extends HarmonyController {
             $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
           }
         }
+
         // Set the last time the thread was updated.
         $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
         $wrapper->field_harmony_thread->save();
