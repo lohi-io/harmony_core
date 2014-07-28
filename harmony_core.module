@@ -1657,13 +1657,13 @@ function harmony_core_action_info() {
     // This action is only intended for use on the thread moderation
     // page as we attempt to prepopulate the new thread title and user
     // id from the first selected post.
-    /*'harmony_core_post_split_action' => array(
+    'harmony_core_post_split_action' => array(
       'type' => 'harmony_post',
       'label' => t('Split post(s) in to a new thread'),
       'configurable' => TRUE,
       'behavior' => array('changes_property'),
       'vbo_configurable' => TRUE,
-    ),*/
+    ),
   );
 
   // @todo "delete" actions.
@@ -2240,7 +2240,7 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     'language' => LANGUAGE_NONE,
     'status' => HARMONY_PUBLISHED,
     'created' => REQUEST_TIME,
-    'updated' => REQUEST_TIME,
+    'updated' => 0,
     'pinned' => HARMONY_NOT_PINNED,
     'locked' => HARMONY_NOT_LOCKED,
     'hidden' => HARMONY_NOT_HIDDEN,
@@ -2259,17 +2259,13 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
 
       $thread->title = $wrapper->field_harmony_thread->title->value();
       $thread->type = $wrapper->field_harmony_thread->type->value();
-      /*$author = $wrapper->field_harmony_thread->uid->name->value();
-      $status = $wrapper->field_harmony_thread->status->value();
-      $pinned = $wrapper->field_harmony_thread->pinned->value();
-      $locked = $wrapper->field_harmony_thread->locked->value();
-      $hidden = $wrapper->field_harmony_thread->hidden->value();*/
     }
   }
 
   $form = drupal_get_form('harmony_core_thread_form', $thread);
 
   // Kill off a bunch of stuff we don't want.
+  unset($form['title']);
   unset($form['field_harmony_first_post']);
   unset($form['field_harmony_last_post']);
   unset($form['#validate']);
@@ -2281,10 +2277,18 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     '#weight' => -100,
   );
 
+  $form['thread_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Thread title'),
+    '#default_value' => $thread->title,
+    '#required' => TRUE,
+  );
+
   $form['author'] = array(
     '#type' => 'textfield',
     '#title' => t('Thread author'),
     '#default_value' => $user->name,
+    '#required' => TRUE,
     '#autocomplete_path' => 'user/autocomplete',
     '#maxlength' => '60',
   );
@@ -2311,23 +2315,173 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
   $is_new = $thread->is_new;
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
-  $wrapper->title->set($form_state['values']['title']);
+  // Set the title from the form value.
+  $wrapper->title->set($form_state['values']['thread_title']);
 
+  // Set the user, grab by name so we can get the uid.
+  $author_user = user_load_by_name($form_state['values']['author']);
+  if (!$author_user) {
+    global $user;
+    $author_user = $user;
+  }
+  $wrapper->uid->set($author_user->uid);
+
+  // Set the thread meta properties.
   $wrapper->status->set($form_state['values']['status']);
   $wrapper->pinned->set($form_state['values']['pinned']);
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->hidden->set($form_state['values']['hidden']);
 
+  // Do submit for fieldapi fields.
   field_attach_submit('harmony_thread', $thread, $form, $form_state);
 
+  // Do a full save of the thread.
   $thread = harmony_thread_save($thread);
 
-  // Pass on the thread id for later use.
-
+  // Pass on the thread details for use in the action.
+  return array(
+    'thread' => $thread,
+    'thread_id' => $thread->thread_id,
+    'thread_title' => $thread->title,
+  );
 }
 
 function harmony_core_post_split_action(&$post, $context) {
+  // We can't re-assign the first post otherwise there wouldn't be
+  // anything in the thread, instead recommend merging threads.
+  // @todo code to allow re-assigning of first post.
+  if ($post->first_post) {
+    $error_vars = array(
+      '@post_id' => $post->post_id,
+      '@thread_merge_url' => url('admin/content/threads'),
+    );
+    drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
+  }
+  else {
+    // Push title to posts, set the updated on the thread.
+    $thread = $context['thread'];
+    $thread_id = $context['thread_id'];
+    $thread_title = $context['thread_title'];
 
+    // Wrappers!
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+    $thread_wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+    // Grab the old thread.
+    $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    $old_thread = harmony_thread_load($old_thread_id);
+    $old_thread_wrapper = entity_metadata_wrapper('harmony_thread', $old_thread);
+
+    // Update post title.
+    $post->title = $thread_title;
+
+    // Update meta information.
+    if ($post->status == HARMONY_PUBLISHED && $post->hidden == HARMONY_NOT_HIDDEN) {
+      $update_first_post = FALSE;
+      $update_last_post = FALSE;
+
+      // Update timestamps if the post is published.
+      if ($post->created < $thread->created) {
+        $thread->created = $post->created;
+        $update_first_post = TRUE;
+      }
+      if ($post->updated > $thread->updated) {
+        $thread->updated = $post->updated;
+        $update_last_post = TRUE;
+      }
+
+      // Update thread & category post counts if published. Isn't this done in
+      // the controller? Nope as we bypass this by using harmony_thread_meta_save.
+      // We need to increase and decrease values between new and old.
+      // Don't use harmony_core_update_meta_count as we can do it faster here.
+      $thread_post_count = $thread_wrapper->field_harmony_post_count->value();
+      $thread_wrapper->field_harmony_post_count->set($thread_post_count + 1);
+
+      // Category now.
+      if ($thread_wrapper->__isset('field_harmony_category') && $thread_wrapper->field_harmony_category->value()) {
+        $new_category_tid = $thread_wrapper->field_harmony_category->tid->value();
+
+        // Check to see if the post has in effect changed category, if so then
+        // we need to decrement the value there as well.
+
+        // If the old thread is published, has the category field and a value
+        // then decrement. Don't increment the new category if the it's the
+        // same as the old one and the new thread is published.
+        $increment_new_category_count = $thread->status == HARMONY_PUBLISHED;
+        if ($old_thread->status == HARMONY_PUBLISHED && $old_thread_wrapper->__isset('field_harmony_category') && $old_thread_wrapper->field_harmony_category->value()) {
+          if ($old_thread_wrapper->field_harmony_category->tid->value() != $new_category_tid) {
+            $old_category_post_count = $old_thread_wrapper->field_harmony_category->field_harmony_post_count->value();
+            $old_thread_wrapper->field_harmony_category->field_harmony_post_count->set($old_category_post_count - 1);
+            $old_thread_wrapper->field_harmony_category->save();
+          }
+          // Category is the same, don't increment the new count.
+          elseif ($thread->status == HARMONY_NOT_PUBLISHED) {
+            $increment_new_category_count = FALSE;
+          }
+        }
+
+        // Update the new category count.
+        if ($increment_new_category_count) {
+          $category_post_count = $thread_wrapper->field_harmony_category->field_harmony_post_count->value();
+          $thread_wrapper->field_harmony_category->field_harmony_post_count->set($category_post_count + 1);
+          $thread_wrapper->field_harmony_category->save();
+        }
+      }
+
+      // Likes too.
+      // Get the number of likes against this post, and update the old thread.
+      $post_likes = NULL;
+      $likes = flag_get_counts('harmony_post', $post->post_id);
+      if (!empty($likes['harmony_likes'])) {
+        $post_likes = $likes['harmony_likes'];
+
+        // Remove from the old thread.
+        $old_thread_likes = $old_thread_wrapper->likes->value();
+        $old_thread_wrapper->likes->set($old_thread_likes - $post_likes);
+        harmony_thread_meta_save($old_thread);
+
+        // Add to the new one!
+        $thread_likes = $thread_wrapper->likes->value();
+        $thread_wrapper->likes->set($thread_likes + $post_likes);
+      }
+
+      // Update first and last post fields on the thread.
+      if ($update_first_post) {
+        $first_post = $thread_wrapper->field_harmony_first_post->value() ? $thread_wrapper->field_harmony_first_post->post_id->value() : NULL;
+        $wrapper->first_post->set(1);
+
+        if ($first_post) {
+          $old_first_post = harmony_post_load($first_post);
+          $old_first_post_wrapper = entity_metadata_wrapper('harmony_post', $old_first_post);
+          $old_first_post_wrapper->first_post->set(0);
+          harmony_post_meta_save($old_first_post);
+        }
+
+        $thread_wrapper->field_harmony_first_post->set($post->post_id);
+      }
+      if ($update_last_post) {
+        $last_post = $thread_wrapper->field_harmony_last_post->value() ? $thread_wrapper->field_harmony_last_post->post_id->value() : NULL;
+        $wrapper->last_post->set(1);
+
+        if ($last_post) {
+          $old_last_post = harmony_post_load($last_post);
+          $old_last_post_wrapper = entity_metadata_wrapper('harmony_post', $old_last_post);
+          $old_last_post_wrapper->last_post->set(0);
+          harmony_post_meta_save($old_last_post);
+        }
+
+        $thread_wrapper->field_harmony_last_post->set($post->post_id);
+      }
+
+      // Should the move post action do this stuff too?
+    }
+
+    // Change the thread entity ref.
+    $wrapper->field_harmony_thread->set($thread_id);
+
+    // Update the thread.
+    harmony_thread_meta_save($thread);
+  }
 }
 
 /**
@@ -3266,8 +3420,17 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
     }
   }
 
-  // Save our changes.
-  $wrapper->save();
+  // Save our changes, if harmony entities use the faster meta save
+  // method.
+  if ($entity_type === 'harmony_thread') {
+    harmony_thread_meta_save($entities[$entity_id]);
+  }
+  elseif ($entity_type === 'harmony_post') {
+    harmony_post_meta_save($entities[$entity_id]);
+  }
+  else {
+    $wrapper->save();
+  }
 }
 
 /**
@@ -3783,6 +3946,7 @@ function harmony_core_get_thread_posts($thread, array $options = array(), $name 
   $query = new EntityFieldQuery;
   $query_result = $query
     ->entityCondition('entity_type', 'harmony_post')
+    ->propertyCondition('status', HARMONY_PUBLISHED)
     ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
     ->propertyOrderBy('created')
     ->execute();
