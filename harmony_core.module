@@ -327,6 +327,7 @@ function harmony_core_entity_property_info() {
     'label' => t('Post ID'),
     'type' => 'integer',
     'description' => t('The unique post ID.'),
+    'schema field' => 'post_id',
   );
   $properties['vid'] = array(
     'label' => t('Revision ID'),
@@ -411,12 +412,20 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'last_post',
   );
+  $post_properties['hostname'] = array(
+    'label' => t('Hostname'),
+    'type' => 'text',
+    'description' => t('The hostname/IP address of the user who created the post or revision.'),
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'hostname',
+  );
   $post_properties['log'] = array(
     'label' => t('Revision log message'),
     'type' => 'text',
     'description' => t('In case a new revision is to be saved, the log entry explaining the changes for this version.'),
     'setter callback' => 'entity_property_verbatim_set',
     'access callback' => 'harmony_core_post_revision_access',
+    'schema field' => 'log',
   );
   $post_properties['log_show'] = array(
     'label' => t('Show revision log message'),
