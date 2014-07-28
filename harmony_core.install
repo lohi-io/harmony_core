@@ -315,6 +315,13 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'hostname' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Hostname of the user who created the post.',
+      ),
     ),
     'indexes' => array(
       'status' => array('status'),
@@ -443,6 +450,13 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'hostname' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Hostname of the user who edited the revision.',
+      ),
     ),
     'indexes' => array(
       'post_id' => array('post_id'),
@@ -540,6 +554,28 @@ function harmony_core_update_7101() {
       'not null' => TRUE,
       'default' => 0,
       'size' => 'tiny',
+    ));
+  }
+}
+
+/**
+ * Add in a "hostname" field to {harmony_post} and {harmony_post_revision}.
+ */
+function harmony_core_update_7102() {
+  if (!db_field_exists('harmony_post', 'hostname')) {
+    db_add_field('harmony_post', 'hostname', array(
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE,
+      'default' => '',
+      'description' => 'Hostname of the user who created the post.',
+    ));
+    db_add_field('harmony_post_revision', 'hostname', array(
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => TRUE,
+      'default' => '',
+      'description' => 'Hostname of the user who edited the revision.',
     ));
   }
 }

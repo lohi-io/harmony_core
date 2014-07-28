@@ -474,6 +474,9 @@ class HarmonyPostController extends HarmonyController {
         // Set last_post.
         $wrapper->last_post->set(1);
 
+        // Set hostname.
+        $entity->hostname = ip_address();
+
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
         if ($this->revisionKey) {
           $this->saveRevision($entity);
@@ -517,10 +520,13 @@ class HarmonyPostController extends HarmonyController {
           }
         }
 
+        // Update the base table (current) record instead of the revision.
         if (!$this->revisionKey || !empty($entity->{$this->defaultRevisionKey})) {
           $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
         }
+        // Update revisions!
         if ($this->revisionKey) {
+          $entity->hostname = ip_address();
           $return = $this->saveRevision($entity);
         }
 
@@ -708,6 +714,7 @@ class HarmonyPostController extends HarmonyController {
     // the current revision or not.
     $query = parent::buildQuery($ids, $conditions, $revision_id);
     $query->addField('base', 'vid', 'current_vid');
+
     // @todo is there sometihng going wrong here?
     $query->addField('base', 'uid', 'author_uid');
 
