@@ -255,14 +255,24 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   // Extra fields.
   $extra_fields = field_info_extra_fields('harmony_post', 'harmony_post', 'display');
 
+  // Revision log.
   if (isset($extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) && $extra_fields['harmony_core_post_revision_display_log']['display'][$view_mode]['visible']) {
-    $revision_log = theme('harmony_post_revision_display_log', array('post' => $post, 'view_mode' => $view_mode));
-
     if (!empty($revision_log)) {
       $build['harmony_core_post_revision_display_log'] = array(
-        '#markup' => $revision_log,
+        '#markup' => theme('harmony_post_revision_display_log', array('post' => $post, 'view_mode' => $view_mode)),
       );
     }
+  }
+  // Authors hostname.
+  if (
+    variable_get('harmony_core_post_show_hostname', FALSE) &&
+    isset($extra_fields['harmony_core_post_display_ip_address']['display'][$view_mode]['visible']) &&
+    $extra_fields['harmony_core_post_display_ip_address']['display'][$view_mode]['visible'] &&
+    user_access('administer forum content')
+  ) {
+    $build['harmony_core_post_display_ip_address'] = array(
+      '#markup' => theme('harmony_core_post_display_ip_address', array('post' => $post, 'view_mode' => $view_mode)),
+    );
   }
 
   // Allow modules to modify the structured post.

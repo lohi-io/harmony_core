@@ -959,6 +959,14 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
+    'harmony_core_post_display_ip_address' => array(
+      'arguments' => array(
+        'post' => NULL,
+        'view_mode' => NULL,
+      ),
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
     'harmony_core_views_style_plugin_harmony_table_ui' => array(
       'render element' => 'form',
       'file' => 'theme.inc',
@@ -3309,6 +3317,14 @@ function harmony_core_field_extra_fields() {
       ),
     ),
   );
+
+  if (variable_get('harmony_core_post_show_hostname', FALSE)) {
+    $extra['harmony_post']['harmony_post']['harmony_core_post_display_ip_address'] = array(
+      'label' => t('Authors Hostname/IP Address'),
+      'description' => t('The hostname of the user who created the post or revision.'),
+      'weight' => 5,
+    );
+  }
 
   return $extra;
 }
