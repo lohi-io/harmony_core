@@ -266,12 +266,12 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   // Authors hostname.
   if (
     variable_get('harmony_core_post_show_hostname', FALSE) &&
-    isset($extra_fields['harmony_core_post_display_ip_address']['display'][$view_mode]['visible']) &&
-    $extra_fields['harmony_core_post_display_ip_address']['display'][$view_mode]['visible'] &&
+    isset($extra_fields['harmony_core_post_display_hostname']['display'][$view_mode]['visible']) &&
+    $extra_fields['harmony_core_post_display_hostname']['display'][$view_mode]['visible'] &&
     user_access('administer forum content')
   ) {
-    $build['harmony_core_post_display_ip_address'] = array(
-      '#markup' => theme('harmony_core_post_display_ip_address', array('post' => $post, 'view_mode' => $view_mode)),
+    $build['harmony_core_post_display_hostname'] = array(
+      '#markup' => theme('harmony_core_post_display_hostname', array('post' => $post, 'view_mode' => $view_mode)),
     );
   }
 

@@ -959,7 +959,7 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
-    'harmony_core_post_display_ip_address' => array(
+    'harmony_core_post_display_hostname' => array(
       'arguments' => array(
         'post' => NULL,
         'view_mode' => NULL,
@@ -3319,7 +3319,7 @@ function harmony_core_field_extra_fields() {
   );
 
   if (variable_get('harmony_core_post_show_hostname', FALSE)) {
-    $extra['harmony_post']['harmony_post']['harmony_core_post_display_ip_address'] = array(
+    $extra['harmony_post']['harmony_post']['display']['harmony_core_post_display_hostname'] = array(
       'label' => t('Authors Hostname/IP Address'),
       'description' => t('The hostname of the user who created the post or revision.'),
       'weight' => 5,

@@ -49,7 +49,7 @@ function theme_harmony_post_revision_display_log($variables) {
  * Field extra field callback which provides the revision log message
  * if it's filled in and set to display to the user.
  */
-function theme_harmony_core_post_display_ip_address($variables) {
+function theme_harmony_core_post_display_hostname($variables) {
   $text = t('<strong>Posted from:</strong> !hostname', array(
     '!hostname' => $variables['post']->hostname,
   ));
