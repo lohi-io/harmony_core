@@ -996,6 +996,17 @@ function harmony_core_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Implements hook_theme_registry_alter().
+ */
+function harmony_core_theme_registry_alter(&$theme_registry) {
+  // Due to a bug with Entity API it messes with the theme registry
+  // and knackers things by setting the "base hook" for Entity API
+  // defined entities through $theme_registry['entity']['pattern'].
+  unset($theme_registry['harmony_thread']['base hook']);
+  unset($theme_registry['harmony_post']['base hook']);
+}
+
+/**
  * Implements hook_cron().
  */
 function harmony_core_cron() {
