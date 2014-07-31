@@ -86,6 +86,7 @@ function harmony_core_thread_view($thread, $view_mode = 'full', $langcode = NULL
   $build += array(
     '#theme' => 'harmony_thread',
     '#thread' => $thread,
+    '#entity' => $thread,
     '#view_mode' => $view_mode,
     '#language' => $langcode,
   );
@@ -243,6 +244,7 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   $build += array(
     '#theme' => 'harmony_post',
     '#post' => $post,
+    '#entity' => $post,
     '#view_mode' => $view_mode,
     '#language' => $langcode,
     '#attached' => array(
