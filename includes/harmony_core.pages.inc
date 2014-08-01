@@ -339,8 +339,9 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       drupal_add_js(drupal_get_path('module', 'harmony_core') . '/js/harmony-post.js');
     }
   }
+
   // Edit link.
-  if (!empty($thread_properties) && !$thread_properties['is_locked'] && harmony_core_post_access_callback('update', $post)) {
+  if (user_access('administer forum content') || !empty($thread_properties) && !$thread_properties['is_locked'] && harmony_core_post_access_callback('update', $post)) {
     $links['edit'] = array(
       'title' => t('Edit'),
       'href' => "post/$post->post_id/edit",

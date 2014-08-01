@@ -1201,6 +1201,7 @@ function harmony_core_entity_access_check($op, $entity, $account, $entity_type, 
       ) {
         return HARMONY_ACCESS_ALLOW;
       }
+      break;
     case 'update':
       if (
         $entity->locked == HARMONY_NOT_LOCKED && user_access("edit any {$entity_type}", $account) ||
@@ -1209,14 +1210,17 @@ function harmony_core_entity_access_check($op, $entity, $account, $entity_type, 
       ) {
         return HARMONY_ACCESS_ALLOW;
       }
+      break;
     case 'delete':
       if (user_access("delete any {$entity_type}", $account) || $entity && $account->uid == $entity->uid && user_access("delete own {$entity_type}s", $account)) {
         return HARMONY_ACCESS_ALLOW;
       }
+      break;
     case 'create':
       if (user_access("create {$entity_type}s", $account)) {
         return HARMONY_ACCESS_ALLOW;
       }
+      break;
   }
 
   return HARMONY_ACCESS_IGNORE;
