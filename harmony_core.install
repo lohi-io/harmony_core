@@ -518,6 +518,8 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_thread_page_output_title_meta');
   variable_del('harmony_core_thread_views_counter_enabled');
   variable_del('harmony_core_post_show_hostname');
+  variable_del('harmony_core_date_type');
+  variable_del('harmony_core_date_format');
 
   // Remove bundle settings vars.
   db_query('DELETE FROM {variable} WHERE name LIKE :pattern', array(':pattern' => db_like('harmony_core_bundle__') . '%'));

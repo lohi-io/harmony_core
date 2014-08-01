@@ -35,7 +35,7 @@ function theme_harmony_post_revision_display_log($variables) {
   if (trim($post->log) != '' && $post->log_show) {
     $user = user_load($post->revision_uid);
     $text = t('Edited on @date by !editor, @reason', array(
-      '@date' => format_date($post->updated),
+      '@date' => format_date($post->updated, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', '')),
       '!editor' => theme('username', array('account' => $user)),
       '@reason' => $post->log,
     ));
@@ -81,8 +81,8 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['thread_url'] = url("thread/$thread_id");
   $variables['url'] = url("post/$post->post_id");
   $variables['permalink_url'] = $variables['url'];
-  $variables['created'] = format_date($post->created);
-  $variables['updated'] = format_date($post->updated);
+  $variables['created'] = format_date($post->created, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', ''));
+  $variables['updated'] = format_date($post->updated, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', ''));
   $variables['is_page'] = arg(0) === 'post';
 
   // Flatten the post object's member fields.
