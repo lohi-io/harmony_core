@@ -11,7 +11,7 @@
  * We need to use this hook instead of hook_views_data() as
  * entity API already provides data for our custom entity type.
  */
- function harmony_core_views_data_alter(&$data) {
+function harmony_core_views_data_alter(&$data) {
   // General fields & things.
   $data['views']['harmony_listing_header'] = array(
     'title' => t('Harmony listing header'),

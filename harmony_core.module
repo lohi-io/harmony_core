@@ -154,6 +154,7 @@ function harmony_core_entity_info() {
     'entity keys' => array(
       'id' => 'post_id',
       'revision' => 'vid',
+      'label' => 'title',
     ),
     'bundles' => array(
       'harmony_post' => array(
@@ -177,7 +178,6 @@ function harmony_core_entity_info() {
         'custom settings' => FALSE,
       ),
     ),
-    'label callback' => 'harmony_core_post_label',
     'uri callback' => 'harmony_core_post_uri',
     'module' => 'harmony_core',
     'access callback' => 'harmony_core_post_access_callback',
@@ -1500,13 +1500,6 @@ function harmony_thread_delete_all_by_type($types) {
  */
 function harmony_thread_type_load($type) {
   return harmony_core_get_thread_types($type);
-}
-
-/**
- * Implements callback_entity_info_label().
- */
-function harmony_core_post_label($entity, $entity_type) {
-  return empty($entity->title) ? t('Untitled post') : $entity->title;
 }
 
 /**
