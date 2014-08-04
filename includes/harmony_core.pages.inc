@@ -10,28 +10,7 @@ function harmony_core_thread_add($type) {
   global $user;
 
   // Determine thread type.
-  if ($type == '') {
-    $type = 'harmony-thread';
-  }
-  $type = str_replace('-', '_', $type);
-  $thread_types = harmony_core_get_thread_types();
-  if (!in_array($type, array_keys($thread_types))) {
-    drupal_not_found();
-  }
-
-  $thread = (object) array(
-    'title' => '',
-    'type' => $type,
-    'uid' => $user->uid,
-    'language' => LANGUAGE_NONE,
-    'status' => HARMONY_PUBLISHED,
-    'created' => REQUEST_TIME,
-    'updated' => REQUEST_TIME,
-    'pinned' => HARMONY_NOT_PINNED,
-    'locked' => HARMONY_NOT_LOCKED,
-    'hidden' => HARMONY_NOT_HIDDEN,
-    'is_new' => TRUE,
-  );
+  $thread = harmony_core_thread_new_object($type);
 
   drupal_set_title(t('Create thread'), PASS_THROUGH);
   $output = drupal_get_form('harmony_core_thread_form', $thread);

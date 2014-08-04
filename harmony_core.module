@@ -1856,19 +1856,7 @@ function harmony_core_thread_move_category_action_form($settings) {
   $form = array();
   $form_state = array();
 
-  $thread = (object) array(
-    'title' => '',
-    'type' => 'harmony_thread',
-    'uid' => $user->uid,
-    'language' => LANGUAGE_NONE,
-    'status' => HARMONY_PUBLISHED,
-    'created' => REQUEST_TIME,
-    'updated' => REQUEST_TIME,
-    'pinned' => HARMONY_NOT_PINNED,
-    'locked' => HARMONY_NOT_LOCKED,
-    'hidden' => HARMONY_NOT_HIDDEN,
-    'is_new' => TRUE,
-  );
+  $thread = harmony_core_thread_new_object();
 
   field_attach_form('harmony_thread', $thread, $form, $form_state, NULL, array('field_name' => 'field_harmony_category'));
 
@@ -2258,19 +2246,8 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
   $form = array();
 
   // Build a standard thread object.
-  $thread = (object) array(
-    'title' => '',
-    'type' => 'harmony_thread',
-    'uid' => $user->uid,
-    'language' => LANGUAGE_NONE,
-    'status' => HARMONY_PUBLISHED,
-    'created' => REQUEST_TIME,
-    'updated' => 0,
-    'pinned' => HARMONY_NOT_PINNED,
-    'locked' => HARMONY_NOT_LOCKED,
-    'hidden' => HARMONY_NOT_HIDDEN,
-    'is_new' => TRUE,
-  );
+  $thread = harmony_core_thread_new_object();
+  $thread->updated = 0;
 
   // Attempt to grab the first selected post which will be the base of
   // information for the new thread.
@@ -2629,10 +2606,44 @@ function harmony_core_cron_queue_info() {
   return $queues;
 }
 
+function harmony_core_thread_new_object($type = NULL) {
+  global $user;
+
+  // Determine thread type.
+  if ($type == '') {
+    $type = 'harmony-thread';
+  }
+  $type = str_replace('-', '_', $type);
+  $thread_types = harmony_core_get_thread_types();
+  if (!in_array($type, array_keys($thread_types))) {
+    drupal_not_found();
+  }
+
+  $thread = (object) array(
+    'title' => '',
+    'type' => 'harmony_thread',
+    'uid' => $user->uid,
+    'language' => LANGUAGE_NONE,
+    'status' => HARMONY_PUBLISHED,
+    'created' => REQUEST_TIME,
+    'updated' => REQUEST_TIME,
+    'pinned' => HARMONY_NOT_PINNED,
+    'locked' => HARMONY_NOT_LOCKED,
+    'hidden' => HARMONY_NOT_HIDDEN,
+    'is_new' => TRUE,
+  );
+
+  return $thread;
+}
+
 /**
  * Thread add/edit form callback.
  */
-function harmony_core_thread_form($form, &$form_state, $thread) {
+function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
+  if (!$thread) {
+    $thread = harmony_core_thread_new_object();
+  }
+
   $form = array();
 
   $form['thread'] = array(
