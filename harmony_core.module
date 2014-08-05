@@ -2403,6 +2403,13 @@ function harmony_core_post_split_action(&$post, $context) {
       $thread_post_count = $thread_wrapper->field_harmony_post_count->value();
       $thread_wrapper->field_harmony_post_count->set($thread_post_count + 1);
 
+      // Decrease the old threads' post count.
+      if ($old_thread->status == HARMONY_PUBLISHED) {
+        $old_thread_post_count = $old_thread_wrapper->field_harmony_post_count->value();
+        $old_thread_wrapper->field_harmony_post_count->set($old_thread_post_count - 1);
+        harmony_thread_meta_save($old_thread);
+      }
+
       // Category now.
       if ($thread_wrapper->__isset('field_harmony_category') && $thread_wrapper->field_harmony_category->value()) {
         $new_category_tid = $thread_wrapper->field_harmony_category->tid->value();
@@ -2414,22 +2421,15 @@ function harmony_core_post_split_action(&$post, $context) {
         // then decrement. Don't increment the new category if the it's the
         // same as the old one and the new thread is published.
         $increment_new_category_count = $thread->status == HARMONY_PUBLISHED;
-        if ($old_thread->status == HARMONY_PUBLISHED) {
-          // Decrease the old threads' post count.
-          $old_thread_post_count = $old_thread_wrapper->field_harmony_post_count->value();
-          $old_thread_wrapper->field_harmony_post_count->set($old_thread_post_count - 1);
-          harmony_thread_meta_save($old_thread);
-
-          if ($old_thread_wrapper->__isset('field_harmony_category') && $old_thread_wrapper->field_harmony_category->value()) {
-            if ($old_thread_wrapper->field_harmony_category->tid->value() != $new_category_tid) {
-              $old_category_post_count = $old_thread_wrapper->field_harmony_category->field_harmony_post_count->value();
-              $old_thread_wrapper->field_harmony_category->field_harmony_post_count->set($old_category_post_count - 1);
-              $old_thread_wrapper->field_harmony_category->save();
-            }
-            // Category is the same, don't increment the new count.
-            elseif ($thread->status == HARMONY_NOT_PUBLISHED) {
-              $increment_new_category_count = FALSE;
-            }
+        if ($old_thread->status == HARMONY_PUBLISHED && $old_thread_wrapper->__isset('field_harmony_category') && $old_thread_wrapper->field_harmony_category->value()) {
+          if ($old_thread_wrapper->field_harmony_category->tid->value() != $new_category_tid) {
+            $old_category_post_count = $old_thread_wrapper->field_harmony_category->field_harmony_post_count->value();
+            $old_thread_wrapper->field_harmony_category->field_harmony_post_count->set($old_category_post_count - 1);
+            $old_thread_wrapper->field_harmony_category->save();
+          }
+          // Category is the same, don't increment the new count.
+          elseif ($thread->status == HARMONY_NOT_PUBLISHED) {
+            $increment_new_category_count = FALSE;
           }
         }
 
