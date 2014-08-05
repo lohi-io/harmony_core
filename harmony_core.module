@@ -3068,8 +3068,10 @@ function harmony_core_post_form($form, &$form_state, $post) {
   if ($post->is_new && !$thread_id) {
     if (!empty($form['field_harmony_thread'][$form['field_harmony_thread']['#language']][0]['target_id']['#default_value'])) {
       $thread_default_value = $form['field_harmony_thread'][$form['field_harmony_thread']['#language']][0]['target_id']['#default_value'];
+
       // Grab the thread id from the default value.
-      $thread_default_value_id = substr($thread_default_value, strrpos($thread_default_value, ' (') + 2, -1);
+      $thread_default_value_id = substr($thread_default_value, strrpos($thread_default_value, ' (') + 2);
+      $thread_default_value_id = substr($thread_default_value_id, 0, strpos($thread_default_value_id, ')'));
 
       // Check just to be safe.
       if (is_numeric($thread_default_value_id)) {
@@ -3082,6 +3084,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
   // a thread id at this point then bail out as we don't want to create an
   // orphaned post.
   $bail_out = FALSE;
+  $bail_out_reason = NULL;
   $thread = NULL;
   $thread_properties = array();
   if ($thread_id) {
@@ -3091,14 +3094,17 @@ function harmony_core_post_form($form, &$form_state, $post) {
       $thread_properties = harmony_core_thread_get_properties($thread_id, $thread);
       if (isset($thread_properties['can_post_in']) && !$thread_properties['can_post_in']) {
         $bail_out = TRUE;
+        $bail_out_reason = 'Cannot post in due to thread properties.';
       }
     }
     else {
       $bail_out = TRUE;
+      $bail_out_reason = 'Cannot post in as could not load the thread.';
     }
   }
   else {
     $bail_out = TRUE;
+    $bail_out_reason = 'No thread id was specified.';
   }
 
   // Bail out!
