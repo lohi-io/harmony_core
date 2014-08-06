@@ -2407,7 +2407,6 @@ function harmony_core_post_split_action(&$post, $context) {
       if ($old_thread->status == HARMONY_PUBLISHED) {
         $old_thread_post_count = $old_thread_wrapper->field_harmony_post_count->value();
         $old_thread_wrapper->field_harmony_post_count->set($old_thread_post_count - 1);
-        harmony_thread_meta_save($old_thread);
       }
 
       // Category now.
@@ -2451,7 +2450,6 @@ function harmony_core_post_split_action(&$post, $context) {
         // Remove from the old thread.
         $old_thread_likes = $old_thread_wrapper->likes->value();
         $old_thread_wrapper->likes->set($old_thread_likes - $post_likes);
-        harmony_thread_meta_save($old_thread);
 
         // Add to the new one!
         $thread_likes = $thread_wrapper->likes->value();
@@ -2486,13 +2484,24 @@ function harmony_core_post_split_action(&$post, $context) {
         $thread_wrapper->field_harmony_last_post->set($post->post_id);
       }
 
+      // Update first and last post on the old thread.
+      $old_thread_posts = harmony_core_get_thread_posts($old_thread);
+      if ($old_thread_wrapper->field_harmony_first_post->value() && $old_thread_posts[0] != $old_thread_wrapper->field_harmony_first_post->post_id->value()) {
+        $old_thread_wrapper->field_harmony_first_post->set($old_thread_posts[0]);
+      }
+      $old_thread_posts_last = array_pop($old_thread_posts);
+      if ($old_thread_wrapper->field_harmony_last_post->value() && $old_thread_posts_last != $old_thread_wrapper->field_harmony_last_post->post_id->value()) {
+        $old_thread_wrapper->field_harmony_last_post->set($old_thread_posts_last);
+      }
+
       // Should the move post action do this stuff too?
     }
 
     // Change the thread entity ref.
     $wrapper->field_harmony_thread->set($thread_id);
 
-    // Update the thread.
+    // Update the threads.
+    harmony_thread_meta_save($old_thread);
     harmony_thread_meta_save($thread);
   }
 }
