@@ -32,10 +32,24 @@ class HarmonyController extends EntityAPIController {
       // the place for that!
       if ($entity->is_new) {
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
+        if ($this->revisionKey) {
+          $this->saveRevision($entity);
+        }
       }
       else {
-        $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
+        // Update the base table if the entity doesn't have revisions or
+        // we are updating the default revision.
+        if (!$this->revisionKey || !empty($entity->{$this->defaultRevisionKey})) {
+          $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
+        }
+        if ($this->revisionKey) {
+          // We force things to be updated quickly, if new revisions are a
+          // consideration then the full save method should be used.
+          $entity->is_new_revision = FALSE;
+          $return = $this->saveRevision($entity);
+        }
         $this->resetCache(array($entity->{$this->idKey}));
+
         field_attach_update($this->entityType, $entity);
       }
 
@@ -304,6 +318,46 @@ class HarmonyThreadController extends HarmonyController {
       throw $e;
     }
   }
+
+  public function rebuildFirstLastPosts($thread) {
+    $thread_posts_stored = array();
+
+    // Grab all (published) posts in the thread.
+    $thread_posts = harmony_core_get_thread_posts($thread);
+    $thread_posts_stored['all'] = $thread_posts;
+    $thread_posts_stored['first'] = array_shift($thread_posts);
+    $thread_posts_stored['last'] = !empty($thread_posts) ? array_pop($thread_posts) : $thread_posts_stored['first'];
+    $thread_posts_stored['other'] = $thread_posts;
+
+    // Unset first and last post property for all except the now first and
+    // last. Focus for this is speed so don't run through
+    // harmony_post_save().
+    // Remember that as we remove items from the thread posts array it could
+    // end up empty.
+    if (!empty($thread_posts)) {
+      db_query('UPDATE {harmony_post} SET first_post = 0, last_post = 0 WHERE post_id IN (:ids)', array(':ids' => $thread_posts));
+    }
+
+    // Set first and last.
+    if ($thread_posts_stored['first'] == $thread_posts_stored['last']) {
+      $result = db_query('UPDATE {harmony_post} SET first_post = 1, last_post = 1 WHERE post_id = :id', array(':id' => $thread_posts_stored['first']));
+    }
+    else {
+      $result = db_query('UPDATE {harmony_post} SET first_post = 1, last_post = 0 WHERE post_id = :id', array(':id' => $thread_posts_stored['first']));
+      $result = db_query('UPDATE {harmony_post} SET first_post = 0, last_post = 1 WHERE post_id = :id', array(':id' => $thread_posts_stored['last']));
+    }
+
+    $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+    // Set the first and last entity reference fields.
+    $wrapper->field_harmony_first_post->set($thread_posts_stored['first']);
+    $wrapper->field_harmony_last_post->set($thread_posts_stored['last']);
+
+    // Save our changes.
+    $this->metaSave($thread);
+
+    return $thread_posts_stored;
+  }
 }
 
 /**
@@ -407,9 +461,15 @@ class HarmonyPostController extends HarmonyController {
     // the uid of the editor and author.
     if (!empty($queried_entities)) {
       foreach ($queried_entities as $entity_id => $entity) {
+        // User id stuff.
         $queried_entities[$entity_id]->revision_uid = $entity->uid;
         $queried_entities[$entity_id]->uid = $entity->author_uid;
         unset($queried_entities[$entity_id]->author_uid);
+
+        // Hostname stuffs.
+        $queried_entities[$entity_id]->revision_hostname = $entity->hostname;
+        $queried_entities[$entity_id]->hostname = $entity->author_hostname;
+        unset($queried_entities[$entity_id]->author_hostname);
       }
     }
 
@@ -469,6 +529,8 @@ class HarmonyPostController extends HarmonyController {
 
       $this->invoke('presave', $entity);
       $wrapper = entity_metadata_wrapper('harmony_post', $entity);
+      $thread_id = NULL;
+      $original_thread_id = NULL;
 
       if ($entity->is_new) {
         // Set last_post.
@@ -494,6 +556,7 @@ class HarmonyPostController extends HarmonyController {
         $entity->is_new_revision = FALSE;
         if (!empty($entity->original)) {
           $original_post_wrapper = entity_metadata_wrapper('harmony_post', $entity->original);
+          $original_thread_id = $original_post_wrapper->field_harmony_thread->value() ? $original_post_wrapper->field_harmony_thread->thread_id->value() : NULL;
 
           $trigger_fields = variable_get('harmony_core_post_revision_trigger_fields', array('field_harmony_text' => 'value'));
 
@@ -526,7 +589,10 @@ class HarmonyPostController extends HarmonyController {
         }
         // Update revisions!
         if ($this->revisionKey) {
-          $entity->hostname = ip_address();
+          // Update the hostname if making a new revision.
+          if ($entity->is_new_revision) {
+            $entity->hostname = ip_address();
+          }
           $return = $this->saveRevision($entity);
         }
 
@@ -554,41 +620,45 @@ class HarmonyPostController extends HarmonyController {
       if ($wrapper->field_harmony_thread->value()) {
         $thread_id = $wrapper->field_harmony_thread->thread_id->value();
       }
-      else {
-        $thread_id = NULL;
-      }
+
+      $moving_thread = !$entity->is_new && $thread_id != $original_thread_id;
 
       // If we're attached to a thread, update some things!
-      if ($thread_id) {
+      if ($thread_id && !$moving_thread) {
         // Set who last updated the thread.
         if ($entity->uid > 0) {
           $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
-
-          // Update last post if this post is new.
-          if ($entity->is_new && $wrapper->field_harmony_thread->__isset('field_harmony_last_post') && $wrapper->field_harmony_thread->field_harmony_last_post->value()) {
-            $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->post_id->value();
-            if ($previous_last_post_id != $entity->post_id) {
-              // Entity metadata wrapper dies here when trying to set a
-              // property through the entity ref.
-              $previous_last_post = harmony_post_load($previous_last_post_id);
-              $previous_last_post_wrapper = entity_metadata_wrapper('harmony_post', $previous_last_post);
-              $previous_last_post_wrapper->field_harmony_thread->field_harmony_last_post->last_post->set(0);
-              $previous_last_post_wrapper->field_harmony_thread->field_harmony_last_post->save();
-            }
-
-            $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
-          }
         }
 
+        // Update last post if this post is new.
+        if ($entity->is_new && $wrapper->field_harmony_thread->__isset('field_harmony_last_post') && $wrapper->field_harmony_thread->field_harmony_last_post->value()) {
+          $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->post_id->value();
+          if ($previous_last_post_id != $entity->post_id) {
+            // Entity metadata wrapper dies here when trying to set a
+            // property through the entity ref.
+            $previous_last_post = harmony_post_load($previous_last_post_id);
+            $previous_last_post->last_post = 0;
+            $this->metaSave($previous_last_post);
+          }
+
+          $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
+        }
+
+        // Invoke post saved, thread updated.
+        if ($entity->is_new) {
+          module_invoke_all('harmony_thread_new_post', $thread_id, $entity);
+        }
+      }
+
+      if ($thread_id) {
         // Set the last time the thread was updated.
-        $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
-        $wrapper->field_harmony_thread->save();
+        if ($wrapper->field_harmony_thread->updated->value() < $wrapper->created->value()) {
+          $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
+          $wrapper->field_harmony_thread->save();
+        }
 
         // Attach the thread type to the post.
         $entity->thread_type = $wrapper->field_harmony_thread->type->value();
-
-        // Invoke post saved, thread updated.
-        module_invoke_all('harmony_thread_new_post', $thread_id, $entity);
       }
 
       // Update counts.
@@ -717,6 +787,9 @@ class HarmonyPostController extends HarmonyController {
 
     // @todo is there sometihng going wrong here?
     $query->addField('base', 'uid', 'author_uid');
+
+    // Add in a query for the original hostname.
+    $query->addField('base', 'hostname', 'author_hostname');
 
     return $query;
   }

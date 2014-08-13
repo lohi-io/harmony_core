@@ -1491,6 +1491,14 @@ function harmony_thread_delete_all_by_type($types) {
 }
 
 /**
+ * Wipe out and re define the first and last post properties and
+ * entity references for a thread.
+ */
+function harmony_thread_rebuild_first_last_posts($thread) {
+  return entity_get_controller('harmony_thread')->rebuildFirstLastPosts($thread);
+}
+
+/**
  * Menu argument loader; Load a thread type by string.
  *
  * @param $type
@@ -2456,53 +2464,27 @@ function harmony_core_post_split_action(&$post, $context) {
         $thread_wrapper->likes->set($thread_likes + $post_likes);
       }
 
-      // Update first and last post fields on the thread.
-      if ($update_first_post) {
-        $first_post = $thread_wrapper->field_harmony_first_post->value() ? $thread_wrapper->field_harmony_first_post->post_id->value() : NULL;
-        $wrapper->first_post->set(1);
-
-        if ($first_post) {
-          $old_first_post = harmony_post_load($first_post);
-          $old_first_post_wrapper = entity_metadata_wrapper('harmony_post', $old_first_post);
-          $old_first_post_wrapper->first_post->set(0);
-          harmony_post_meta_save($old_first_post);
-        }
-
-        $thread_wrapper->field_harmony_first_post->set($post->post_id);
-      }
-      if ($update_last_post) {
-        $last_post = $thread_wrapper->field_harmony_last_post->value() ? $thread_wrapper->field_harmony_last_post->post_id->value() : NULL;
-        $wrapper->last_post->set(1);
-
-        if ($last_post) {
-          $old_last_post = harmony_post_load($last_post);
-          $old_last_post_wrapper = entity_metadata_wrapper('harmony_post', $old_last_post);
-          $old_last_post_wrapper->last_post->set(0);
-          harmony_post_meta_save($old_last_post);
-        }
-
-        $thread_wrapper->field_harmony_last_post->set($post->post_id);
-      }
-
-      // Update first and last post on the old thread.
-      $old_thread_posts = harmony_core_get_thread_posts($old_thread);
-      if ($old_thread_wrapper->field_harmony_first_post->value() && $old_thread_posts[0] != $old_thread_wrapper->field_harmony_first_post->post_id->value()) {
-        $old_thread_wrapper->field_harmony_first_post->set($old_thread_posts[0]);
-      }
-      $old_thread_posts_last = array_pop($old_thread_posts);
-      if ($old_thread_wrapper->field_harmony_last_post->value() && $old_thread_posts_last != $old_thread_wrapper->field_harmony_last_post->post_id->value()) {
-        $old_thread_wrapper->field_harmony_last_post->set($old_thread_posts_last);
-      }
-
       // Should the move post action do this stuff too?
     }
 
     // Change the thread entity ref.
     $wrapper->field_harmony_thread->set($thread_id);
 
+    // Save the post early.
+    $post = harmony_post_meta_save($post);
+
     // Update the threads.
     harmony_thread_meta_save($old_thread);
     harmony_thread_meta_save($thread);
+
+    // Rebuild the first and last thread properties.
+    harmony_thread_rebuild_first_last_posts($old_thread);
+    $thread_posts = harmony_thread_rebuild_first_last_posts($thread);
+
+    // At this point as views bulk operations will save the entity for us it'll
+    // override any changes made elsewhere unless we grab it here and re-apply.
+    $post->first_post = $thread_posts['first'] == $post->post_id ? 1 : 0;
+    $post->last_post = $thread_posts['last'] == $post->post_id ? 1 : 0;
   }
 }
 
