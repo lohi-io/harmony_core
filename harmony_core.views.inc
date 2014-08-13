@@ -318,6 +318,24 @@ function harmony_core_views_data_alter(&$data) {
         'handler' => 'views_handler_sort',
       ),
     ),
+    'hostname' => array(
+      'title' => t('Hostname'),
+      'help' => t('The hostname or IP address from where the revision was created.'),
+      'field' => array(
+        'handler' => 'views_handler_field_xss',
+        'click sortable' => TRUE,
+      ),
+      'filter' => array(
+        'handler' => 'views_handler_filter_string',
+        'allow empty' => TRUE,
+      ),
+      'argument' => array(
+        'handler' => 'views_handler_argument_string',
+      ),
+      'sort' => array(
+        'handler' => 'views_handler_sort',
+      ),
+    ),
     'uid' => array(
       'title' => t('Author UID'),
       'help' => t('The user authoring the revision. If you need more fields from the author, add the Author relationship.'),
