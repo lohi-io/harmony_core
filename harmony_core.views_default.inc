@@ -970,9 +970,12 @@ function harmony_core_views_default_views() {
     'name' => 'name',
     'timestamp' => 'timestamp',
     'log' => 'log',
+    'hostname' => 'hostname',
     'is_current' => 'delete_revision',
     'delete_revision' => 'delete_revision',
     'make_current' => 'delete_revision',
+    'view_diff' => 'view_diff',
+    'field_harmony_thread-revision_id' => 'field_harmony_thread-revision_id',
   );
   $handler->display->display_options['style_options']['default'] = '-1';
   $handler->display->display_options['style_options']['info'] = array(
@@ -1002,6 +1005,13 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
+    'hostname' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => 'views-align-center',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
     'is_current' => array(
       'align' => '',
       'separator' => '',
@@ -1013,6 +1023,18 @@ function harmony_core_views_default_views() {
       'empty_column' => 0,
     ),
     'make_current' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'view_diff' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'field_harmony_thread-revision_id' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -1055,6 +1077,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['log']['id'] = 'log';
   $handler->display->display_options['fields']['log']['table'] = 'harmony_post_revision';
   $handler->display->display_options['fields']['log']['field'] = 'log';
+  /* Field: Post (historical data): Hostname */
+  $handler->display->display_options['fields']['hostname']['id'] = 'hostname';
+  $handler->display->display_options['fields']['hostname']['table'] = 'harmony_post_revision';
+  $handler->display->display_options['fields']['hostname']['field'] = 'hostname';
   /* Field: Post (historical data): Is current */
   $handler->display->display_options['fields']['is_current']['id'] = 'is_current';
   $handler->display->display_options['fields']['is_current']['table'] = 'harmony_post_revision';
