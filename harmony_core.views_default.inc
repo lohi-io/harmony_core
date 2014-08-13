@@ -1324,6 +1324,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['updated']['field'] = 'updated';
   $handler->display->display_options['fields']['updated']['label'] = 'Updated';
   $handler->display->display_options['fields']['updated']['date_format'] = 'short';
+  /* Field: Post: Hostname */
+  $handler->display->display_options['fields']['hostname']['id'] = 'hostname';
+  $handler->display->display_options['fields']['hostname']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['hostname']['field'] = 'hostname';
   /* Field: Post: Edit link */
   $handler->display->display_options['fields']['edit_link']['id'] = 'edit_link';
   $handler->display->display_options['fields']['edit_link']['table'] = 'harmony_post';
