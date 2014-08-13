@@ -335,16 +335,41 @@ class HarmonyThreadController extends HarmonyController {
     // Remember that as we remove items from the thread posts array it could
     // end up empty.
     if (!empty($thread_posts)) {
-      db_query('UPDATE {harmony_post} SET first_post = 0, last_post = 0 WHERE post_id IN (:ids)', array(':ids' => $thread_posts));
+      foreach ($thread_posts as $post_id) {
+        $post = harmony_post_load($post_id);
+
+        if ($post) {
+          $post->first_post = 0;
+          $post->last_post = 0;
+          harmony_post_meta_save($post);
+        }
+      }
     }
 
     // Set first and last.
     if ($thread_posts_stored['first'] == $thread_posts_stored['last']) {
-      $result = db_query('UPDATE {harmony_post} SET first_post = 1, last_post = 1 WHERE post_id = :id', array(':id' => $thread_posts_stored['first']));
+      $post = harmony_post_load($thread_posts_stored['first']);
+
+      if ($post) {
+        $post->first_post = 1;
+        $post->last_post = 1;
+        harmony_post_meta_save($post);
+      }
     }
     else {
-      $result = db_query('UPDATE {harmony_post} SET first_post = 1, last_post = 0 WHERE post_id = :id', array(':id' => $thread_posts_stored['first']));
-      $result = db_query('UPDATE {harmony_post} SET first_post = 0, last_post = 1 WHERE post_id = :id', array(':id' => $thread_posts_stored['last']));
+      $first_post = harmony_post_load($thread_posts_stored['first']);
+      if ($first_post) {
+        $first_post->first_post = 1;
+        $first_post->last_post = 0;
+        harmony_post_meta_save($first_post);
+      }
+
+      $last_post = harmony_post_load($thread_posts_stored['last']);
+      if ($last_post) {
+        $last_post->first_post = 0;
+        $last_post->last_post = 1;
+        harmony_post_meta_save($last_post);
+      }
     }
 
     $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
@@ -764,7 +789,7 @@ class HarmonyPostController extends HarmonyController {
       drupal_write_record($this->revisionTable, $record, $this->revisionKey);
       // @todo: Fix original entity to be of the same revision and check whether
       // the default revision key has been set.
-      $update_default_revision = $entity->{$this->defaultRevisionKey} && $entity->{$this->revisionKey} != $entity->original->{$this->revisionKey};
+      $update_default_revision = $entity->{$this->defaultRevisionKey} && !empty($entity->original->{$this->revisionKey}) && $entity->{$this->revisionKey} != $entity->original->{$this->revisionKey};
     }
     // Make sure to update the new revision key for the entity.
     $entity->{$this->revisionKey} = $record[$this->revisionKey];

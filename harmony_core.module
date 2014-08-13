@@ -2474,8 +2474,8 @@ function harmony_core_post_split_action(&$post, $context) {
     $post = harmony_post_meta_save($post);
 
     // Update the threads.
-    harmony_thread_meta_save($old_thread);
-    harmony_thread_meta_save($thread);
+    $old_thread = harmony_thread_meta_save($old_thread);
+    $thread = harmony_thread_meta_save($thread);
 
     // Rebuild the first and last thread properties.
     harmony_thread_rebuild_first_last_posts($old_thread);
