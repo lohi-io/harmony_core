@@ -359,6 +359,8 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       'attributes' => array(
         'title' => t('Reply directly to this post'),
         'class' => array('reply-link'),
+        'data-thread-id' => $thread_id,
+        'data-post-id' => $post->post_id,
       ),
       'query' => array(
         'field_harmony_thread' => $thread_id,
