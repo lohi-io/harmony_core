@@ -3,6 +3,7 @@ description = Provides core functionality for Harmony!
 core = 7.x
 package = Harmony
 project = harmony_core
+configure = admin/harmony
 dependencies[] = better_formats
 dependencies[] = codefilter
 dependencies[] = context

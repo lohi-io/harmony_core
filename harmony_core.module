@@ -115,8 +115,8 @@ function harmony_core_entity_info() {
     $entities['harmony_thread']['bundles'][$type] = array(
       'label' => $info->label,
       'admin' => array(
-        'path' => 'admin/structure/harmony/thread/%harmony_thread_type',
-        'real path' => 'admin/structure/harmony/thread/' . $type,
+        'path' => 'admin/harmony/structure/thread/%harmony_thread_type',
+        'real path' => 'admin/harmony/structure/thread/' . $type,
         'bundle argument' => 4,
         'access arguments' => array('administer harmony_thread_types'),
       ),
@@ -137,7 +137,7 @@ function harmony_core_entity_info() {
     ),
     'module' => 'harmony_core',
     'admin ui' => array(
-      'path' => 'admin/structure/harmony/thread',
+      'path' => 'admin/harmony/structure/thread',
       'controller class' => 'HarmonyThreadTypeUIController',
     ),
     'access callback' => 'harmony_core_thread_type_access_callback',
@@ -160,8 +160,8 @@ function harmony_core_entity_info() {
       'harmony_post' => array(
         'label' => t('Post'),
         'admin' => array(
-          'path' => 'admin/structure/harmony/post',
-          'real path' => 'admin/structure/harmony/post',
+          'path' => 'admin/harmony/structure/post',
+          'real path' => 'admin/harmony/structure/post',
           'access arguments' => array('administer harmony_post entity'),
         ),
       ),
@@ -627,9 +627,9 @@ function harmony_core_menu() {
   $includes_dir = drupal_get_path('module', 'harmony_core') . '/includes';
 
   // Administration menu items.
-  $items['admin/structure/harmony'] = array(
+  $items['admin/harmony'] = array(
     'title' => 'Harmony',
-    'description' => 'Manage the Harmony Thread, Thread Type &amp; Post entities.',
+    'description' => 'Harmony dashboard.',
     'access arguments' => array('administer harmony settings'),
     'page callback' => 'system_admin_menu_block_page',
     'file' => 'system.admin.inc',
@@ -637,7 +637,21 @@ function harmony_core_menu() {
     'weight' => -10,
   );
 
-  $items['admin/structure/harmony/post'] = array(
+  $items['admin/harmony/content'] = $items['admin/harmony'];
+  $items['admin/harmony/content']['title'] = 'Content';
+  $items['admin/harmony/content']['description'] = 'Find, moderate and administer Harmony content.';
+
+  $items['admin/harmony/structure'] = $items['admin/harmony'];
+  $items['admin/harmony/structure']['title'] = 'Structure';
+  $items['admin/harmony/structure']['description'] = 'Manage the Harmony Thread, Thread Type &amp; Post entities.';
+  $items['admin/harmony/structure']['weight'] = 2;
+
+  $items['admin/harmony/config'] = $items['admin/harmony'];
+  $items['admin/harmony/config']['title'] = 'Configuration';
+  $items['admin/harmony/config']['description'] = 'Administer Harmony module and sub-module settings.';
+  $items['admin/harmony/config']['weight'] = 3;
+
+  $items['admin/harmony/structure/post'] = array(
     'title' => 'Post settings',
     'description' => 'Manage the Post entity.',
     'access arguments' => array('administer harmony_post entity'),
@@ -648,7 +662,7 @@ function harmony_core_menu() {
     'weight' => 1,
   );
 
-  $items['admin/structure/harmony/post/edit'] = array(
+  $items['admin/harmony/structure/post/edit'] = array(
     'title' => 'Edit',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
@@ -665,17 +679,18 @@ function harmony_core_menu() {
   );
 
   // Admin thread add links.
-  $items['admin/content/threads/add'] = array(
+  $items['admin/harmony/content/threads/add'] = array(
     'title' => 'Add',
     'page callback' => 'harmony_core_thread_add_redirect',
     'page arguments' => array('harmony_thread'),
     'access arguments' => array('create harmony_thread harmony threads'),
+    'weight' => 10,
   );
 
   $thread_types = harmony_core_get_thread_types();
   if (count($thread_types) > 1) {
     foreach ($thread_types as $type => $info) {
-      $items['admin/content/threads/add/' . str_replace('_', '-', $type)] = array(
+      $items['admin/harmony/content/threads/add/' . str_replace('_', '-', $type)] = array(
         'title' => check_plain($info->label),
         'page callback' => 'harmony_core_thread_add_redirect',
         'page arguments' => array($type),
@@ -2173,7 +2188,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
   if ($post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
-      '@thread_merge_url' => url('admin/content/threads'),
+      '@thread_merge_url' => url('admin/harmony/content/threads'),
     );
     drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
   }
@@ -2367,7 +2382,7 @@ function harmony_core_post_split_action(&$post, $context) {
   if ($post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
-      '@thread_merge_url' => url('admin/content/threads'),
+      '@thread_merge_url' => url('admin/harmony/content/threads'),
     );
     drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
   }
@@ -2985,14 +3000,14 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
   }
 
   // Redirect the user.
-  $form_state['redirect'] = 'admin/structure/harmony/thread';
+  $form_state['redirect'] = 'admin/harmony/structure/thread';
 }
 
 /**
  * Form API submit callback for the delete button.
  */
 function harmony_thread_type_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/structure/harmony/thread/manage/' . $form_state['harmony_thread_type']->type . '/delete';
+  $form_state['redirect'] = 'admin/harmony/structure/thread/manage/' . $form_state['harmony_thread_type']->type . '/delete';
 }
 
 /**

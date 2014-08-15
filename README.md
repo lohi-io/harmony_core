@@ -40,15 +40,17 @@ The default listing of posts can be found here:
 /forum
 
 You can add and alter fields on the Thread entity here:
-/admin/structure/harmony/thread
+/admin/harmony/structure/thread
 
 And post here:
-/admin/structure/harmony/post
+/admin/harmony/structure/post
 
 ## Install notes
 
 jQuery update should be set to use 1.7, there are issues with this however, check the settings here:
 /admin/config/development/jquery_update
+
+You will also want to use the same version of jQuery on admin pages.
 
 If you want to use At.js you will need to download libraries, I refer you to the instructions for that module.
 
