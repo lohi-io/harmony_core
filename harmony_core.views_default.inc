@@ -828,6 +828,9 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['type'] = 'normal';
+  $handler->display->display_options['tab_options']['title'] = 'Threads';
+  $handler->display->display_options['tab_options']['weight'] = '0';
   $export['harmony_administration_threads'] = $view;
 
   $view = new view();
