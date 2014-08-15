@@ -3827,7 +3827,7 @@ function harmony_core_user_delete($account) {
     ->fetchCol();
   harmony_core_mass_update('harmony_thread', $threads, 'delete', array());
 
-  // Delete old revisions.
+  // Delete Posts.
   // @todo.
   /*$revisions = db_query('SELECT vid FROM {thread_revision} WHERE uid = :uid', array(':uid' => $account->uid))->fetchCol();
   foreach ($revisions as $revision) {
@@ -3991,21 +3991,248 @@ function harmony_post_get_replies($post_id) {
 /**
  * Helper function to grab an array of post ids when passed a thread id.
  */
-function harmony_core_get_thread_posts($thread, array $options = array(), $name = NULL, $entity_type = NULL) {
-  $post_ids = array();
+function harmony_core_get_thread_posts($thread, array $options = array(), $name = NULL, $entity_type = NULL, $reset = FALSE) {
+  $harmony_core_thread_posts = &drupal_static(__FUNCTION__, array());
 
-  // Get a list of posts in the current thread.
-  $query = new EntityFieldQuery;
-  $query_result = $query
-    ->entityCondition('entity_type', 'harmony_post')
-    ->propertyCondition('status', HARMONY_PUBLISHED)
-    ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
-    ->propertyOrderBy('created')
-    ->execute();
+  if (!isset($harmony_core_thread_posts[$thread->thread_id]) || $reset) {
+    $post_ids = array();
 
-  if (!empty($query_result['harmony_post'])) {
-    $post_ids = array_keys($query_result['harmony_post']);
+    // Get a list of posts in the current thread.
+    $query = new EntityFieldQuery;
+    $query_result = $query
+      ->entityCondition('entity_type', 'harmony_post')
+      ->propertyCondition('status', HARMONY_PUBLISHED)
+      ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
+      ->propertyOrderBy('created')
+      ->execute();
+
+    if (!empty($query_result['harmony_post'])) {
+      $post_ids = array_keys($query_result['harmony_post']);
+    }
+
+    $harmony_core_thread_posts[$thread->thread_id] = $post_ids;
   }
 
-  return $post_ids;
+  return $harmony_core_thread_posts[$thread->thread_id];
+}
+
+/* Functions relating to working out a posts' permalink. */
+
+/**
+ * Function to update stored information about views pager settings.
+ */
+function harmony_core_thread_post_listing_info_update() {
+  list($view_name, $view_display) = explode('|', variable_get('harmony_core_thread_post_listing_view', 'harmony_thread_posts_listing|default'));
+  $view = views_get_view($view_name, TRUE);
+
+  // Bail out if view failed to load.
+  if (!$view) {
+    return;
+  }
+
+  // Set specified display.
+  $view->set_display($view_display);
+  $pager = $view->display_handler->get_plugin('pager');
+
+  // Get paging info.
+  $paging_info = array(
+    'using_pager' => !in_array($pager->plugin_name, array('none', 'some')),
+    'pager_type' => $pager->plugin_name,
+    'items_per_page' => $pager->options['items_per_page'],
+    'offset' => $pager->options['offset'],
+  );
+  variable_set('harmony_core_thread_post_listing_paging_info', $paging_info);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function harmony_core_form_views_ui_edit_form_alter(&$form, &$form_state, $form_id) {
+  if (variable_get('harmony_core_thread_post_listing_auto_update', TRUE)) {
+    $form['actions']['save']['#submit'][] = 'harmony_core_post_listing_info_view_update';
+  }
+}
+
+/**
+ * Form submit callback.
+ */
+function harmony_core_post_listing_info_view_update($form, &$form_state) {
+  if (variable_get('harmony_core_thread_post_listing_auto_update', TRUE)) {
+    list($view_name, $view_display) = explode('|', variable_get('harmony_core_thread_post_listing_view', 'harmony_thread_posts_listing|default'));
+    if ($form_state['view']->name === $view_name) {
+      harmony_core_thread_post_listing_info_update();
+    }
+  }
+}
+
+/**
+ * Basic thread post position getter callback...er.
+ *
+ * This uses the simplest possible method to determine position which will
+ * suit anyone who has a basic chronological listing like the default harmony
+ * core one. Fancy views users who want to change sort order/criteria whatever
+ * should use the views getter callback which will execute the view (heavy)
+ * to work this out.
+ */
+function harmony_core_post_in_thread_position_basic($thread_id, $post_id) {
+  $page = 0;
+
+  $thread = new stdClass();
+  $thread->thread_id = $thread_id;
+  $thread_posts = harmony_core_get_thread_posts($thread);
+  $pager_info = variable_get('harmony_core_thread_post_listing_paging_info', array(
+    'using_pager' => TRUE,
+    'pager_type' => 'full',
+    'items_per_page' => 10,
+    'offset' => 0
+  ));
+
+  // If we're not using a pager it'll be on the first page?
+  if (!$pager_info['using_pager'] || empty($thread_posts)) {
+    return $page;
+  }
+
+  // Remove as many items from the posts array as the offset specifies.
+  $thread_posts = array_slice($thread_posts, $pager_info['offset']);
+
+  if (!empty($thread_posts)) {
+    foreach ($thread_posts as $row_id => $row_post_id) {
+      if ($post_id == $row_post_id) {
+        // Calculate what page we'd be on.
+        // Row id is zero indexed.
+        // Per page isn't.
+        // Page numbers start from 0, so remove 1.
+        $page = ceil(($row_id + 1) / $pager_info['items_per_page']) - 1;
+
+        break;
+      }
+    }
+  }
+
+  return $page;
+}
+
+/**
+ * Views thread post position getter callback...er.
+ *
+ * Do a full view execution to work out the position of a post within a thread.
+ * If we've got unsual sorts of whatever going on then we'll want this. And
+ * hope that said view has query caching on.
+ *
+ * Additionally if you're reading this, I'd recommend that you have two views,
+ * one which is used for the actual listing and another which is a clone that
+ * implements the same sorts and so on but doesn't load as many fields. The
+ * lighter view should be set in the var harmony_core_thread_post_listing_view
+ * and the view callback used. The extra info stored in the variable
+ * harmony_core_thread_post_listing_paging_info is only relevent to the basic
+ * position getter callback and is basically ignored in the following function.
+ */
+function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
+  $page = 0;
+  list($view_name, $view_display) = explode('|', variable_get('harmony_core_thread_post_listing_view', 'harmony_thread_posts_listing|default'));
+  $view = views_get_view($view_name, TRUE);
+
+  // Bail out if view failed to load.
+  if (!$view) {
+    // Return page 0 if something goes wrong.
+    return $page;
+  }
+
+  // Set specified display.
+  $view->set_display($view_display);
+  $view->set_arguments(array($thread_id));
+
+  // Grab how many items per page and offset.
+  $pager = $view->display_handler->get_plugin('pager');
+  $items_per_page = $pager->options['items_per_page'];
+  $offset = $pager->options['offset'];
+
+  // Certain smart people could do things like the following code by
+  // @rob_knight would mean reducing the amount of work the view will have
+  // to do, but in a more general sense we can't do this as you can do all
+  // sorts to a view like mess with the data returned and all that. If you
+  // can, then implement a custom position getter with the following.
+  /*
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+  // Only match posts before the current one
+  $view->display['default']->handler->options['filters']['created'] = array(
+    'id' => 'created',
+    'table' => 'harmony_post',
+    'field' => 'created',
+    'operator' => '<',
+    'value' => array('value' => date('Y m d H:i:s', $wrapper->created->value()))
+  );
+
+  $view->build();
+  $cq = $view->build_info['count_query'];
+  $cq->addMetaData('view', $view);
+  $cq->preExecute();
+  $cq = $cq->countQuery();
+
+  // Execute the count query to get the number of preceding posts
+  $count = $view->display_handler->get_plugin('pager')->execute_count_query($cq);
+
+  $page = ceil(($count + 1) / $items_per_page) - 1;
+  */
+
+  $view->set_items_per_page(0);
+  $view->pre_execute();
+  $view->execute();
+
+  if (!empty($view->result)) {
+    $total_rows = $view->total_rows;
+
+    foreach ($view->result as $row_id => $row) {
+      if (empty($row->post_id)) {
+        watchdog('harmony_core', 'When trying to determine the position of a post in a thread using a View callback, the data returned is missing a post ID. This means it will always fail.', array(), WATCHDOG_ERROR);
+        break;
+      }
+
+      if ($post_id == $row->post_id) {
+        // Calculate what page we'd be on.
+        // Row id is zero indexed.
+        // Per page isn't.
+        // Offset will already be done by views I think?
+        // Page numbers start from 0, so remove 1.
+        $page = ceil(($row_id + 1) / $items_per_page) - 1;
+
+        break;
+      }
+    }
+  }
+
+  return $page;
+}
+
+/**
+ * Wrapper function to grab a posts position within a thread. We have this
+ * so that we can use different functions to determine position.
+ */
+function harmony_core_post_in_thread_position($thread_id, $post_id, $callback = NULL) {
+  if (!$callback || $callback && !function_exists($callback)) {
+    $callback = variable_get('harmony_core_post_position_callback', 'harmony_core_post_in_thread_position_basic');
+  }
+  $positions = &drupal_static(__FUNCTION__, array());
+
+  if (!isset($positions[$thread_id][$post_id])) {
+    $positions[$thread_id][$post_id] = $callback($thread_id, $post_id);
+  }
+
+  return $positions[$thread_id][$post_id];
+}
+
+/**
+ * Function to return a URL to a post on the correct page of a thread.
+ */
+function harmony_core_post_thread_url($thread_id, $post_id) {
+  $options = array('fragment' => "post-{$post_id}");
+  $page_querystring = variable_get('harmony_core_post_position_page_querystring', 'page');
+  $page = harmony_core_post_in_thread_position($thread_id, $post_id);
+
+  if ($page > 0) {
+    $options['query'][$page_querystring] = $page;
+  }
+
+  return url("thread/{$thread_id}", $options);
 }

@@ -311,6 +311,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
           'class' => array(
             'post-show-replies',
           ),
+          'data-thread-id' => $thread_id,
           'data-post-id' => $post->post_id,
         ),
       );
@@ -324,7 +325,12 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
     $links['edit'] = array(
       'title' => t('Edit'),
       'href' => "post/$post->post_id/edit",
-      'attributes' => array('title' => t('Edit this post')),
+      'attributes' => array(
+        'id' => "post-$post->post_id-edit",
+        'title' => t('Edit this post'),
+        'data-thread-id' => $thread_id,
+        'data-post-id' => $post->post_id,
+      ),
     );
     $edit_query = array();
 
@@ -357,6 +363,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       'title' => t('Reply'),
       'href' => 'post/add',
       'attributes' => array(
+        'id' => "post-$post->post_id-reply",
         'title' => t('Reply directly to this post'),
         'class' => array('reply-link'),
         'data-thread-id' => $thread_id,
@@ -384,8 +391,11 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',
       'attributes' => array(
+        'id' => "post-$post->post_id-reply-as-new",
         'title' => t('Create a new thread as a reply to this post'),
         'class' => array('reply-link'),
+        'data-thread-id' => $thread_id,
+        'data-post-id' => $post->post_id,
       ),
       'query' => array(
         'field_harmony_thread_cont_from' => $post->post_id,
