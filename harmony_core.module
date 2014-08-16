@@ -469,6 +469,11 @@ function harmony_core_permission() {
       'description' => t('Allows users to configure general settings for Harmony.'),
       'restrict access' => TRUE,
     ),
+    'access harmony admin pages' => array(
+      'title' => t('Access Harmony admin pages'),
+      'description' => t('Allows users to access the base level admin Harmony menu items.'),
+      'restrict access' => TRUE,
+    ),
     'administer harmony_thread_types' => array(
       'title' => t('Administer thread types'),
       'description' => t('Allows users to create, edit and delete Thread types (bundles).'),
@@ -630,7 +635,7 @@ function harmony_core_menu() {
   $items['admin/harmony'] = array(
     'title' => 'Harmony',
     'description' => 'Harmony dashboard.',
-    'access arguments' => array('administer harmony settings'),
+    'access arguments' => array('access harmony admin pages'),
     'page callback' => 'system_admin_menu_block_page',
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
