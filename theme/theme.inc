@@ -79,6 +79,7 @@ function template_preprocess_harmony_post(&$variables) {
   // Add in some useful variables.
   $variables['title'] = check_plain($post->title);
   $variables['thread_url'] = url("thread/$thread_id");
+  $variables['thread_post_url'] = harmony_core_post_thread_url($thread_id, $post->post_id);
   $variables['url'] = url("post/$post->post_id");
   $variables['permalink_url'] = $variables['url'];
   $variables['created'] = format_date($post->created, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', ''));

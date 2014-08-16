@@ -3281,9 +3281,18 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $post = harmony_post_save($post);
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+  // If we've got a thread, redirect the user to the correct page and
+  // place on that page, otherwise the post page.
   if ($wrapper->field_harmony_thread->value()) {
     $thread_id = $wrapper->field_harmony_thread->thread_id->value();
-    $form_state['redirect'] = "thread/$thread_id";
+    $thread_post_url = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
+    $form_state['redirect'] = array(
+      $thread_post_url['url'],
+      array(
+        'query' => $thread_post_url['query'],
+        'fragment' => $thread_post_url['fragment'],
+      ),
+    );
   }
   else {
     $form_state['redirect'] = "post/$post->post_id";
@@ -4245,7 +4254,7 @@ function harmony_core_post_in_thread_position($thread_id, $post_id, $callback = 
 /**
  * Function to return a URL to a post on the correct page of a thread.
  */
-function harmony_core_post_thread_url($thread_id, $post_id) {
+function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALSE) {
   $options = array('fragment' => "post-{$post_id}");
   $page_querystring = variable_get('harmony_core_post_position_page_querystring', 'page');
   $page = harmony_core_post_in_thread_position($thread_id, $post_id);
@@ -4254,5 +4263,14 @@ function harmony_core_post_thread_url($thread_id, $post_id) {
     $options['query'][$page_querystring] = $page;
   }
 
-  return url("thread/{$thread_id}", $options);
+  if (!$return_array) {
+    return url("thread/{$thread_id}", $options);
+  }
+  else {
+    return array(
+      'url' => "thread/{$thread_id}",
+      'query' => $options['query'],
+      'fragment' => $options['fragment'],
+    );
+  }
 }

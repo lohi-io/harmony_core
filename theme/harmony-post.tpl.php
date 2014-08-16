@@ -63,6 +63,6 @@ $links = render($content['links']);
 </div>
 <?php if ($is_page): ?>
 <div class="post-return">
-  <a href="<?php print $thread_url; ?>"><?php print t('Return to thread'); ?></a>
+  <a href="<?php print $thread_post_url; ?>"><?php print t('Return to thread'); ?></a>
 </div>
 <?php endif; ?>
