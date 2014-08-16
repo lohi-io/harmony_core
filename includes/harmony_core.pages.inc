@@ -212,6 +212,9 @@ function harmony_core_post_view($post, $view_mode = 'full', $langcode = NULL) {
   // Load up the author entity so it's available when theming.
   $post->author = $post->uid > 0 ? user_load($post->uid) : NULL;
 
+  // Revision log message.
+  $revision_log = $post->log ? $post->log : NULL;
+
   // Populate $post->content with a render() array.
   harmony_core_post_build_content($post, $view_mode, $langcode);
 
