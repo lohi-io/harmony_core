@@ -4262,6 +4262,9 @@ function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALS
   if ($page > 0) {
     $options['query'][$page_querystring] = $page;
   }
+  else {
+    $options['query'] = array();
+  }
 
   if (!$return_array) {
     return url("thread/{$thread_id}", $options);
