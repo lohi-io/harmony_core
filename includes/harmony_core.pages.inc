@@ -12,7 +12,7 @@ function harmony_core_thread_add($type) {
   // Check that thread types exist.
   $thread_types = harmony_core_get_thread_types();
   if (empty($thread_types)) {
-    return '<p>' . t("No thread types exist, something's gone wrong! A default type should have been deployed on install, if you've managed to delete it then you can <a href="@create-thread-type">create it again</a> though you'll need to ensure the required fields are in place.", array('@create-thread-type' => url('admin/harmony/structure/thread/add'))) . '</p>';
+    return '<p>' . t('No thread types exist, something\'s gone wrong! A default type should have been deployed on install, if you\'ve managed to delete it then you can <a href="@create-thread-type">create it again</a> though you\'ll need to ensure the required fields are in place.', array('@create-thread-type' => url('admin/harmony/structure/thread/add'))) . '</p>';
   }
 
   // Determine thread type.
