@@ -2632,7 +2632,7 @@ function harmony_core_thread_new_object($type = NULL) {
 
   $thread = (object) array(
     'title' => '',
-    'type' => 'harmony_thread',
+    'type' => $type,
     'uid' => $user->uid,
     'language' => LANGUAGE_NONE,
     'status' => HARMONY_PUBLISHED,
