@@ -329,6 +329,8 @@ class HarmonyThreadController extends HarmonyController {
     $thread_posts_stored['last'] = !empty($thread_posts) ? array_pop($thread_posts) : $thread_posts_stored['first'];
     $thread_posts_stored['other'] = $thread_posts;
 
+    $last_post_uid = 0;
+
     // Unset first and last post property for all except the now first and
     // last. Focus for this is speed so don't run through
     // harmony_post_save().
@@ -354,6 +356,7 @@ class HarmonyThreadController extends HarmonyController {
         $post->first_post = 1;
         $post->last_post = 1;
         harmony_post_meta_save($post);
+        $last_post_uid = $post->uid;
       }
     }
     else {
@@ -369,6 +372,7 @@ class HarmonyThreadController extends HarmonyController {
         $last_post->first_post = 0;
         $last_post->last_post = 1;
         harmony_post_meta_save($last_post);
+        $last_post_uid = $last_post->uid;
       }
     }
 
@@ -377,6 +381,8 @@ class HarmonyThreadController extends HarmonyController {
     // Set the first and last entity reference fields.
     $wrapper->field_harmony_first_post->set($thread_posts_stored['first']);
     $wrapper->field_harmony_last_post->set($thread_posts_stored['last']);
+    // Set the last user to post in the thread.
+    $wrapper->field_harmony_last_user_to_reply->set($last_post_uid);
 
     // Save our changes.
     $this->metaSave($thread);

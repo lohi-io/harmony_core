@@ -2272,6 +2272,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
 function harmony_core_post_split_action_form($settings, $vbo = array()) {
   global $user;
   $form = array();
+  $form_state = array();
 
   // Build a standard thread object.
   $thread = harmony_core_thread_new_object();
@@ -2292,26 +2293,77 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     }
   }
 
-  $form = drupal_get_form('harmony_core_thread_form', $thread);
+  // Create form elements, straight copy from harmony_core_thread_form().
+  $form['thread'] = array(
+    '#type' => 'value',
+    '#value' => $thread,
+  );
+  foreach (array('thread_id', 'uid', 'is_new') as $key) {
+    $form[$key] = array(
+      '#type' => 'value',
+      '#value' => isset($thread->$key) ? $thread->$key : NULL,
+    );
+  }
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Thread title'),
+    '#required' => TRUE,
+    '#default_value' => $thread->title,
+    '#attributes' => array(
+      'placeholder' => t('Thread title'),
+    ),
+    '#title_display' => 'invisible',
+    '#maxlength' => 255,
+  );
+
+  // Attach fields.
+  field_attach_form('harmony_thread', $thread, $form, $form_state);
 
   // Kill off a bunch of stuff we don't want.
-  unset($form['title']);
-  unset($form['field_harmony_first_post']);
-  unset($form['field_harmony_last_post']);
-  unset($form['#validate']);
-  unset($form['#submit']);
+  $form['field_harmony_first_post']['#access'] = FALSE;
+  $form['field_harmony_last_post']['#access'] = FALSE;
+  $form['field_harmony_last_user_to_reply']['#access'] = FALSE;
+  $form['field_harmony_post_count']['#access'] = FALSE;
+
+  // Options for administrators
+  $form['options'] = array(
+    '#type' => 'fieldset',
+    '#access' => user_access('administer forum content'),
+    '#title' => t('Thread options'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('thread-form-options'),
+    ),
+    '#weight' => 95,
+  );
+  $form['options']['status'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Published'),
+    '#default_value' => $thread->status,
+  );
+  $form['options']['pinned'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Pin to the top of listings'),
+    '#default_value' => $thread->pinned,
+  );
+  $form['options']['locked'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Lock from replies and edits'),
+    '#default_value' => $thread->locked,
+  );
+  $form['options']['hidden'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide from listings'),
+    '#default_value' => $thread->hidden,
+  );
 
   // Add in help text and an author field for re-assigning.
   $form['guidance_text'] = array(
     '#markup' => t('<p>To split posts in to another thread, we must create a new thread. Please complete the form below.'),
     '#weight' => -100,
-  );
-
-  $form['thread_title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Thread title'),
-    '#default_value' => $thread->title,
-    '#required' => TRUE,
   );
 
   $form['author'] = array(
@@ -2333,6 +2385,13 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     }
   }
 
+  $form['override_created'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Set the new threads created date to now'),
+    '#default_value' => 0,
+    '#description' => t("Tick to change the new threads created date to be now. This would be instead of taking the oldest post (first in the new thread) selecteds created date."),
+  );
+
   return $form;
 }
 
@@ -2345,8 +2404,15 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
   $is_new = $thread->is_new;
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
+  // Setup date overrides if in play.
+  if ($form_state['values']['override_created']) {
+    $thread->override_created = TRUE;
+    $thread->created = REQUEST_TIME;
+    $thread->updated = REQUEST_TIME;
+  }
+
   // Set the title from the form value.
-  $wrapper->title->set($form_state['values']['thread_title']);
+  $wrapper->title->set($form_state['values']['title']);
 
   // Set the user, grab by name so we can get the uid.
   $author_user = user_load_by_name($form_state['values']['author']);
@@ -2415,13 +2481,15 @@ function harmony_core_post_split_action(&$post, $context) {
       $update_last_post = FALSE;
 
       // Update timestamps if the post is published.
-      if ($post->created < $thread->created) {
-        $thread->created = $post->created;
-        $update_first_post = TRUE;
-      }
-      if ($post->updated > $thread->updated) {
-        $thread->updated = $post->updated;
-        $update_last_post = TRUE;
+      if (!isset($thread->override_created)) {
+        if ($post->created < $thread->created) {
+          $thread->created = $post->created;
+          $update_first_post = TRUE;
+        }
+        if ($post->updated > $thread->updated) {
+          $thread->updated = $post->updated;
+          $update_last_post = TRUE;
+        }
       }
 
       // Update thread & category post counts if published. Isn't this done in
@@ -2693,7 +2761,7 @@ function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
 
   // Allow category to be preopulated, also check access if
   // harmony_access_forum is in place.
-  if (!empty($_GET['field_harmony_category']) && is_numeric($_GET['field_harmony_category'])) {
+  if (!empty($form['field_harmony_category']) && !empty($_GET['field_harmony_category']) && is_numeric($_GET['field_harmony_category'])) {
     // Load up the term to check it exists and that it's in the correct vocab.
     $term = taxonomy_term_load($_GET['field_harmony_category']);
 
