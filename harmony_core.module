@@ -2294,6 +2294,8 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
   }
 
   // Create form elements, straight copy from harmony_core_thread_form().
+  // Previously tried using the return of this function but it resulted
+  // in unusual behaviour and fieldapi values not being set.
   $form['thread'] = array(
     '#type' => 'value',
     '#value' => $thread,
@@ -2359,6 +2361,12 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     '#title' => t('Hide from listings'),
     '#default_value' => $thread->hidden,
   );
+  $form['options']['override_created'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Set the new threads created date to now'),
+    '#default_value' => 0,
+    '#description' => t("Tick to change the new threads created date to be now. This would be instead of taking the oldest post (first in the new thread) selecteds created date."),
+  );
 
   // Add in help text and an author field for re-assigning.
   $form['guidance_text'] = array(
@@ -2381,16 +2389,9 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
 
     // Taxonomy if the bundle has that field.
     if (!empty($form['field_harmony_category']) && $wrapper->field_harmony_thread->field_harmony_category->value()) {
-      $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $wrapper->field_harmony_thread->field_harmony_category->value();
+      $form['field_harmony_category'][$form['field_harmony_category']['#language']]['#default_value'] = $wrapper->field_harmony_thread->field_harmony_category->tid->value();
     }
   }
-
-  $form['override_created'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Set the new threads created date to now'),
-    '#default_value' => 0,
-    '#description' => t("Tick to change the new threads created date to be now. This would be instead of taking the oldest post (first in the new thread) selecteds created date."),
-  );
 
   return $form;
 }
