@@ -14,7 +14,7 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
   }
 
   function pre_render(&$values) {
-    parent::construct();
+    //parent::pre_render();
     ctools_include('ajax');
     ctools_include('modal');
     ctools_modal_add_js();
@@ -29,8 +29,6 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
   }
 
   function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-
     $form['text'] = array(
       '#type' => 'textfield',
       '#title' => t('Link text'),
@@ -42,7 +40,8 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
       '#default_value' => $this->options['newline_prepend'],
     );
 
-    // The path is set by render_link function so don't allow to set it.
+    parent::options_form($form, $form_state);
+
     $form['alter']['path'] = array('#access' => FALSE);
     $form['alter']['external'] = array('#access' => FALSE);
   }
@@ -54,9 +53,9 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
 
       $output = '';
       if ($this->options['newline_prepend']) {
-        $output = '<br>';
+        $output .= '<br>';
       }
-      $output = '<div id="post-moderate-view-' . $values->post_id . '">' . ctools_modal_text_button($text, $url, '') . '</div>';
+      $output .= '<div id="post-moderate-view-' . $values->post_id . '">' . ctools_modal_text_button($text, $url, '') . '</div>';
       return $output;
     }
   }
