@@ -29,6 +29,8 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
   }
 
   function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+
     $form['text'] = array(
       '#type' => 'textfield',
       '#title' => t('Link text'),
@@ -43,11 +45,9 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
     // The path is set by render_link function so don't allow to set it.
     $form['alter']['path'] = array('#access' => FALSE);
     $form['alter']['external'] = array('#access' => FALSE);
-
-    parent::options_form($form, $form_state);
   }
 
-  function render($values) {dsm($this->options);
+  function render($values) {
     if ($row_id = $this->get_value($values)) {
       $text = check_plain($this->options['text']);
       $url = "post/{$values->post_id}/view-text/nojs";
