@@ -1376,7 +1376,6 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['post_view_text']['table'] = 'harmony_post';
   $handler->display->display_options['fields']['post_view_text']['field'] = 'post_view_text';
   $handler->display->display_options['fields']['post_view_text']['label'] = '';
-  $handler->display->display_options['fields']['post_view_text']['exclude'] = TRUE;
   $handler->display->display_options['fields']['post_view_text']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['post_view_text']['text'] = 'view post text';
   $handler->display->display_options['fields']['post_view_text']['newline_prepend'] = FALSE;
