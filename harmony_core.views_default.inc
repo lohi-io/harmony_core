@@ -1167,6 +1167,8 @@ function harmony_core_views_default_views() {
     'status' => 'status',
     'created' => 'created',
     'updated' => 'updated',
+    'hostname' => 'hostname',
+    'post_view_text' => 'delete_link',
     'edit_link' => 'delete_link',
     'delete_link' => 'delete_link',
   );
@@ -1201,6 +1203,18 @@ function harmony_core_views_default_views() {
     'updated' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'hostname' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'post_view_text' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -1357,6 +1371,15 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['hostname']['id'] = 'hostname';
   $handler->display->display_options['fields']['hostname']['table'] = 'harmony_post';
   $handler->display->display_options['fields']['hostname']['field'] = 'hostname';
+  /* Field: Post: Link to view or AJAX load the posts text */
+  $handler->display->display_options['fields']['post_view_text']['id'] = 'post_view_text';
+  $handler->display->display_options['fields']['post_view_text']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['post_view_text']['field'] = 'post_view_text';
+  $handler->display->display_options['fields']['post_view_text']['label'] = '';
+  $handler->display->display_options['fields']['post_view_text']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['post_view_text']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['post_view_text']['text'] = 'view post text';
+  $handler->display->display_options['fields']['post_view_text']['newline_prepend'] = FALSE;
   /* Field: Post: Edit link */
   $handler->display->display_options['fields']['edit_link']['id'] = 'edit_link';
   $handler->display->display_options['fields']['edit_link']['table'] = 'harmony_post';
