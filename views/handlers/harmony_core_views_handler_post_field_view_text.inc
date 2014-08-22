@@ -13,6 +13,13 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
     $this->real_field = 'post_id';
   }
 
+  function pre_render(&$values) {
+    parent::construct();
+    ctools_include('ajax');
+    ctools_include('modal');
+    ctools_modal_add_js();
+  }
+
   function option_definition() {
     $options = parent::option_definition();
     $options['text'] = array('default' => t("View the posts' text"), 'translatable' => TRUE);
@@ -32,14 +39,15 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
       '#title' => t('Output a newline before the link'),
       '#default_value' => $this->options['newline_prepend'],
     );
-    parent::options_form($form, $form_state);
 
     // The path is set by render_link function so don't allow to set it.
     $form['alter']['path'] = array('#access' => FALSE);
     $form['alter']['external'] = array('#access' => FALSE);
+
+    parent::options_form($form, $form_state);
   }
 
-  function render($values) {
+  function render($values) {dsm($this->options);
     if ($row_id = $this->get_value($values)) {
       $text = check_plain($this->options['text']);
       $url = "post/{$values->post_id}/view-text/nojs";
