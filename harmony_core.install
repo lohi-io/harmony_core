@@ -93,6 +93,7 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
+        'size' => 'tiny',
       ),
       'created' => array(
         'description' => 'The Unix timestamp when the thread was created.',
@@ -111,18 +112,21 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'locked' => array(
         'description' => 'Boolean indicating whether the thread is locked from changes.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'hidden' => array(
         'description' => 'Boolean indicating whether the thread is hidden in listings.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'favourites' => array(
         'description' => 'Number of times that the thread has been favourited.',
@@ -258,6 +262,7 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
+        'size' => 'tiny',
       ),
       'created' => array(
         'description' => 'The Unix timestamp when the post was created.',
@@ -276,12 +281,14 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'hidden' => array(
         'description' => 'Whether the post is hidden.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'replies' => array(
         'description' => 'Number of times that the post has been replied to.',
@@ -294,6 +301,7 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'last_post' => array(
         'description' => 'Boolean indicating whether the post is the last within the thread.',
@@ -399,6 +407,7 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
+        'size' => 'tiny',
       ),
       'timestamp' => array(
         'description' => 'The Unix timestamp when the revision was created.',
@@ -411,12 +420,14 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'hidden' => array(
         'description' => 'Whether the post is hidden.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'replies' => array(
         'description' => 'Number of times that the post has been replied to.',
@@ -429,6 +440,7 @@ function harmony_core_schema() {
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
+        'size' => 'tiny',
       ),
       'last_post' => array(
         'description' => 'Boolean indicating whether the post is the last within the thread.',
