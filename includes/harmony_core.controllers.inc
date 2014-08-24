@@ -994,15 +994,17 @@ class HarmonyPostController extends HarmonyController {
     // Get last item in the array.
     $new_last_post_id = array_pop($thread_posts);
 
-    // Update the field on the thread.
-    $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
-    $wrapper->field_harmony_thread->save();
+    if ($new_last_post_id) {
+      // Update the field on the thread.
+      $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
+      $wrapper->field_harmony_thread->save();
 
-    // Update the last post property on the new last post.
-    $new_last_post = harmony_post_load($new_last_post_id);
-    $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
-    $new_last_post_wrapper->last_post->set(1);
-    $new_last_post_wrapper->save();
+      // Update the last post property on the new last post.
+      $new_last_post = harmony_post_load($new_last_post_id);
+      $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
+      $new_last_post_wrapper->last_post->set(1);
+      $new_last_post_wrapper->save();
+    }
   }
 }
 
