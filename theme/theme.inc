@@ -58,6 +58,14 @@ function theme_harmony_core_post_display_hostname($variables) {
 }
 
 /**
+ * Processes variables for harmony-thread.tpl.php
+ */
+function template_preprocess_harmony_thread(&$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['thread'] = $variables['elements']['#thread'];
+}
+
+/**
  * Processes variables for harmony-post.tpl.php
  *
  * The $variables array contains the following arguments:
@@ -482,22 +490,51 @@ function theme_harmony_listing_header($variables) {
 /**
  * Build up the title meta things for a thread.
  */
-function theme_harmony_core_thread_title_meta($variables) {
+function theme_harmony_core_thread_meta_wrapper($variables) {
   extract($variables);
+  $classes = array('harmony-meta');
 
-  if (!$thread_properties['locked'] && !$thread_properties['pinned']) {
-    return NULL;
+  if (isset($in_title) && $in_title) {
+    $classes[] = 'harmony-title-meta';
   }
+
+  // Pass along which properties to output.
+  $properties_default = array(
+    'locked',
+    'pinned',
+  );
+  $properties = variable_get('harmony_core_thread_meta_properties', $properties_default);
 
   $output = array();
-  if ($thread_properties['locked']) {
-    $output[] = '<span class="harmony-meta-item harmony-thread-locked" title="' . t('This thread has been locked from edits.') . '">' . t('Locked') . '</span>';
-  }
-  if ($thread_properties['pinned']) {
-    $output[] = '<span class="harmony-meta-item harmony-thread-locked" title="' . t('This thread has been pinned and will appear at the top of listings.') . '">' . t('Pinned') . '</span>';
+  foreach ($properties as $property) {
+    $meta_item = theme('harmony_core_thread_meta_item', array('thread_properties' => $thread_properties, 'property' => $property));
+
+    if ($meta_item) {
+      $output[] = $meta_item;
+    }
   }
 
-  return '<span class="harmony-title-meta">' . implode(' ', $output) . '</span>';
+  return !empty($output) ? '<span class="' . implode(' ', $classes) . '">' . implode(' ', $output) . '</span>' : NULL;
+}
+
+/**
+ * Theme function for an individual property.
+ */
+function theme_harmony_core_thread_meta_item($variables) {
+  $thread_properties = $variables['thread_properties'];
+  $property = $variables['property'];
+  $output = NULL;
+  $classes = array(
+    'harmony-meta-item',
+    'harmony-thread-' . drupal_html_class($variables['property']),
+  );
+
+  if (!empty($thread_properties[$property]) && $thread_properties[$property]) {
+    $property_text = harmony_core_meta_get_property('harmony_thread', $property);
+    $output = '<span class="' . implode(' ', $classes) . '" title="' . $property_text['help'] . '">' . $property_text['title'] . '</span>';
+  }
+
+  return $output;
 }
 
 /**

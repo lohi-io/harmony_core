@@ -1000,10 +1000,19 @@ function harmony_core_theme($existing, $type, $theme, $path) {
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
     ),
-    'harmony_core_thread_title_meta' => array(
+    'harmony_core_thread_meta_wrapper' => array(
       'variables' => array(
         'thread' => NULL,
         'thread_properties' => NULL,
+        'in_title' => FALSE,
+      ),
+      'file' => 'theme.inc',
+      'path' => $module_dir . '/theme',
+    ),
+    'harmony_core_thread_meta_item' => array(
+      'variables' => array(
+        'thread_properties' => NULL,
+        'property' => NULL,
       ),
       'file' => 'theme.inc',
       'path' => $module_dir . '/theme',
@@ -2417,6 +2426,7 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
 
   // Set the user, grab by name so we can get the uid.
   $author_user = user_load_by_name($form_state['values']['author']);
+
   if (!$author_user) {
     global $user;
     $author_user = $user;
@@ -2636,15 +2646,18 @@ function harmony_core_preprocess_html(&$variables) {
  * Implements template_preprocess_page().
  */
 function harmony_core_preprocess_page(&$variables) {
-  if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2) && variable_get('harmony_core_thread_page_output_title_meta', TRUE)) {
+  if (arg(0) === 'thread' && is_numeric(arg(1)) && !arg(2)) {
     $thread = harmony_thread_load(arg(1));
-    $thread_properties = harmony_core_thread_get_properties(arg(1), $thread);
-    if ($thread_properties['locked'] || $thread_properties['pinned']) {
-      $variables['title_prefix'][] = array(
-        '#theme' => 'harmony_core_thread_title_meta',
-        '#thread' => $thread,
-        '#thread_properties' => $thread_properties,
-      );
+    if (variable_get('harmony_core_bundle__' . $thread->type . '__thread_meta_in_title', 1)) {
+      $thread_properties = harmony_core_thread_get_properties($thread->thread_id, $thread);
+      if ($thread_properties['locked'] || $thread_properties['pinned']) {
+        $variables['title_prefix'][] = array(
+          '#theme' => 'harmony_core_thread_meta_wrapper',
+          '#thread' => $thread,
+          '#thread_properties' => $thread_properties,
+          '#in_title' => TRUE,
+        );
+      }
     }
   }
 }
@@ -2990,6 +3003,13 @@ function harmony_thread_type_form($form, &$form_state, $harmony_thread_type, $op
     '#description' => t('What should the create new thread form be prepopulated with? To access this users must have permission to use "Reply as a new thread".'),
   );
 
+  $form['thread_meta_in_title'] = array(
+    '#title' => t('Output thread meta details in the thread title'),
+    '#type' => 'checkbox',
+    '#default_value' => !empty($harmony_thread_type->type) ? variable_get('harmony_core_bundle__' . $harmony_thread_type->type . '__thread_meta_in_title', 1) : 1,
+    '#description' => t('Thread meta details so far are things like &quot;Locked&quot; and &quot;Pinned&quot;.'),
+  );
+
   // Check for existing content.
   $content_count = 0;
   if ($op != 'add' && $op != 'clone') {
@@ -3034,6 +3054,7 @@ function harmony_thread_type_form_submit(&$form, &$form_state) {
   $variables = array(
     'show_anon_reply_links',
     'reply_as_new_thread',
+    'thread_meta_in_title'
   );
 
   foreach ($variables as $variable) {
@@ -4172,7 +4193,7 @@ function harmony_core_post_listing_info_view_update($form, &$form_state) {
  * should use the views getter callback which will execute the view (heavy)
  * to work this out.
  */
-function harmony_core_post_in_thread_position_basic($thread_id, $post_id) {
+function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_last = FALSE) {
   $page = 0;
 
   $thread = new stdClass();
@@ -4182,7 +4203,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id) {
     'using_pager' => TRUE,
     'pager_type' => 'full',
     'items_per_page' => 10,
-    'offset' => 0
+    'offset' => 0,
   ));
 
   // If we're not using a pager it'll be on the first page?
@@ -4345,4 +4366,30 @@ function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALS
       'fragment' => $options['fragment'],
     );
   }
+}
+
+/**
+ * Helper function to grab some standard text.
+ * @todo Make this admin UI editable.
+ */
+function harmony_core_meta_get_property($type, $property) {
+  $text = variable_get('harmony_core_meta_properties', array());
+
+  if (empty($text)) {
+    // Drupal <3 arrays.
+    $text = array(
+      'harmony_thread' => array(
+        'pinned' => array(
+          'title' => t('Pinned'),
+          'help' => t('This thread has been pinned and will appear at the top of listings.'),
+        ),
+        'locked' => array(
+          'title' => t('Locked'),
+          'help' => t('This thread has been locked from edits.'),
+        ),
+      ),
+    );
+  }
+
+  return !empty($text[$type][$property]) ? $text[$type][$property] : NULL;
 }

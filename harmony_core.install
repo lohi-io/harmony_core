@@ -527,11 +527,12 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_mass_update_batch_threshold');
   variable_del('harmony_core_post_revision_trigger_fields');
   variable_del('harmony_core_default_input_format');
-  variable_del('harmony_core_thread_page_output_title_meta');
   variable_del('harmony_core_thread_views_counter_enabled');
   variable_del('harmony_core_post_show_hostname');
   variable_del('harmony_core_date_type');
   variable_del('harmony_core_date_format');
+  variable_del('harmony_core_thread_meta_properties');
+  variable_del('harmony_core_meta_properties');
 
   variable_del('harmony_core_post_position_callback');
   variable_del('harmony_core_post_position_page_querystring');
