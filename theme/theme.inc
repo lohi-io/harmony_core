@@ -63,6 +63,16 @@ function theme_harmony_core_post_display_hostname($variables) {
 function template_preprocess_harmony_thread(&$variables) {
   $variables['view_mode'] = $variables['elements']['#view_mode'];
   $variables['thread'] = $variables['elements']['#thread'];
+  $thread = $variables['thread'];
+
+  // Flatten the thread object's member fields.
+  $variables = array_merge((array) $thread, $variables);
+
+  // Helpful $content variable for templates.
+  $variables += array('content' => array());
+  foreach (element_children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
 }
 
 /**
