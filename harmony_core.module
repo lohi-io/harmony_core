@@ -2650,14 +2650,12 @@ function harmony_core_preprocess_page(&$variables) {
     $thread = harmony_thread_load(arg(1));
     if (variable_get('harmony_core_bundle__' . $thread->type . '__thread_meta_in_title', 1)) {
       $thread_properties = harmony_core_thread_get_properties($thread->thread_id, $thread);
-      if ($thread_properties['locked'] || $thread_properties['pinned']) {
-        $variables['title_prefix'][] = array(
-          '#theme' => 'harmony_core_thread_meta_wrapper',
-          '#thread' => $thread,
-          '#thread_properties' => $thread_properties,
-          '#in_title' => TRUE,
-        );
-      }
+      $variables['title_prefix'][] = array(
+        '#theme' => 'harmony_core_thread_meta_wrapper',
+        '#thread' => $thread,
+        '#thread_properties' => $thread_properties,
+        '#in_title' => TRUE,
+      );
     }
   }
 }
@@ -4369,10 +4367,10 @@ function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALS
 }
 
 /**
- * Helper function to grab some standard text.
+ * Helper function to grab some properties and text.
  * @todo Make this admin UI editable.
  */
-function harmony_core_meta_get_property($type, $property) {
+function harmony_core_meta_get_property($type, $property = NULL, $all = FALSE) {
   $text = variable_get('harmony_core_meta_properties', array());
 
   if (empty($text)) {
@@ -4391,5 +4389,10 @@ function harmony_core_meta_get_property($type, $property) {
     );
   }
 
-  return !empty($text[$type][$property]) ? $text[$type][$property] : NULL;
+  if ($all) {
+    return !empty($text[$type]) ? $text[$type] : NULL;
+  }
+  else {
+    return !empty($text[$type][$property]) ? $text[$type][$property] : NULL;
+  }
 }
