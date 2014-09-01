@@ -98,13 +98,15 @@ class HarmonyThreadController extends HarmonyController {
 
       if ($entity->is_new) {
         $return = drupal_write_record($this->entityInfo['base table'], $entity);
-        $this->invoke('insert', $entity);
+        // Normally we'd invoke insert hooks here, but we've got more work to
+        // do before the entity is considered finalised.
+        $this->invoke('insert_pre_meta', $entity);
       }
       else {
         $return = drupal_write_record($this->entityInfo['base table'], $entity, $this->idKey);
 
         $this->resetCache(array($entity->{$this->idKey}));
-        $this->invoke('update', $entity);
+        $this->invoke('update_pre_meta', $entity);
 
         field_attach_update($this->entityType, $entity);
       }
@@ -211,6 +213,9 @@ class HarmonyThreadController extends HarmonyController {
       // Update path alias for the thread.
       module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
       harmony_core_thread_update_alias($entity, $op);
+
+      // Invoke insert or update hook.
+      $this->invoke($op, $entity);
 
       // Ignore slave server temporarily.
       db_ignore_slave();
@@ -563,6 +568,8 @@ class HarmonyPostController extends HarmonyController {
       $thread_id = NULL;
       $original_thread_id = NULL;
 
+      $op = $entity->is_new ? 'insert' : 'update';
+
       if ($entity->is_new) {
         // Set last_post.
         $wrapper->last_post->set(1);
@@ -574,7 +581,9 @@ class HarmonyPostController extends HarmonyController {
         if ($this->revisionKey) {
           $this->saveRevision($entity);
         }
-        $this->invoke('insert', $entity);
+        // Normally we'd invoke insert hooks here, but we've got more work to
+        // do before the entity is considered finalised.
+        $this->invoke('insert_pre_meta', $entity);
 
         //field_attach_insert($this->entityType, $entity);
       }
@@ -628,7 +637,7 @@ class HarmonyPostController extends HarmonyController {
         }
 
         $this->resetCache(array($entity->{$this->idKey}));
-        $this->invoke('update', $entity);
+        $this->invoke('update_pre_meta', $entity);
         //field_attach_update($this->entityType, $entity);
 
         // Field API always saves as default revision, so if the revision saved
@@ -748,6 +757,9 @@ class HarmonyPostController extends HarmonyController {
           }
         }
       }
+
+      // Invoke insert or update hook.
+      $this->invoke($op, $entity);
 
       // Ignore slave server temporarily.
       db_ignore_slave();
