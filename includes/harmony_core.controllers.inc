@@ -217,6 +217,16 @@ class HarmonyThreadController extends HarmonyController {
       // Invoke insert or update hook.
       $this->invoke($op, $entity);
 
+      // Trigger rules with special skip save.
+      if (module_exists('rules')) {
+        if ($op === 'insert') {
+          rules_invoke_event('harmony_thread_insert_skip', $entity);
+        }
+        else {
+          rules_invoke_event('harmony_thread_update_skip', $entity, $entity->original);
+        }
+      }
+
       // Ignore slave server temporarily.
       db_ignore_slave();
       unset($entity->is_new);
@@ -760,6 +770,16 @@ class HarmonyPostController extends HarmonyController {
 
       // Invoke insert or update hook.
       $this->invoke($op, $entity);
+
+      // Trigger rules with special skip save.
+      if (module_exists('rules')) {
+        if ($op === 'insert') {
+          rules_invoke_event('harmony_post_insert_skip', $entity);
+        }
+        else {
+          rules_invoke_event('harmony_post_update_skip', $entity, $entity->original);
+        }
+      }
 
       // Ignore slave server temporarily.
       db_ignore_slave();
