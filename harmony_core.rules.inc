@@ -39,7 +39,7 @@ function harmony_core_rules_action_info() {
 function harmony_core_rules_event_info() {
   $items = array(
     'harmony_thread_insert_skip' => array(
-      'label' => t('After saving new thread (skip save)'),
+      'label' => t('After saving a new thread (skip save)'),
       'group' => t('Harmony'),
       'variables' => array(
         'harmony_thread' => array(
@@ -66,7 +66,7 @@ function harmony_core_rules_event_info() {
       ),
     ),
     'harmony_post_insert_skip' => array(
-      'label' => t('After saving new post (skip save)'),
+      'label' => t('After saving a new post (skip save)'),
       'group' => t('Harmony'),
       'variables' => array(
         'harmony_post' => array(
