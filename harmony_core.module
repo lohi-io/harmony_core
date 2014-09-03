@@ -856,6 +856,16 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
+  $items['post/%harmony_post/permalink'] = array(
+    'title_callback' => 'entity_label',
+    'title arguments' => array('harmony_post', 1),
+    'page callback' => 'harmony_core_post_permalink_callback',
+    'page arguments' => array(1),
+    'access callback' => 'harmony_core_post_access_callback',
+    'access arguments' => array('view', 1),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['ajax/post-replies/%harmony_post'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('harmony_post', 2),
@@ -3375,7 +3385,7 @@ function harmony_core_post_form_submit($form, &$form_state) {
     $thread_id = $wrapper->field_harmony_thread->thread_id->value();
     $thread_post_url = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
     $form_state['redirect'] = array(
-      $thread_post_url['url'],
+      $thread_post_url['path'],
       array(
         'query' => $thread_post_url['query'],
         'fragment' => $thread_post_url['fragment'],
@@ -4343,6 +4353,10 @@ function harmony_core_post_in_thread_position($thread_id, $post_id, $callback = 
  * Function to return a URL to a post on the correct page of a thread.
  */
 function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALSE) {
+  if (is_numeric($thread_id) && !is_numeric($post_id)) {
+    return !$return_array ? url("thread/{$thread_id}") : array('path' => "thread/{$thread_id}", 'query' => array(), 'fragment' => array());
+  }
+
   $options = array('fragment' => "post-{$post_id}");
   $page_querystring = variable_get('harmony_core_post_position_page_querystring', 'page');
   $page = harmony_core_post_in_thread_position($thread_id, $post_id);
@@ -4359,7 +4373,7 @@ function harmony_core_post_thread_url($thread_id, $post_id, $return_array = FALS
   }
   else {
     return array(
-      'url' => "thread/{$thread_id}",
+      'path' => "thread/{$thread_id}",
       'query' => $options['query'],
       'fragment' => $options['fragment'],
     );
@@ -4395,4 +4409,28 @@ function harmony_core_meta_get_property($type, $property = NULL, $all = FALSE) {
   else {
     return !empty($text[$type][$property]) ? $text[$type][$property] : NULL;
   }
+}
+
+/**
+ * Page callback.
+ *
+ * Redirect the user from the permalink URL to it's place within its thread.
+ */
+function harmony_core_post_permalink_callback($post) {
+  $wrapper = entity_metadata_wrapper('harmony_post', $post);
+
+  if ($wrapper->field_harmony_thread->value()) {
+    $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    $thread_post_url = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
+
+    $path = $thread_post_url['path'];
+    unset($thread_post_url['path']);
+    $options = $thread_post_url;
+  }
+  else {
+    $path = 'post/' . $post->post_id;
+    $options = array();
+  }
+
+  drupal_goto($path, $options, 301);
 }
