@@ -338,7 +338,7 @@ class HarmonyThreadController extends HarmonyController {
     $thread_posts_stored = array();
 
     // Grab all (published) posts in the thread.
-    $thread_posts = harmony_core_get_thread_posts($thread);
+    $thread_posts = harmony_core_get_thread_posts($thread->thread_id);
     $thread_posts_stored['all'] = $thread_posts;
     $thread_posts_stored['first'] = array_shift($thread_posts);
     $thread_posts_stored['last'] = !empty($thread_posts) ? array_pop($thread_posts) : $thread_posts_stored['first'];
@@ -1015,9 +1015,7 @@ class HarmonyPostController extends HarmonyController {
   }
 
   public function updateLastPost($thread_id, $post_id, $wrapper) {
-    $dummy_thread = new stdClass();
-    $dummy_thread->thread_id = $thread_id;
-    $thread_posts = harmony_core_get_thread_posts($dummy_thread);
+    $thread_posts = harmony_core_get_thread_posts($thread_id);
 
     if (($key = array_search($post_id, $thread_posts)) !== FALSE) {
       unset($thread_posts[$key]);

@@ -2244,7 +2244,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
     // Is this post the last in the old thread? If so update the old thread.
     if ($wrapper->last_post->value()) {
       $old_thread = harmony_thread_load($old_thread_id);
-      $old_thread_posts = harmony_core_get_thread_posts($old_thread);
+      $old_thread_posts = harmony_core_get_thread_posts($old_thread->thread_id);
 
       // Get last item in the array.
       $new_last_post_id = array_pop($thread_posts);
@@ -4118,10 +4118,14 @@ function harmony_post_get_replies($post_id) {
 /**
  * Helper function to grab an array of post ids when passed a thread id.
  */
-function harmony_core_get_thread_posts($thread, array $options = array(), $name = NULL, $entity_type = NULL, $reset = FALSE) {
+function harmony_core_get_thread_posts($thread_id, array $options = array(), $name = NULL, $entity_type = NULL, $reset = FALSE) {
   $harmony_core_thread_posts = &drupal_static(__FUNCTION__, array());
 
-  if (!isset($harmony_core_thread_posts[$thread->thread_id]) || $reset) {
+  if (is_object($thread_id)) {
+    $thread_id = $thread_id->thread_id;
+  }
+
+  if (!isset($harmony_core_thread_posts[$thread_id]) || $reset) {
     $post_ids = array();
 
     // Get a list of posts in the current thread.
@@ -4129,7 +4133,7 @@ function harmony_core_get_thread_posts($thread, array $options = array(), $name 
     $query_result = $query
       ->entityCondition('entity_type', 'harmony_post')
       ->propertyCondition('status', HARMONY_PUBLISHED)
-      ->fieldCondition('field_harmony_thread', 'target_id', $thread->thread_id)
+      ->fieldCondition('field_harmony_thread', 'target_id', $thread_id)
       ->propertyOrderBy('created')
       ->execute();
 
@@ -4137,10 +4141,10 @@ function harmony_core_get_thread_posts($thread, array $options = array(), $name 
       $post_ids = array_keys($query_result['harmony_post']);
     }
 
-    $harmony_core_thread_posts[$thread->thread_id] = $post_ids;
+    $harmony_core_thread_posts[$thread_id] = $post_ids;
   }
 
-  return $harmony_core_thread_posts[$thread->thread_id];
+  return $harmony_core_thread_posts[$thread_id];
 }
 
 /* Functions relating to working out a posts' permalink. */
@@ -4204,9 +4208,7 @@ function harmony_core_post_listing_info_view_update($form, &$form_state) {
 function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_last = FALSE) {
   $page = 0;
 
-  $thread = new stdClass();
-  $thread->thread_id = $thread_id;
-  $thread_posts = harmony_core_get_thread_posts($thread);
+  $thread_posts = harmony_core_get_thread_posts($thread_id);
   $pager_info = variable_get('harmony_core_thread_post_listing_paging_info', array(
     'using_pager' => TRUE,
     'pager_type' => 'full',
