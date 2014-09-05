@@ -9,6 +9,11 @@
 function harmony_core_thread_add($type) {
   global $user;
 
+  // Respect the killswitch.
+  if (variable_get('harmony_core_disable_new_content', FALSE)) {
+    return '<p>' . t('You cannot create new threads at this time.') . '</p>';
+  }
+
   // Check that thread types exist.
   $thread_types = harmony_core_get_thread_types();
   if (empty($thread_types)) {
@@ -189,6 +194,11 @@ function harmony_core_post_add($is_page = TRUE) {
   if ($is_page) {
     drupal_set_title(t('Create post'), PASS_THROUGH);
   }
+
+  if (variable_get('harmony_core_disable_new_content', FALSE)) {
+    return '<p>' . t('You cannot create new posts at this time.') . '</p>';
+  }
+
   $output = drupal_get_form('harmony_core_post_form', $post);
 
   return $output;

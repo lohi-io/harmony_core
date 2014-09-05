@@ -533,6 +533,9 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_date_format');
   variable_del('harmony_core_thread_meta_properties');
   variable_del('harmony_core_meta_properties');
+  variable_del('harmony_core_disable_new_content');
+  variable_del('harmony_core_disable_new_content_warning_enabled');
+  variable_del('harmony_core_disable_new_content_warning_message');
 
   variable_del('harmony_core_post_position_callback');
   variable_del('harmony_core_post_position_page_querystring');

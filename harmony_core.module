@@ -489,6 +489,11 @@ function harmony_core_permission() {
       'description' => t('Allows users to create, edit and delete any forum threads or posts.'),
       'restrict access' => TRUE,
     ),
+    'disable new harmony content' => array(
+      'title' => t('Disable creation of new forum content'),
+      'description' => t('Allows access to the new content killswitch which prevents new thread and posts from being created.'),
+      'restrict access' => TRUE,
+    ),
     'bypass harmony forum access control' => array(
       'title' => t('Bypass forum access control'),
       'description' => t('Allows users to bypass access checks.'),
@@ -651,17 +656,12 @@ function harmony_core_menu() {
   $items['admin/harmony/structure']['description'] = 'Manage the Harmony Thread, Thread Type &amp; Post entities.';
   $items['admin/harmony/structure']['weight'] = 2;
 
-  $items['admin/harmony/config'] = $items['admin/harmony'];
-  $items['admin/harmony/config']['title'] = 'Configuration';
-  $items['admin/harmony/config']['description'] = 'Administer Harmony module and sub-module settings.';
-  $items['admin/harmony/config']['weight'] = 3;
-
   $items['admin/harmony/structure/post'] = array(
     'title' => 'Post settings',
     'description' => 'Manage the Post entity.',
-    'access arguments' => array('administer harmony_post entity'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('harmony_core_post_entity_form'),
+    'access arguments' => array('administer harmony_post entity'),
     'file' => 'harmony_core.admin.inc',
     'file path' => $includes_dir,
     'weight' => 1,
@@ -671,6 +671,22 @@ function harmony_core_menu() {
     'title' => 'Edit',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
+  );
+
+  $items['admin/harmony/config'] = $items['admin/harmony'];
+  $items['admin/harmony/config']['title'] = 'Configuration';
+  $items['admin/harmony/config']['description'] = 'Administer Harmony module and sub-module settings.';
+  $items['admin/harmony/config']['weight'] = 3;
+
+  $items['admin/harmony/config/disable-new-content'] = array(
+    'title' => 'Disable new content',
+    'description' => 'Disable the creation of new Harmony forum content.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_admin_disable_new_content'),
+    'access arguments' => array('disable new harmony content'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+    'weight' => 1,
   );
 
   // Standard CRUD menu items.
@@ -1091,6 +1107,26 @@ function harmony_core_context_registry() {
       ),
     ),
   );
+}
+
+/**
+ * Implements hook_init().
+ */
+function harmony_core_init() {
+  if (
+    variable_get('harmony_core_disable_new_content', FALSE) &&
+    variable_get('harmony_core_disable_new_content_warning_enabled', FALSE) &&
+    variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.') != ''
+  ) {
+    if (user_access('disable new harmony content')) {
+      if ($_GET['q'] != 'admin/harmony/config/disable-new-content') {
+        drupal_set_message(t('Creation of new Harmony forum content has been disabled. <a href="@url">Click here to allow</a>.', array('@url' => url('admin/harmony/config/disable-new-content'))), 'warning', FALSE);
+      }
+    }
+    else {
+      drupal_set_message(check_plain(variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.')), 'warning', FALSE);
+    }
+  }
 }
 
 /**
@@ -2757,6 +2793,12 @@ function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
     $thread->is_new = FALSE;
   }
 
+  if ($thread->is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
+    $form['new_content_disabled'] = array(
+      '#markup' => t('You cannot create new threads at this time.'),
+    );
+  }
+
   // Basic thread information.
   // These elements are just values so they are not even sent to the client.
   foreach (array('thread_id', 'uid', 'is_new') as $key) {
@@ -2877,6 +2919,13 @@ function harmony_core_thread_form_validate($form, &$form_state) {
 function harmony_core_thread_form_submit($form, &$form_state) {
   $thread = $form_state['values']['thread'];
   $is_new = $thread->is_new;
+
+  if ($is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
+    $form_state['redirect'] = '<front>';
+    drupal_set_message(t('You cannot create new threads at this time.'), 'error');
+    return;
+  }
+
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
   $wrapper->title->set($form_state['values']['title']);
@@ -3161,6 +3210,12 @@ function harmony_core_post_form($form, &$form_state, $post) {
     }
   }
 
+  if ($post->is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
+    $form['new_content_disabled'] = array(
+      '#markup' => t('You cannot create new posts at this time.'),
+    );
+  }
+
   // Basic post information.
   // These elements are just values so they are not even sent to the client.
   foreach (array('post_id', 'uid', 'is_new') as $key) {
@@ -3365,6 +3420,14 @@ function harmony_core_post_form_validate($form, &$form_state) {
  */
 function harmony_core_post_form_submit($form, &$form_state) {
   $post = $form_state['values']['post'];
+  $is_new = $post->is_new;
+
+  if ($is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
+    $form_state['redirect'] = '<front>';
+    drupal_set_message(t('You cannot create new posts at this time.'), 'error');
+    return;
+  }
+
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
   $wrapper->title->set($form_state['values']['title']);
