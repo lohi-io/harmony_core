@@ -345,6 +345,7 @@ class HarmonyThreadController extends HarmonyController {
     $thread_posts_stored['other'] = $thread_posts;
 
     $last_post_uid = 0;
+    $last_post_uri = array();
 
     // Unset first and last post property for all except the now first and
     // last. Focus for this is speed so don't run through
@@ -368,10 +369,14 @@ class HarmonyThreadController extends HarmonyController {
       $post = harmony_post_load($thread_posts_stored['first']);
 
       if ($post) {
+        // Set first and last properties.
         $post->first_post = 1;
         $post->last_post = 1;
         harmony_post_meta_save($post);
+
+        // Thread stuff.
         $last_post_uid = $post->uid;
+        $last_post_uri = harmony_core_post_thread_url($thread->thread_id, $post->post_id, TRUE);
       }
     }
     else {
@@ -387,7 +392,10 @@ class HarmonyThreadController extends HarmonyController {
         $last_post->first_post = 0;
         $last_post->last_post = 1;
         harmony_post_meta_save($last_post);
+
+        // Thread stuff.
         $last_post_uid = $last_post->uid;
+        $last_post_uri = harmony_core_post_thread_url($thread->thread_id, $last_post->post_id, TRUE);
       }
     }
 
@@ -396,8 +404,12 @@ class HarmonyThreadController extends HarmonyController {
     // Set the first and last entity reference fields.
     $wrapper->field_harmony_first_post->set($thread_posts_stored['first']);
     $wrapper->field_harmony_last_post->set($thread_posts_stored['last']);
+
     // Set the last user to post in the thread.
     $wrapper->field_harmony_last_user_to_reply->set($last_post_uid);
+
+    // Attach last post uri.
+    $thread->last_post_uri = $last_post_uri;
 
     // Save our changes.
     $this->metaSave($thread);
@@ -667,8 +679,12 @@ class HarmonyPostController extends HarmonyController {
       }
 
       // Grab some details on the thread.
+      $thread = NULL;
+      $thread_updated = FALSE;
       if ($wrapper->field_harmony_thread->value()) {
         $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+        $thread = harmony_thread_load($thread_id);
+        $thread_wrapper = entity_metadata_wrapper('harmony_thread', $thread);
       }
 
       $moving_thread = !$entity->is_new && $thread_id != $original_thread_id;
@@ -677,11 +693,12 @@ class HarmonyPostController extends HarmonyController {
       if ($thread_id && !$moving_thread) {
         // Set who last updated the thread.
         if ($entity->uid > 0) {
-          $wrapper->field_harmony_thread->field_harmony_last_user_to_reply->set($entity->uid);
+          $thread_wrapper->field_harmony_last_user_to_reply->set($entity->uid);
+          $thread_updated = TRUE;
         }
 
         // Update last post if this post is new.
-        if ($entity->is_new && $wrapper->field_harmony_thread->__isset('field_harmony_last_post') && $wrapper->field_harmony_thread->field_harmony_last_post->value()) {
+        if ($entity->is_new && $thread_wrapper->__isset('field_harmony_last_post') && $thread_wrapper->field_harmony_last_post->value()) {
           $previous_last_post_id = $wrapper->field_harmony_thread->field_harmony_last_post->post_id->value();
           if ($previous_last_post_id != $entity->post_id) {
             // Entity metadata wrapper dies here when trying to set a
@@ -691,7 +708,9 @@ class HarmonyPostController extends HarmonyController {
             $this->metaSave($previous_last_post);
           }
 
-          $wrapper->field_harmony_thread->field_harmony_last_post->set($entity->post_id);
+          $thread_wrapper->field_harmony_last_post->set($entity->post_id);
+          $thread->last_post_uri = harmony_core_post_thread_url($thread_id, $entity->post_id, TRUE);
+          $thread_updated = TRUE;
         }
 
         // Invoke post saved, thread updated.
@@ -702,13 +721,17 @@ class HarmonyPostController extends HarmonyController {
 
       if ($thread_id) {
         // Set the last time the thread was updated.
-        if ($wrapper->field_harmony_thread->updated->value() < $wrapper->created->value()) {
-          $wrapper->field_harmony_thread->updated->set(REQUEST_TIME);
-          $wrapper->field_harmony_thread->save();
+        if ($thread_wrapper->updated->value() < $wrapper->created->value()) {
+          $thread_wrapper->updated->set(REQUEST_TIME);
+          $thread_updated = TRUE;
         }
 
         // Attach the thread type to the post.
         $entity->thread_type = $wrapper->field_harmony_thread->type->value();
+      }
+
+      if ($thread_updated) {
+        harmony_thread_meta_save($thread);
       }
 
       // Update counts.
@@ -1026,8 +1049,11 @@ class HarmonyPostController extends HarmonyController {
 
     if ($new_last_post_id) {
       // Update the field on the thread.
-      $wrapper->field_harmony_thread->field_harmony_last_post->set($new_last_post_id);
-      $wrapper->field_harmony_thread->save();
+      $thread = harmony_thread_load($thread_id);
+      $thread_wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+      $thread_wrapper->field_harmony_last_post->set($new_last_post_id);
+      $thread->last_post_uri = harmony_core_post_thread_url($thread_id, $new_last_post_id, TRUE);
+      harmony_thread_meta_save($thread);
 
       // Update the last post property on the new last post.
       $new_last_post = harmony_post_load($new_last_post_id);

@@ -311,6 +311,14 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'schema field' => 'views',
   );
+  $thread_properties['last_post_uri'] = array(
+    'label' => t('Last post URI'),
+    'description' => t('The path to the last post in the thread.'),
+    'type' => 'text',
+    'schema field' => 'last_post_uri',
+    'getter callback' => 'harmony_core_get_last_post_uri_property',
+    'computed' => TRUE,
+  );
   // Added so that Search API can get at a threads posts.
   $thread_properties['posts'] = array(
     'label' => t('Posts'),
@@ -1124,7 +1132,7 @@ function harmony_core_init() {
       }
     }
     else {
-      drupal_set_message(check_plain(variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.')), 'warning', FALSE);
+      drupal_set_message(filter_xss(variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.')), 'warning', FALSE);
     }
   }
 }
@@ -2795,7 +2803,7 @@ function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
 
   if ($thread->is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
     $form['new_content_disabled'] = array(
-      '#markup' => t('You cannot create new threads at this time.'),
+      '#markup' => '<p>' . t('You cannot create new threads at this time.') . '</p>',
     );
   }
 
@@ -3212,7 +3220,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
 
   if ($post->is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
     $form['new_content_disabled'] = array(
-      '#markup' => t('You cannot create new posts at this time.'),
+      '#markup' => '<p>' . t('You cannot create new posts at this time.') . '</p>',
     );
   }
 
@@ -4208,6 +4216,50 @@ function harmony_core_get_thread_posts($thread_id, array $options = array(), $na
   }
 
   return $harmony_core_thread_posts[$thread_id];
+}
+
+/**
+ * Grab the last_post_uri property of a thread and translate it into
+ * a path for use.
+ */
+function harmony_core_get_last_post_uri_property($data, array $options, $name, $type, $info) {
+  $name = isset($info['schema field']) ? $info['schema field'] : $name;
+
+  if ((is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) && isset($data[$name])) {
+    $post_uri = $data[$name];
+  }
+  elseif (is_object($data) && isset($data->$name)) {
+    $post_uri = $data->$name;
+  }
+
+  if (!empty($post_uri)) {
+    return harmony_core_get_last_post_uri($post_uri);
+  }
+
+  return NULL;
+}
+
+/**
+ * Set the last_post_uri propert on thread entity, serialise the incoming
+ * array.
+ */
+function harmony_core_set_last_post_uri_property(&$data, $name, $value, $langcode, $type, $info) {
+  $name = isset($info['schema field']) ? $info['schema field'] : $name;
+  if (is_array($data) || (is_object($data) && $data instanceof ArrayAccess)) {
+    $data[$name] = serialize($value);
+  }
+  elseif (is_object($data)) {
+    $data->$name = serialize($value);
+  }
+}
+
+/**
+ * Turns a serialised array into a post URI.
+ */
+function harmony_core_get_last_post_uri($post_uri) {
+  $path = $post_uri['path'];
+  unset($post_uri['path']);
+  return url($path, $post_uri);
 }
 
 /* Functions relating to working out a posts' permalink. */

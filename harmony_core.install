@@ -159,6 +159,14 @@ function harmony_core_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'last_post_uri' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'serialize' => TRUE,
+        'description' => 'URI of the last post in this thread serialised.',
+      ),
     ),
     'indexes' => array(
       'status' => array('status'),
@@ -536,6 +544,7 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_disable_new_content');
   variable_del('harmony_core_disable_new_content_warning_enabled');
   variable_del('harmony_core_disable_new_content_warning_message');
+  variable_del('harmony_core_thread_last_post_url_needs_rebuild');
 
   variable_del('harmony_core_post_position_callback');
   variable_del('harmony_core_post_position_page_querystring');
@@ -602,5 +611,22 @@ function harmony_core_update_7102() {
       'default' => '',
       'description' => 'Hostname of the user who edited the revision.',
     ));
+  }
+}
+
+/**
+ * Add the "last_post_ui" field to the {harmony_thread} table.
+ */
+function harmony_core_update_7103() {
+  if (!db_field_exists('harmony_thread', 'last_post_uri')) {
+    db_add_field('harmony_thread', 'last_post_uri', array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+      'serialize' => TRUE,
+      'description' => 'URI of the last post in this thread serialised.',
+    ));
+    variable_set('harmony_core_thread_last_post_url_needs_rebuild', TRUE);
   }
 }

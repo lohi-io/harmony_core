@@ -94,6 +94,14 @@ function harmony_core_views_data_alter(&$data) {
   // which has the "link to thread" functionality.
   $data['harmony_thread']['title']['field']['handler'] = 'harmony_core_views_handler_thread_field';
 
+  $data['harmony_thread']['last_post_uri'] = array(
+    'field' => array(
+      'title' => t('Last post URI'),
+      'help' => t('Provides a path to the last post within the thread (can be used in rewriting with replacements).'),
+      'handler' => 'harmony_core_views_handler_thread_field_last_post_uri',
+    ),
+  );
+
   // ----------------------------------------------------------------------
   // History table
 
