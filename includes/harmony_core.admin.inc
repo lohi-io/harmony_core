@@ -26,6 +26,100 @@ function harmony_core_post_entity_form($form, &$form_state, $bundle = array(), $
 }
 
 /**
+ * General Harmony settings form.
+ */
+function harmony_core_admin_general() {
+  $form = array();
+
+  return system_settings_form($form);
+}
+
+/**
+ * Return a basic form that facilitates the rebuild actions.
+ */
+function harmony_core_admin_rebuild_data() {
+  $form = array();
+
+  $form['guidance_text'] = array(
+    '#markup' => '<p>' . t('From this page you can rebuild supporting data used by Harmony entities.') . '</p>',
+  );
+
+  $rebuild_actions = harmony_core_rebuild_actions();
+  foreach ($rebuild_actions as $id => $rebuild_action) {
+    $form[$id] = array(
+      '#type' => 'fieldset',
+      '#title' => $rebuild_action['fieldset title'],
+    );
+
+    $form[$id]['guidance_text'] = array(
+      '#markup' => '<p>' . $rebuild_action['guidance text'] . '</p>',
+    );
+
+    $form[$id]["{$id}_button"] = array(
+      '#type' => 'submit',
+      '#value' => t('Rebuild @action', array('@action' => $rebuild_action['title'])),
+      '#submit' => array('harmony_core_admin_rebuild_redirect'),
+      '#rebuild_confirm_action' => $id,
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Redirect to a confirmation page for a rebuild action.
+ */
+function harmony_core_admin_rebuild_redirect($form, &$form_state) {
+  drupal_goto('admin/harmony/config/general/rebuild/confirm/' . check_plain($form_state['clicked_button']['#rebuild_confirm_action']));
+}
+
+/**
+ * Confirmation for for rebuilds.
+ */
+function harmony_core_admin_rebuild_confirm($form, $form_state, $action_id) {
+  $rebuild_actions = harmony_core_rebuild_actions();
+  $action = !empty($rebuild_actions[$action_id]) ? $rebuild_actions[$action_id] : NULL;
+
+  if (!$action) {
+    return array(
+      '#markup' => '<p>' . t('Action not found.') . '</p>',
+    );
+  }
+
+  $form['action_id'] = array(
+    '#type' => 'value',
+    '#value' => $action_id,
+  );
+
+  $form['action'] = array(
+    '#type' => 'value',
+    '#value' => $action,
+  );
+
+  return confirm_form(
+    $form,
+    t('Are you sure you want to rebuild @title?', array('@title' => $action['title'])),
+    'admin/harmony/config/general/rebuild',
+    '',
+    t('Rebuild @title', array('@title' => $action['title'])),
+    t('Cancel')
+  );
+}
+
+/**
+ * Confirm submit handler which also kicks off the batch operation.
+ *
+ * @see harmony_core_admin_rebuild_confirm()
+ */
+function harmony_core_admin_rebuild_confirm_submit($form, &$form_state) {
+  $action_id = $form_state['values']['action_id'];
+
+  harmony_core_admin_rebuild_execute($action_id);
+
+  $form_state['redirect'] = 'admin/harmony/config/general/rebuild';
+}
+
+/**
  * Returns a system form for disabling new Harmony forum content.
  */
 function harmony_core_admin_disable_new_content() {

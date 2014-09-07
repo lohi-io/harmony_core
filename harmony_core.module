@@ -497,6 +497,11 @@ function harmony_core_permission() {
       'description' => t('Allows users to create, edit and delete any forum threads or posts.'),
       'restrict access' => TRUE,
     ),
+    'access harmony rebuild actions' => array(
+      'title' => t('Rebuild Harmony meta & count data'),
+      'description' => t('Allows access to rebuild thread and post counters and thread meta support data.'),
+      'restrict access' => TRUE,
+    ),
     'disable new harmony content' => array(
       'title' => t('Disable creation of new forum content'),
       'description' => t('Allows access to the new content killswitch which prevents new thread and posts from being created.'),
@@ -686,7 +691,17 @@ function harmony_core_menu() {
   $items['admin/harmony/config']['description'] = 'Administer Harmony module and sub-module settings.';
   $items['admin/harmony/config']['weight'] = 3;
 
-  $items['admin/harmony/config/disable-new-content'] = array(
+  $items['admin/harmony/config/general'] = array(
+    'title' => 'General settings',
+    'description' => 'Dumping ground for the various settings kicking about.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_admin_general'),
+    'access arguments' => array('administer harmony settings'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['admin/harmony/config/general/disable-new-content'] = array(
     'title' => 'Disable new content',
     'description' => 'Disable the creation of new Harmony forum content.',
     'page callback' => 'drupal_get_form',
@@ -694,7 +709,25 @@ function harmony_core_menu() {
     'access arguments' => array('disable new harmony content'),
     'file' => 'harmony_core.admin.inc',
     'file path' => $includes_dir,
-    'weight' => 1,
+  );
+
+  $items['admin/harmony/config/general/rebuild'] = array(
+    'title' => 'Rebuild supporting Harmony entity data',
+    'description' => 'Rebuild the supporting data used by Harmony entities.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_admin_rebuild_data'),
+    'access arguments' => array('access harmony rebuild actions'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
+  );
+
+  $items['admin/harmony/config/general/rebuild/confirm/%'] = array(
+    'title' => 'Confirm rebuild',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('harmony_core_admin_rebuild_confirm', 6),
+    'access arguments' => array('access harmony rebuild actions'),
+    'file' => 'harmony_core.admin.inc',
+    'file path' => $includes_dir,
   );
 
   // Standard CRUD menu items.
@@ -1121,6 +1154,7 @@ function harmony_core_context_registry() {
  * Implements hook_init().
  */
 function harmony_core_init() {
+  // Output messages about new content not being allowed if setup so.
   if (
     variable_get('harmony_core_disable_new_content', FALSE) &&
     variable_get('harmony_core_disable_new_content_warning_enabled', FALSE) &&
@@ -1134,6 +1168,18 @@ function harmony_core_init() {
     else {
       drupal_set_message(filter_xss(variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.')), 'warning', FALSE);
     }
+  }
+
+  // Output messages to relevant users if rebuild actions are required.
+  if (user_access('access harmony rebuild actions') && !empty(variable_get('harmony_core_rebuild_actions', array()))) {
+    $list = array();
+    $rebuild_actions = harmony_core_rebuild_actions();
+
+    foreach (variable_get('harmony_core_rebuild_actions', array()) as $action) {
+      $list[] = $rebuild_actions[$action]['title'];
+    }
+
+    drupal_set_message(t('The following Harmony internal data stores need rebuilding: @list. <a href="@url">Click here to do so</a>.', array('@list' => implode(', ', $list), '@url' => url('admin/harmony/config/general/rebuild'))), 'warning', FALSE);
   }
 }
 
@@ -4288,6 +4334,11 @@ function harmony_core_thread_post_listing_info_update() {
     'offset' => $pager->options['offset'],
   );
   variable_set('harmony_core_thread_post_listing_paging_info', $paging_info);
+
+  // State that a rebuild of the last post URI properties is required.
+  $actions = variable_get('harmony_core_rebuild_actions', array());
+  $actions = array_merge($actions, array('last_post_uris'));
+  variable_set('harmony_core_rebuild_actions', $actions);
 }
 
 /**
@@ -4550,4 +4601,44 @@ function harmony_core_post_permalink_callback($post) {
   }
 
   drupal_goto($path, $options, 301);
+}
+
+/**
+ * Return a list of all the rebuild actions available.
+ */
+function harmony_core_rebuild_actions() {
+  $rebuild_file_path = drupal_get_path('module', 'harmony_core') . '/includes/harmony_core.rebuild_actions.inc';
+
+  return array(
+    'last_post_uris' => array(
+      'title' => t('thread last post URIs'),
+      'fieldset title' => t('Thread last post URIs'),
+      'guidance text' => t('If the thread post listing paging options (posts per page) have been altered, you may be asked to rebuild the thread last post data. This is because the last post may now appear on a different page number and each thread stores the URL of the last post within.'),
+      'batch' => array(
+        'operations' => array(
+          array('_harmony_core_rebuild_last_post_uris_operation', array()),
+        ),
+        'finished' => '_harmony_core_rebuild_last_post_uris_operation_finished',
+        'file' => $rebuild_file_path,
+      ),
+      'drush' => array(
+        'command' => 'harmony-rebuild-thread-post-uris',
+        'callback' => 'harmony_core_drush_rebuild_thread_post_uris',
+        // Goes through dt() later.
+        'description' => 'Rebuilds the thread last post uri property on all threads.',
+      ),
+    ),
+  );
+}
+
+/**
+ * Execute a batched action.
+ */
+function harmony_core_admin_rebuild_execute($action_id) {
+  $actions = harmony_core_rebuild_actions();
+  $action = $actions[$action_id];
+
+  $batch = $action['batch'];
+  $batch['title'] = t('Rebuilding @title', array('@title' => $action['title']));
+  batch_set($batch);
 }

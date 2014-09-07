@@ -544,7 +544,7 @@ function harmony_core_uninstall() {
   variable_del('harmony_core_disable_new_content');
   variable_del('harmony_core_disable_new_content_warning_enabled');
   variable_del('harmony_core_disable_new_content_warning_message');
-  variable_del('harmony_core_thread_last_post_url_needs_rebuild');
+  variable_del('harmony_core_rebuild_actions');
 
   variable_del('harmony_core_post_position_callback');
   variable_del('harmony_core_post_position_page_querystring');
@@ -627,6 +627,8 @@ function harmony_core_update_7103() {
       'serialize' => TRUE,
       'description' => 'URI of the last post in this thread serialised.',
     ));
-    variable_set('harmony_core_thread_last_post_url_needs_rebuild', TRUE);
+    $actions = variable_get('harmony_core_rebuild_actions', array());
+    $actions = array_merge($actions, array('last_post_uris'));
+    variable_set('harmony_core_rebuild_actions', $actions);
   }
 }
