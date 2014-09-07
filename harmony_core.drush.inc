@@ -26,10 +26,10 @@ function harmony_core_drush_command() {
     'description' => dt('Rebuilds all of the thread meta data (Post URIs, First and Last thread entity references and Last user to update).'),
   );*/
 
-  /*$items['harmony-rebuild-thread-first-last'] = array(
+  $items['harmony-rebuild-thread-first-last'] = array(
     'callback' => 'harmony_core_drush_rebuild_thread_first_last',
-    'description' => dt('Rebuilds the thread first and last entity references on all threads.'),
-  );*/
+    'description' => dt('Rebuilds the thread first and last entity references on all threads and the first_post and last_post properties on post entites. Also rebuilds thread last post URIs.'),
+  );
 
   return $items;
 }
@@ -48,6 +48,8 @@ function harmony_core_drush_rebuild_thread_post_uris() {
   drush_backend_batch_process();
 }
 
-/*function harmony_core_drush_rebuild_thread_first_last() {
-
-}*/
+function harmony_core_drush_rebuild_thread_first_last() {
+  module_load_include('module', 'harmony_core', 'harmony_core');
+  harmony_core_admin_rebuild_execute('thread_first_last');
+  drush_backend_batch_process();
+}

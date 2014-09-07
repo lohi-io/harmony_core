@@ -4420,7 +4420,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
  * implements the same sorts and so on but doesn't load as many fields. The
  * lighter view should be set in the var harmony_core_thread_post_listing_view
  * and the view callback used. The extra info stored in the variable
- * harmony_core_thread_post_listing_paging_info is only relevent to the basic
+ * harmony_core_thread_post_listing_paging_info is only relevant to the basic
  * position getter callback and is basically ignored in the following function.
  */
 function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
@@ -4619,7 +4619,19 @@ function harmony_core_rebuild_actions() {
         'operations' => array(
           array('_harmony_core_rebuild_last_post_uris_operation', array()),
         ),
-        'finished' => '_harmony_core_rebuild_last_post_uris_operation_finished',
+        'finished' => '_harmony_core_rebuild_last_post_uris_finished',
+        'file' => $rebuild_file_path,
+      ),
+    ),
+    'thread_first_last' => array(
+      'title' => t('thread first and last post entity references'),
+      'fieldset title' => t('Thread first &amp; last post'),
+      'guidance text' => t('Whilst there are measures and balances in place to prevent issues, you can rebuild all of the noted first and last post entity references for all threads. This will also update the first_post and last_post properties on the relevant post entities. This action also rebuilds the threads last post URIs.'),
+      'batch' => array(
+        'operations' => array(
+          array('_harmony_core_rebuild_thread_first_last_operation', array()),
+        ),
+        'finished' => '_harmony_core_rebuild_thread_first_last_finished',
         'file' => $rebuild_file_path,
       ),
     ),

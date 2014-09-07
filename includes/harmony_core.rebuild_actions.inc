@@ -74,6 +74,45 @@ function _harmony_core_rebuild_last_post_uris_operation(&$context) {
 /**
  * Finished callback for the Last post URI rebuild action.
  */
-function _harmony_core_rebuild_last_post_uris_operation_finished($success, $results, $operations) {
+function _harmony_core_rebuild_last_post_uris_finished($success, $results, $operations) {
   _harmony_core_rebuild_finished($success, $results, $operations, 'last_post_uris');
+}
+
+/**
+ * Operation callback for rebuilding the first and last post entity references
+ * along with the first and last post properties on post entities.
+ */
+function _harmony_core_rebuild_thread_first_last_operation(&$context) {
+  if (empty($context['sandbox'])) {
+    // Initiate multistep processing.
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['current_entity_id'] = 0;
+    $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT thread_id) FROM {harmony_thread}')->fetchField();
+  }
+
+  // Process the next 20 threads.
+  $limit = 20;
+  $thread_ids = db_query_range("SELECT thread_id FROM {harmony_thread} WHERE thread_id > :entity_id ORDER BY thread_id ASC", 0, $limit, array(':entity_id' => $context['sandbox']['current_entity_id']))->fetchCol();
+  $threads = harmony_thread_load_multiple($thread_ids, array(), TRUE);
+
+  foreach ($threads as $thread_id => $thread) {
+    if (!empty($thread)) {
+      harmony_thread_rebuild_first_last_posts($thread);
+    }
+
+    $context['sandbox']['progress']++;
+    $context['sandbox']['current_entity_id'] = $thread_id;
+  }
+
+  // Multistep processing : report progress.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+/**
+ * Finished callback for the first last post reference rebuild action.
+ */
+function _harmony_core_rebuild_thread_first_last_finished($success, $results, $operations) {
+  _harmony_core_rebuild_finished($success, $results, $operations, 'thread_first_last');
 }
