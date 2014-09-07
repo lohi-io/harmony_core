@@ -3010,6 +3010,15 @@ function harmony_core_thread_form_submit($form, &$form_state) {
 
     // Set the last post whilst we're at it.
     $wrapper->field_harmony_last_post->set($post_id);
+
+    // Set the last post URI to just the post, as there's only one.
+    $thread->last_post_uri = array(
+      'path' => 'thread/' . $thread->thread_id,
+      'query' => array(),
+      'fragment' => '',
+    );
+
+    // Save.
     $thread = harmony_thread_meta_save($thread);
   }
 
@@ -4304,6 +4313,10 @@ function harmony_core_set_last_post_uri_property(&$data, $name, $value, $langcod
  * Turns a serialised array into a post URI.
  */
 function harmony_core_get_last_post_uri($post_uri) {
+  if (!$post_uri) {
+    return '';
+  }
+
   $path = $post_uri['path'];
   unset($post_uri['path']);
   return url($path, $post_uri);
