@@ -54,9 +54,11 @@ function _harmony_core_rebuild_last_post_uris_operation(&$context) {
       $thread_posts_stored['last'] = !empty($thread_posts) ? array_pop($thread_posts) : $thread_posts_stored['first'];
       $thread_posts_stored['other'] = $thread_posts;
 
-      $last_post = harmony_post_load($thread_posts_stored['last']);
-      $thread->last_post_uri = harmony_core_post_thread_url($thread->thread_id, $last_post->post_id, TRUE);
-      harmony_thread_meta_save($thread);
+      if ($thread_posts_stored['last']) {
+        $last_post = harmony_post_load($thread_posts_stored['last']);
+        $thread->last_post_uri = harmony_core_post_thread_url($thread->thread_id, $last_post->post_id, TRUE);
+        harmony_thread_meta_save($thread);
+      }
     }
 
     $context['sandbox']['progress']++;

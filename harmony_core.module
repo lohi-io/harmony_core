@@ -1171,7 +1171,8 @@ function harmony_core_init() {
   }
 
   // Output messages to relevant users if rebuild actions are required.
-  if (user_access('access harmony rebuild actions') && !empty(variable_get('harmony_core_rebuild_actions', array()))) {
+  $required_rebuild_actions = variable_get('harmony_core_rebuild_actions', array());
+  if (user_access('access harmony rebuild actions') && !empty($required_rebuild_actions)) {
     $list = array();
     $rebuild_actions = harmony_core_rebuild_actions();
 
@@ -4620,12 +4621,6 @@ function harmony_core_rebuild_actions() {
         ),
         'finished' => '_harmony_core_rebuild_last_post_uris_operation_finished',
         'file' => $rebuild_file_path,
-      ),
-      'drush' => array(
-        'command' => 'harmony-rebuild-thread-post-uris',
-        'callback' => 'harmony_core_drush_rebuild_thread_post_uris',
-        // Goes through dt() later.
-        'description' => 'Rebuilds the thread last post uri property on all threads.',
       ),
     ),
   );
