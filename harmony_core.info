@@ -117,6 +117,7 @@ files[] = views/handlers/harmony_core_views_handler_thread_field.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link_edit.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_link_delete.inc
+files[] = views/handlers/harmony_core_views_handler_thread_field_replies.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_reply_link.inc
 files[] = views/handlers/harmony_core_views_handler_thread_field_last_post_uri.inc
 files[] = views/handlers/harmony_core_views_handler_post_field.inc

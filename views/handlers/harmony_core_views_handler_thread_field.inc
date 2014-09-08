@@ -13,7 +13,6 @@
  * @ingroup views_field_handlers
  */
 class harmony_core_views_handler_thread_field extends views_handler_field {
-
   function init(&$view, &$options) {
     parent::init($view, $options);
     // Don't add the additional fields to groupby

@@ -102,6 +102,16 @@ function harmony_core_views_data_alter(&$data) {
     ),
   );
 
+  // Provide a field which shows number of replies to a thread which is post
+  // count - 1.
+  $data['field_data_field_harmony_post_count']['harmony_thread_replies'] = array(
+    'group' => t('Thread'),
+    'title' => t('Number of replies to Thread'),
+    'help' => t('The number of replies to a thread, which will be thread post count -1, with supporting text. E.g. "1 reply".'),
+    'field' => $data['field_data_field_harmony_post_count']['field_harmony_post_count']['field'],
+  );
+  $data['field_data_field_harmony_post_count']['harmony_thread_replies']['field']['handler'] = 'harmony_core_views_handler_thread_field_replies';
+
   // ----------------------------------------------------------------------
   // History table
 
