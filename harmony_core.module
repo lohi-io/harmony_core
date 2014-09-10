@@ -2947,12 +2947,24 @@ function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
     '#weight' => 5,
     '#submit' => array('harmony_core_thread_form_submit'),
   );
-  if (!empty($thread->thread_id) && harmony_core_thread_access_callback('delete', $thread)) {
-    $form['actions']['delete'] = array(
-      '#type' => 'submit',
-      '#value' => t('Delete'),
-      '#weight' => 15,
-      '#submit' => array('harmony_thread_delete_submit'),
+  if (!empty($thread->thread_id)) {
+    // Delete button.
+    if (harmony_core_thread_access_callback('delete', $thread)) {
+      $form['actions']['delete'] = array(
+        '#type' => 'submit',
+        '#value' => t('Delete'),
+        '#weight' => 15,
+        '#submit' => array('harmony_thread_delete_submit'),
+      );
+    }
+
+    // Cancel link.
+    $form['actions']['cancel'] = array(
+      '#type' => 'link',
+      '#title' => t('Cancel'),
+      '#href' => 'thread/' . $thread->thread_id,
+      '#options' => array(),
+      '#weight' => 20,
     );
   }
 
@@ -3448,24 +3460,36 @@ function harmony_core_post_form($form, &$form_state, $post) {
       '#submit' => array('harmony_post_delete_submit'),
     );
   }
-  // Add cancel link if on the create post URL.
+  // Add cancel link.
   if (arg(0) === 'post' && arg(1) === 'add') {
-    // Prepare cancel link.
-    $path = '<front>';
+    // Bounce the user back to the thread.
     if (isset($_GET['field_harmony_thread']) && is_numeric($_GET['field_harmony_thread'])) {
       $options = drupal_parse_url('thread/' . $_GET['field_harmony_thread']);
     }
+    // Can't figure out where to go, go home!
     else {
-      $options = array('path' => $path);
+      $options = array('path' => '<front>');
     }
-    $form['actions']['cancel'] = array(
-      '#type' => 'link',
-      '#title' => t('Cancel'),
-      '#href' => $options['path'],
-      '#options' => $options,
-      '#weight' => 20,
-    );
   }
+  // Editing a post.
+  elseif (!empty($post->post_id)) {
+    if ($thread_id) {
+      $options = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
+    }
+    else {
+      $options = array(
+        'path' => 'post/' . $post->post_id,
+      );
+    }
+  }
+
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => $options['path'],
+    '#options' => $options,
+    '#weight' => 20,
+  );
 
   return $form;
 }
