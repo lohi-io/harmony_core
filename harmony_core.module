@@ -3464,32 +3464,35 @@ function harmony_core_post_form($form, &$form_state, $post) {
   if (arg(0) === 'post' && arg(1) === 'add') {
     // Bounce the user back to the thread.
     if (isset($_GET['field_harmony_thread']) && is_numeric($_GET['field_harmony_thread'])) {
-      $options = drupal_parse_url('thread/' . $_GET['field_harmony_thread']);
+      $cancel_options = drupal_parse_url('thread/' . $_GET['field_harmony_thread']);
     }
     // Can't figure out where to go, go home!
     else {
-      $options = array('path' => '<front>');
+      $cancel_options = array('path' => '<front>');
     }
   }
   // Editing a post.
   elseif (!empty($post->post_id)) {
     if ($thread_id) {
-      $options = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
+      $cancel_options = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
     }
     else {
-      $options = array(
+      $cancel_options = array(
         'path' => 'post/' . $post->post_id,
       );
     }
   }
 
-  $form['actions']['cancel'] = array(
-    '#type' => 'link',
-    '#title' => t('Cancel'),
-    '#href' => $options['path'],
-    '#options' => $options,
-    '#weight' => 20,
-  );
+  // Add the cancel link if we've got a path.
+  if (!empty($cancel_options['path'])) {
+    $form['actions']['cancel'] = array(
+      '#type' => 'link',
+      '#title' => t('Cancel'),
+      '#href' => $cancel_options['path'],
+      '#options' => $cancel_options,
+      '#weight' => 20,
+    );
+  }
 
   return $form;
 }
