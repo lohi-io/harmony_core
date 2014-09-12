@@ -214,6 +214,10 @@ class HarmonyThreadController extends HarmonyController {
       module_load_include('inc', 'harmony_core', 'includes/harmony_core.pathauto');
       harmony_core_thread_update_alias($entity, $op);
 
+      // No longer technically new so remove the flag, the correct hooks will
+      // be invoked though.
+      unset($entity->is_new);
+
       // Invoke insert or update hook.
       $this->invoke($op, $entity);
 
@@ -229,7 +233,6 @@ class HarmonyThreadController extends HarmonyController {
 
       // Ignore slave server temporarily.
       db_ignore_slave();
-      unset($entity->is_new);
       unset($entity->original);
 
       // Return the entity.
