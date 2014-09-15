@@ -46,7 +46,7 @@ class HarmonyController extends EntityAPIController {
           // We force things to be updated quickly, if new revisions are a
           // consideration then the full save method should be used.
           $entity->is_new_revision = FALSE;
-          $return = $this->saveRevision($entity);
+          $return = $this->metaSaveRevision($entity);
         }
         $this->resetCache(array($entity->{$this->idKey}));
 
@@ -66,6 +66,37 @@ class HarmonyController extends EntityAPIController {
       watchdog_exception($this->entityType, $e);
       throw $e;
     }
+  }
+
+  protected function metaSaveRevision($entity) {
+    $record = (array) $entity;
+
+    $entity->is_new_revision = !empty($entity->is_new_revision) || !empty($entity->revision) || $entity->is_new;
+    $entity->revision = &$entity->is_new_revision;
+    $entity->{$this->defaultRevisionKey} = !empty($entity->{$this->defaultRevisionKey}) || $entity->is_new;
+
+    if ($entity->is_new_revision && isset($record[$this->revisionKey])) {
+      $record[$this->revisionKey] = NULL;
+    }
+
+    if ($entity->is_new_revision) {
+      drupal_write_record($this->revisionTable, $record);
+      $update_default_revision = $entity->{$this->defaultRevisionKey};
+    }
+    else {
+      drupal_write_record($this->revisionTable, $record, $this->revisionKey);
+      $update_default_revision = $entity->{$this->defaultRevisionKey} && !empty($entity->original->{$this->revisionKey}) && $entity->{$this->revisionKey} != $entity->original->{$this->revisionKey};
+    }
+
+    $entity->{$this->revisionKey} = $record[$this->revisionKey];
+
+    if ($update_default_revision) {
+      db_update($this->entityInfo['base table'])
+        ->fields(array($this->revisionKey => $record[$this->revisionKey]))
+        ->condition($this->idKey, $entity->{$this->idKey})
+        ->execute();
+    }
+    return $entity->is_new_revision ? SAVED_NEW : SAVED_UPDATED;
   }
 }
 
