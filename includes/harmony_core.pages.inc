@@ -405,7 +405,7 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       $links['reply']['attributes']['class'][0] = 'login-link';
     }
   }
-  if (user_access('reply as new harmony_thread') || $show_reply_as_to_anon) {
+  if ((user_access('reply as new harmony_thread') || $show_reply_as_to_anon) && !variable_get('harmony_core_disable_new_content', FALSE)) {
     $links['reply_as_new_thread'] = array(
       'title' => t('Reply as a new thread'),
       'href' => 'thread/add',
@@ -432,11 +432,15 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
       $links['reply_as_new_thread']['attributes']['class'][0] = 'login-link';
     }
   }
-  $post->content['links']['post'] = array(
-    '#theme' => 'links__post__post',
-    '#links' => $links,
-    '#attributes' => array('class' => array('inline')),
-  );
+
+  // If this post has links, setup the render array.
+  if (!empty($links)) {
+    $post->content['links']['post'] = array(
+      '#theme' => 'links__post__post',
+      '#links' => $links,
+      '#attributes' => array('class' => array('inline')),
+    );
+  }
 
   // Allow modules to make their own additions to the post.
   module_invoke_all('harmony_post_view', $post, $view_mode, $langcode);

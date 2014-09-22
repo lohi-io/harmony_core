@@ -40,7 +40,7 @@ class harmony_core_views_handler_area_add_thread extends views_handler_area {
    * Render the area
    */
   function render($empty = FALSE) {
-    if (!empty($this->options['link_text'])) {
+    if (!empty($this->options['link_text']) && !variable_get('harmony_core_disable_new_content', FALSE)) {
       // @todo harmony_access stuff.
       if (user_access('create harmony_thread harmony threads')) {
         // @todo this should grab tid value from view object.

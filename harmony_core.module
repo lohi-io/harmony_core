@@ -691,15 +691,10 @@ function harmony_core_menu() {
   $items['admin/harmony/config']['description'] = 'Administer Harmony module and sub-module settings.';
   $items['admin/harmony/config']['weight'] = 3;
 
-  $items['admin/harmony/config/general'] = array(
-    'title' => 'General settings',
-    'description' => 'Dumping ground for the various settings kicking about.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('harmony_core_admin_general'),
-    'access arguments' => array('administer harmony settings'),
-    'file' => 'harmony_core.admin.inc',
-    'file path' => $includes_dir,
-  );
+  $items['admin/harmony/config/general'] = $items['admin/harmony'];
+  $items['admin/harmony/config/general']['title'] = 'General settings';
+  $items['admin/harmony/config/general']['description'] = 'Dumping ground for the various settings kicking about.';
+  $items['admin/harmony/config/general']['access arguments'] = array('administer harmony settings');
 
   $items['admin/harmony/config/general/disable-new-content'] = array(
     'title' => 'Disable new content',
@@ -1161,8 +1156,8 @@ function harmony_core_init() {
     variable_get('harmony_core_disable_new_content_warning_message', 'The creation of new threads and posts has been temporarily disabled.') != ''
   ) {
     if (user_access('disable new harmony content')) {
-      if ($_GET['q'] != 'admin/harmony/config/disable-new-content') {
-        drupal_set_message(t('Creation of new Harmony forum content has been disabled. <a href="@url">Click here to allow</a>.', array('@url' => url('admin/harmony/config/disable-new-content'))), 'warning', FALSE);
+      if ($_GET['q'] != 'admin/harmony/config/general/disable-new-content') {
+        drupal_set_message(t('Creation of new Harmony forum content has been disabled. <a href="@url">Click here to allow</a>.', array('@url' => url('admin/harmony/config/general/disable-new-content'))), 'warning', FALSE);
       }
     }
     else {
@@ -3907,6 +3902,7 @@ function harmony_core_thread_get_properties($thread_id = NULL, $thread = NULL) {
     }
 
     if ($thread) {
+      $killswitch = variable_get('harmony_core_disable_new_content', FALSE);
       $thread_properties[$thread_id] = array(
         'type' => $thread->type,
         'status' => $thread->status,
@@ -3922,7 +3918,7 @@ function harmony_core_thread_get_properties($thread_id = NULL, $thread = NULL) {
         'is_pinned' => $thread->pinned == HARMONY_PINNED,
         'is_locked' => $thread->locked == HARMONY_LOCKED,
         'is_hidden' => $thread->hidden == HARMONY_HIDDEN,
-        'can_post_in' => $thread->status == HARMONY_PUBLISHED && $thread->locked == HARMONY_NOT_LOCKED && $thread->hidden == HARMONY_NOT_HIDDEN,
+        'can_post_in' => $thread->status == HARMONY_PUBLISHED && $thread->locked == HARMONY_NOT_LOCKED && $thread->hidden == HARMONY_NOT_HIDDEN && !$killswitch,
       );
     }
     else {
