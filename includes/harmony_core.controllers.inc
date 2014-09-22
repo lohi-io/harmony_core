@@ -856,7 +856,7 @@ class HarmonyPostController extends HarmonyController {
   protected function saveRevision($entity) {
     // Update the revision user to be the current person editing if not anon.
     // We don't allow anon to create threads or posts but things can happen
-    // via drush.
+    // via drush. Always update the user even if the text isn't changing.
     global $user;
     $entity->uid = $user->uid > 0 ? $user->uid : $entity->uid;
 
