@@ -28,7 +28,7 @@
           'event': 'click tap',
           'effect': 'slide',
           'speed': 'fast',
-          'url': Drupal.settings.basePath + '?q=ajax/post-replies/' + post_id
+          'url': Drupal.settings.basePath + '?q=ajax/harmony/post-replies/' + post_id
         };
 
         var ajax = new Drupal.ajax(base, this, element_settings);

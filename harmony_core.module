@@ -918,7 +918,7 @@ function harmony_core_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['ajax/post-replies/%harmony_post'] = array(
+  $items['ajax/harmony/post-replies/%harmony_post'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('harmony_post', 2),
     'page callback' => 'harmony_core_ajax_post_replies',
@@ -3346,7 +3346,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
   if ($bail_out) {
     return array(
       'text' => array(
-        '#markup' => t("<p>The thread you're trying to post in is either locked or missing, if this is in error please contact the site administrator."),
+        '#markup' => t("<p>The thread you're trying to post in is either locked, appears in an unpublished thread or is missing. If this is in error please contact the site administrator."),
       ),
     );
   }
