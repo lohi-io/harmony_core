@@ -191,7 +191,8 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     }
 
     $wrapper->title->set($form_state['values']['title']);
-    $wrapper->status->set($form_state['values']['status']);
+    // Published or unpublished shouldn't propogate to the post.
+    //$wrapper->status->set($form_state['values']['status']);
     $wrapper->locked->set($form_state['values']['locked']);
     $wrapper->log->set($post->revisions['log']);
     $wrapper->log_show->set($post->revisions['log_show']);
