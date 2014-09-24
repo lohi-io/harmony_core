@@ -3327,7 +3327,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
 
     if ($thread) {
       $thread_properties = harmony_core_thread_get_properties($thread_id, $thread);
-      if (isset($thread_properties['can_post_in']) && !$thread_properties['can_post_in']) {
+      if (isset($thread_properties['can_post_in']) && !$thread_properties['can_post_in'] && !user_access('administer forum content')) {
         $bail_out = TRUE;
         $bail_out_reason = 'Cannot post in due to thread properties.';
       }
