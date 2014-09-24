@@ -1160,9 +1160,13 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '50';
-  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
+    'counter' => 'counter',
     'name' => 'name',
     'status' => 'status',
     'created' => 'created',
@@ -1175,59 +1179,84 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['default'] = 'created';
   $handler->display->display_options['style_options']['info'] = array(
     'views_bulk_operations' => array(
+      'align' => 'text-center',
+      'separator' => '',
+      'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
+    ),
+    'counter' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'name' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'status' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'created' => array(
       'sortable' => 1,
-      'default_sort_order' => 'asc',
-      'align' => '',
+      'default_sort_order' => 'desc',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'updated' => array(
       'sortable' => 1,
-      'default_sort_order' => 'desc',
-      'align' => '',
+      'default_sort_order' => 'asc',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'hostname' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => '',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'post_view_text' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'edit_link' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'delete_link' => array(
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => ' ',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -1345,6 +1374,14 @@ function harmony_core_views_default_views() {
       'label' => '',
     ),
   );
+  /* Field: Global: View result counter */
+  $handler->display->display_options['fields']['counter']['id'] = 'counter';
+  $handler->display->display_options['fields']['counter']['table'] = 'views';
+  $handler->display->display_options['fields']['counter']['field'] = 'counter';
+  $handler->display->display_options['fields']['counter']['label'] = 'Title';
+  $handler->display->display_options['fields']['counter']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['counter']['alter']['text'] = 'Post #[counter]';
+  $handler->display->display_options['fields']['counter']['counter_start'] = '1';
   /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';
