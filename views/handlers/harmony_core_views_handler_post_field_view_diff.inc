@@ -68,7 +68,7 @@ class harmony_core_views_handler_post_field_view_diff extends views_handler_fiel
     if ($entity = $this->get_value($values)) {
       if (harmony_core_post_revision_access_callback('view', $entity) && harmony_post_get_first_vid($entity->post_id) != $entity->vid) {
         $text = check_plain($this->options['text']);
-        $diff_url = "post/{$entity->post_id}/revisions/{$entity->vid}/nojs";
+        $diff_url = "ajax/harmony/post/{$entity->post_id}/revisions/{$entity->vid}/nojs";
 
         return '<div id="post-revision-' . $entity->vid . '">' . ctools_modal_text_button($text, $diff_url, '') . '</div>';
       }

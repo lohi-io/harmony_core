@@ -863,14 +863,14 @@ function harmony_core_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['post/%harmony_post/revisions/%/%ctools_js'] = array(
+  $items['ajax/harmony/post/%harmony_post/revisions/%/%ctools_js'] = array(
     'title callback' => 'harmony_core_post_revision_title',
-    'title arguments' => array(1),
-    'load arguments' => array(3),
+    'title arguments' => array(3),
+    'load arguments' => array(5),
     'page callback' => 'harmony_core_post_revision_view',
-    'page arguments' => array(1, 3, 4),
+    'page arguments' => array(3, 5, 6),
     'access callback' => 'harmony_core_post_revision_access_callback',
-    'access arguments' => array('view', 1),
+    'access arguments' => array('view', 3),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );
@@ -897,13 +897,13 @@ function harmony_core_menu() {
     'file path' => $includes_dir,
   );
 
-  $items['post/%harmony_post/view-text/%ctools_js'] = array(
+  $items['ajax/harmony/post/%harmony_post/view-text/%ctools_js'] = array(
     'title callback' => 'entity_label',
-    'title arguments' => array('harmony_post', 1),
+    'title arguments' => array('harmony_post', 3),
     'page callback' => 'harmony_core_post_view_text',
-    'page arguments' => array(1, 3),
+    'page arguments' => array(3, 5),
     'access callback' => 'harmony_core_post_access_callback',
-    'access arguments' => array('view', 1),
+    'access arguments' => array('view', 3),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
   );

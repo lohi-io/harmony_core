@@ -49,7 +49,7 @@ class harmony_core_views_handler_post_field_view_text extends views_handler_fiel
   function render($values) {
     if ($row_id = $this->get_value($values)) {
       $text = check_plain($this->options['text']);
-      $url = "post/{$values->post_id}/view-text/nojs";
+      $url = "ajax/harmony/post/{$values->post_id}/view-text/nojs";
 
       $output = '';
       if ($this->options['newline_prepend']) {
