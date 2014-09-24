@@ -32,10 +32,10 @@ $links = render($content['links']);
     <?php endif; ?>
     <div class="pull-right">
       <span class="post-created">
-        <?php if ($is_page): ?>
-        <?php print $created; ?>
-        <?php else: ?>
+        <?php if ($link_created): ?>
         <a href="<?php print $thread_post_url; ?>" title="<?php print t('Permalink to this post'); ?>"><?php print $created; ?></a>
+        <?php else: ?>
+        <?php print $created; ?>
         <?php endif; ?>
       </span>
       <?php if ($revisions): ?>

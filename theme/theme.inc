@@ -100,6 +100,7 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['thread_post_url'] = harmony_core_post_thread_url($thread_id, $post->post_id);
   $variables['url'] = url("post/$post->post_id");
   $variables['permalink_url'] = $variables['url'];
+  $variables['link_created'] = $variables['thread_post_url'] && $post->status == HARMONY_PUBLISHED && $post->hidden != HARMONY_HIDDEN;
   $variables['created'] = format_date($post->created, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', ''));
   $variables['updated'] = format_date($post->updated, variable_get('harmony_core_date_type', 'medium'), variable_get('harmony_core_date_format', ''));
   $variables['is_page'] = arg(0) === 'post';
