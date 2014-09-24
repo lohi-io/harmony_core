@@ -3269,18 +3269,37 @@ function harmony_core_post_form($form, &$form_state, $post) {
   );
   $form['#attributes']['class'][] = 'post-form';
 
+  // Work out if we're working with an existing post.
   $wrapper = NULL;
   $thread_id = NULL;
   if (empty($post->is_new)) {
     $post->is_new = FALSE;
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+    // Grab the thread id for use later on.
     if ($wrapper->field_harmony_thread->value()) {
       $thread_id = $wrapper->field_harmony_thread->thread_id->value();
       $post->title = $wrapper->field_harmony_thread->title->value();
     }
+
+    // Check to see if we're working with the first post within a thread, if
+    // so then redirect the user to edit the thread itself.
+    if ($post->first_post && $thread_id) {
+      // If a destination is present then carry it through.
+      $goto_options = array();
+      if (isset($_GET['destination']) && !url_is_external($_GET['destination'])) {
+        $goto_options['query'] = drupal_get_destination();
+        // This is horrible but drupal_goto picks up on the fact that
+        // destination is set in the get vars and will straight bounce the
+        // user when we don't want this. Looking forward to D8.
+        $_GET['destination'] = NULL;
+      }
+
+      drupal_goto("thread/{$thread_id}/edit", $goto_options);
+    }
   }
 
+  // Check to see if the killswitch is active.
   if ($post->is_new && variable_get('harmony_core_disable_new_content', FALSE)) {
     $form['new_content_disabled'] = array(
       '#markup' => '<p>' . t('You cannot create new posts at this time.') . '</p>',
