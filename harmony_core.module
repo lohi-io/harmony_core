@@ -920,11 +920,11 @@ function harmony_core_menu() {
 
   $items['ajax/harmony/post-replies/%harmony_post'] = array(
     'title callback' => 'entity_label',
-    'title arguments' => array('harmony_post', 2),
+    'title arguments' => array('harmony_post', 3),
     'page callback' => 'harmony_core_ajax_post_replies',
-    'page arguments' => array(2),
+    'page arguments' => array(3),
     'access callback' => 'harmony_core_post_access_callback',
-    'access arguments' => array('view', 2),
+    'access arguments' => array('view', 3),
     'file' => 'harmony_core.pages.inc',
     'file path' => $includes_dir,
     'type' => MENU_CALLBACK,
