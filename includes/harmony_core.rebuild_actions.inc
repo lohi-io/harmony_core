@@ -116,3 +116,75 @@ function _harmony_core_rebuild_thread_first_last_operation(&$context) {
 function _harmony_core_rebuild_thread_first_last_finished($success, $results, $operations) {
   _harmony_core_rebuild_finished($success, $results, $operations, 'thread_first_last');
 }
+
+/**
+ * Rebuild the count fields on certain entities in batches. Can be triggered
+ * via the UI or Drush.
+ */
+function _harmony_core_rebuild_counts_operation($target, &$context) {
+  if (empty($context['sandbox'])) {
+    // Initiate multistep processing.
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['limit'] = 20;
+    $context['sandbox']['current_entity_id'] = 0;
+
+    // Setup vars to be used during execution, and work out the maximum
+    // number of items we'll be dealing with.
+    switch ($target) {
+      case 'users':
+        $context['sandbox']['entity_type'] = 'user';
+        $context['sandbox']['entity_table'] = 'users';
+        $context['sandbox']['id_key'] = 'uid';
+        $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT uid) FROM {users} WHERE uid > 0')->fetchField();
+        break;
+
+      case 'threads':
+        $context['sandbox']['entity_type'] = 'harmony_thread';
+        $context['sandbox']['entity_table'] = 'harmony_thread';
+        $context['sandbox']['id_key'] = 'thread_id';
+        $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT thread_id) FROM {harmony_thread}')->fetchField();
+        break;
+
+      case 'categories':
+        $context['sandbox']['entity_type'] = 'taxonomy_term';
+        $context['sandbox']['entity_table'] = 'taxonomy_term_data';
+        $context['sandbox']['id_key'] = 'tid';
+        $vocabulary = taxonomy_vocabulary_machine_name_load('harmony_category');
+        $context['sandbox']['vid'] = $vocabulary->vid;
+        $context['sandbox']['limit'] = 1;
+        $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT tid) FROM {taxonomy_term_data} WHERE vid = :vid', array(':vid' => $vocabulary->vid))->fetchField();
+        break;
+    }
+  }
+
+  // Process the next set of items, this could be a dynamic query but they're
+  // slow and we know that the input is internal.
+  $table = $context['sandbox']['entity_table'];
+  $id_key = $context['sandbox']['id_key'];
+  $entity_ids = db_query_range('SELECT ' . $id_key . ' FROM {' . $table . '} WHERE ' . $id_key . ' > :entity_id ORDER BY ' . $id_key . ' ASC', 0, $context['sandbox']['limit'], array(
+    ':entity_id' => $context['sandbox']['current_entity_id']
+  ))->fetchCol();
+  $entities = entity_load($context['sandbox']['entity_type'], $entity_ids, array(), TRUE);
+
+  foreach ($entities as $entity_id => $entity) {
+    if (!empty($entity)) {
+      harmony_core_rebuild_meta_count($context['sandbox']['entity_type'], $entity_id, $entity);
+    }
+
+    $context['sandbox']['progress']++;
+    $context['sandbox']['current_entity_id'] = $entity_id;
+  }
+
+  // Multistep processing : report progress.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+/**
+ * Finished callback for the counts rebuild action.
+ */
+function _harmony_core_rebuild_counts_finished($success, $results, $operations) {
+  _harmony_core_rebuild_finished($success, $results, $operations, 'counts');
+}
+

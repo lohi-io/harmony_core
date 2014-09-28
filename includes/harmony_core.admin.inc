@@ -41,7 +41,7 @@ function harmony_core_admin_rebuild_data() {
   $form = array();
 
   $form['guidance_text'] = array(
-    '#markup' => '<p>' . t('From this page you can rebuild supporting data used by Harmony entities.') . '</p>',
+    '#markup' => '<p>' . t('From this page you can rebuild supporting data used by Harmony entities.') .'</p><p>' . t("If your site has a lot of content and expect these rebuild commands to take a while, you should probably put the site in <a href=\"@maintenance-url\">Maintenance mode</a> until they're done.", array('@maintenance-url' => url('admin/config/development/maintenance'))) . '</p>',
   );
 
   $rebuild_actions = harmony_core_rebuild_actions();
@@ -96,6 +96,13 @@ function harmony_core_admin_rebuild_confirm($form, $form_state, $action_id) {
     '#value' => $action,
   );
 
+  // Add in any options for the rebuild command.
+  if (!empty($action['arguments'])) {
+    foreach ($action['arguments'] as $argument_id => $argument) {
+      $form[$argument_id] = $argument;
+    }
+  }
+
   return confirm_form(
     $form,
     t('Are you sure you want to rebuild @title?', array('@title' => $action['title'])),
@@ -114,7 +121,7 @@ function harmony_core_admin_rebuild_confirm($form, $form_state, $action_id) {
 function harmony_core_admin_rebuild_confirm_submit($form, &$form_state) {
   $action_id = $form_state['values']['action_id'];
 
-  harmony_core_admin_rebuild_execute($action_id);
+  harmony_core_admin_rebuild_execute($action_id, $form_state['values']);
 
   $form_state['redirect'] = 'admin/harmony/config/general/rebuild';
 }

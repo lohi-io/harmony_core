@@ -3785,6 +3785,56 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
 }
 
 /**
+ * Rebuild an entities count fields.
+ */
+function harmony_core_rebuild_meta_count($entity_type, $entity_id, $entity = NULL) {
+  if (!$entity) {
+    $entity = entity_load($entity_type, array($entity_id), array(), TRUE);
+  }
+
+  $wrapper = entity_metadata_wrapper($entity_type, $entity);
+
+  switch ($entity_type) {
+    case 'user':
+      // Get the number of threads and set.
+      $threads = db_query("SELECT COUNT(DISTINCT thread_id)
+        FROM {harmony_thread}
+        WHERE uid = :uid AND status = 1 AND hidden = 0", array(':uid' => $entity_id))->fetchField();
+      $wrapper->field_harmony_thread_count->set($threads);
+      // Get the number of posts and set.
+      $posts = db_query("SELECT COUNT(DISTINCT post_id)
+        FROM {harmony_post}
+        WHERE uid = :uid AND status = 1 AND hidden = 0", array(':uid' => $entity_id))->fetchField();
+      $wrapper->field_harmony_post_count->set($posts);
+      break;
+
+    case 'harmony_thread':
+      $posts = harmony_core_get_thread_posts($entity_id);
+      $wrapper->field_harmony_post_count->set(count($posts));
+      break;
+
+    case 'taxonomy_term':
+      // Get the number of threads and set.
+      $threads = db_query("SELECT COUNT(DISTINCT entity_id)
+        FROM {field_data_field_harmony_category}
+        WHERE entity_type = 'harmony_thread' AND deleted = 0 AND field_harmony_category_tid = :tid", array(':tid' => $entity_id))->fetchField();
+      $wrapper->field_harmony_thread_count->set($threads);
+      // Get the number of posts and set.
+      $posts = db_query("SELECT SUM(fpc.field_harmony_post_count_value)
+        FROM {field_data_field_harmony_post_count} AS fpc
+        LEFT JOIN {harmony_thread} AS ht ON fpc.entity_id = ht.thread_id
+        LEFT JOIN {field_data_field_harmony_category} AS fc ON ht.thread_id = fc.entity_id
+        WHERE fpc.deleted = 0 AND fpc.entity_type = 'harmony_thread' AND fpc.field_harmony_post_count_value > 0
+        AND ht.status = 1 AND ht.hidden = 0
+        AND fc.deleted = 0 AND fc.entity_type = 'harmony_thread' AND fc.field_harmony_category_tid = :tid", array(':tid' => $entity_id))->fetchField();
+      $wrapper->field_harmony_post_count->set($posts);
+      break;
+  }
+
+  $wrapper->save();
+}
+
+/**
  * Helper function to update a posts title.
  */
 function harmony_core_update_post_title($item) {
@@ -4665,8 +4715,45 @@ function harmony_core_post_permalink_callback($post) {
  */
 function harmony_core_rebuild_actions() {
   $rebuild_file_path = drupal_get_path('module', 'harmony_core') . '/includes/harmony_core.rebuild_actions.inc';
+  $settings = array();
 
   return array(
+    'counts' => array(
+      'title' => t('internal counters'),
+      'fieldset title' => t('Internal counters'),
+      'guidance text' => t('Harmony has a series of thread &amp; post count fields in different places. If one of these counters has an incorrect value then you can rebuild them here. You will be able to choose which counts to rebuild.'),
+      // Should be British spelling but this is better for consistency :/
+      'arguments' => array(
+        'target' => array(
+          // Mirrors Form API.
+          '#type' => 'checkboxes',
+          '#title' => t('Which counts should be rebuilt?'),
+          '#required' => TRUE,
+          '#options' => array(
+            'users' => t('Thread &amp; Post counts on Users'),
+            'threads' => t('Post counts on Threads'),
+            'categories' => t('Thread &amp; Post counts on Categories'),
+          ),
+          '#default_value' => array(
+            'users',
+            'threads',
+            'categories',
+          ),
+          '#description' => t('Note that if rebuilding the category counts, this relies on the thread counts being accurate. Whilst not required it is recommended that the thread counts are rebuilt if rebuilding category counts.'),
+          // Flag to note that each option selected represents a batch
+          // operation to execute with the value as a parameter.
+          '#options_as_operations' => TRUE,
+        ),
+      ),
+      'batch' => array(
+        'operations' => array(
+          // This will be filled properly by the execute function.
+          array('_harmony_core_rebuild_counts_operation', array()),
+        ),
+        'finished' => '_harmony_core_rebuild_counts_finished',
+        'file' => $rebuild_file_path,
+      ),
+    ),
     'last_post_uris' => array(
       'title' => t('thread last post URIs'),
       'fieldset title' => t('Thread last post URIs'),
@@ -4695,13 +4782,57 @@ function harmony_core_rebuild_actions() {
 }
 
 /**
+ * Grab any arguments specific by the action and placed on the confirm form
+ * for use within the batch operation.
+ */
+function harmony_core_rebuild_action_extract_form_arguments($action, $form_values) {
+  $arguments = array();
+
+  if (!empty($action['arguments'])) {
+    foreach ($action['arguments'] as $argument_id => $argument) {
+      if (isset($form_values[$argument_id])) {
+        $arguments[$argument_id] = $form_values[$argument_id];
+      }
+    }
+  }
+
+  return $arguments;
+}
+
+/**
  * Execute a batched action.
  */
-function harmony_core_admin_rebuild_execute($action_id) {
+function harmony_core_admin_rebuild_execute($action_id, $form_values = array()) {
   $actions = harmony_core_rebuild_actions();
   $action = $actions[$action_id];
 
   $batch = $action['batch'];
   $batch['title'] = t('Rebuilding @title', array('@title' => $action['title']));
+
+  // Pass on settings if need be.
+  $settings = harmony_core_rebuild_action_extract_form_arguments($action, $form_values);
+
+  if ($settings) {
+    foreach ($action['arguments'] as $argument_id => $argument) {
+      if (isset($argument['#options_as_operations']) && $argument['#options_as_operations']) {
+        // For each option selected pass that as a parameter to the batch
+        // operation callback. Add potentially multiple operations.
+        $operation = $batch['operations'][0][0];
+        $batch['operations'] = array();
+
+        foreach ($settings[$argument_id] as $setting) {
+          $batch['operations'][] = array($operation, array($setting));
+        }
+      }
+      else {
+        // Standard, if we've got an argument just pass it to the batch
+        // operation callback.
+        foreach ($batch['operations'] as $index => $operation) {
+          $batch['operations'][$index] = array($operation[0], $settings);
+        }
+      }
+    }
+  }
+
   batch_set($batch);
 }
