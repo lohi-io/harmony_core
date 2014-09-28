@@ -16,12 +16,20 @@ function harmony_core_drush_command() {
     'description' => dt('Rebuilds the thread last post uri property on all threads.'),
   );
 
-  /*$items['harmony-rebuild-counts'] = array(
+  $items['harmony-rebuild-counts'] = array(
     'callback' => 'harmony_core_drush_rebuild_counts',
     'description' => dt('Rebuilds all of the thread and posts counts.'),
+    'arguments' => array(
+      'targets' => dt('A space delimited list of places to rebuild the counts. Optional, if omitted all counts will be rebuilt. If rebuilding categories this uses counts from threads so perhaps rebuild that as well.'),
+    ),
+    'examples' => array(
+      'drush harmony-rebuild-counts' => 'Rebuild all the counts! threads (post count), users (thread & post counts) and categories (thread & post counts).',
+      'drush harmony-rebuild-counts threads users' => 'Rebuild counts for threads and users.',
+      'drush harmony-rebuild-counts threads categories' => 'Rebuild counts for threads and categories.',
+    ),
   );
 
-  $items['harmony-rebuild-thread-meta'] = array(
+  /*$items['harmony-rebuild-thread-meta'] = array(
     'callback' => 'harmony_core_drush_rebuild_thread_meta',
     'description' => dt('Rebuilds all of the thread meta data (Post URIs, First and Last thread entity references and Last user to update).'),
   );*/
@@ -34,22 +42,75 @@ function harmony_core_drush_command() {
   return $items;
 }
 
-/*function harmony_core_drush_rebuild_counts() {
-
-}
-
-function harmony_core_drush_rebuild_thread_meta() {
+/*function harmony_core_drush_rebuild_thread_meta() {
 
 }*/
 
 function harmony_core_drush_rebuild_thread_post_uris() {
-  module_load_include('module', 'harmony_core', 'harmony_core');
-  harmony_core_admin_rebuild_execute('last_post_uris');
-  drush_backend_batch_process();
+  if (drush_confirm('Are you sure you want to rebuild all of the Thread last post URIs?')) {
+    module_load_include('module', 'harmony_core', 'harmony_core');
+    harmony_core_admin_rebuild_execute('last_post_uris');
+    drush_backend_batch_process();
+  }
+  else {
+    drush_user_abort();
+  }
+}
+
+function harmony_core_drush_rebuild_counts() {
+  $args = func_get_args();
+
+  if (!empty($args)) {
+    if (!(in_array('threads', $args) && count($args) === 1)) {
+      // Check arguments.
+      $new_args = array();
+
+      // If threads is present, make it first.
+      if (in_array('threads', $args)) {
+        $new_args[] = 'threads';
+        $key = array_search('threads', $args);
+        unset($args[$key]);
+      }
+
+      if (!empty($args)) {
+        foreach ($args as $arg) {
+          if ($arg != 'users' && $arg != 'categories') {
+            drush_set_error(dt('Invalid argument: @arg', array('@arg' => $arg)));
+          }
+          else {
+            $new_args[] = $arg;
+          }
+        }
+      }
+
+      $args = $new_args;
+    }
+  }
+  else {
+    $args = array(
+      'users',
+      'threads',
+      'categories',
+    );
+  }
+
+  if (drush_confirm(dt('Are you sure you want to rebuild the internal counts for @args?', array('@args' => implode(', ', $args))))) {
+    module_load_include('module', 'harmony_core', 'harmony_core');
+    harmony_core_admin_rebuild_execute('counts', array('target' => $args));
+    drush_backend_batch_process();
+  }
+  else {
+    drush_user_abort();
+  }
 }
 
 function harmony_core_drush_rebuild_thread_first_last() {
-  module_load_include('module', 'harmony_core', 'harmony_core');
-  harmony_core_admin_rebuild_execute('thread_first_last');
-  drush_backend_batch_process();
+  if (drush_confirm('Are you sure you want to rebuild all of the Thread first and last post properites?')) {
+    module_load_include('module', 'harmony_core', 'harmony_core');
+    harmony_core_admin_rebuild_execute('thread_first_last');
+    drush_backend_batch_process();
+  }
+  else {
+    drush_user_abort();
+  }
 }
