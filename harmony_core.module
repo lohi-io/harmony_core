@@ -4821,8 +4821,11 @@ function harmony_core_admin_rebuild_execute($action_id, $form_values = array()) 
         $batch['operations'] = array();
 
         foreach ($settings[$argument_id] as $setting) {
-          $batch['operations'][] = array($operation, array($setting));
+          if ($setting) {
+            $batch['operations'][] = array($operation, array($setting));
+          }
         }
+        print_r($batch);exit;
       }
       else {
         // Standard, if we've got an argument just pass it to the batch
