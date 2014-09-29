@@ -3789,7 +3789,14 @@ function harmony_core_update_meta_count($fields, $entity_type, $entity_id, $op =
  */
 function harmony_core_rebuild_meta_count($entity_type, $entity_id, $entity = NULL) {
   if (!$entity) {
-    $entity = entity_load($entity_type, array($entity_id), array(), TRUE);
+    $entities = entity_load($entity_type, array($entity_id), array(), TRUE);
+
+    if (!empty($entities[$entity_id])) {
+      $entity = $entities[$entity_id];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   $wrapper = entity_metadata_wrapper($entity_type, $entity);
@@ -4825,7 +4832,6 @@ function harmony_core_admin_rebuild_execute($action_id, $form_values = array()) 
             $batch['operations'][] = array($operation, array($setting));
           }
         }
-        print_r($batch);exit;
       }
       else {
         // Standard, if we've got an argument just pass it to the batch
