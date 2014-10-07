@@ -93,6 +93,7 @@ function template_preprocess_harmony_post(&$variables) {
   // Thread data.
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
   $thread_id = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->thread_id->value() : NULL;
+  $thread_type = $wrapper->field_harmony_thread->type->value();
 
   // Add in some useful variables.
   $variables['title'] = check_plain($post->title);
@@ -175,7 +176,20 @@ function template_preprocess_harmony_post(&$variables) {
   // Suggest some templates, including default? What's going wrong here?
   $variables['theme_hook_suggestions'][] = 'harmony_post';
   $variables['theme_hook_suggestions'][] = 'harmony_post__' . $variables['view_mode'];
-  $variables['theme_hook_suggestions'][] = "harmony_post__$post->post_id";
+  $variables['theme_hook_suggestions'][] = "harmony_post__{$thread_type}";
+  $variables['theme_hook_suggestions'][] = "harmony_post__{$post->post_id}";
+
+  // Suggest templates for other things like, only post, first post and last
+  // post.
+  if ($variables['first_post'] && $variables['last_post']) {
+    $variables['theme_hook_suggestions'][] = 'harmony_post__only';
+  }
+  elseif ($variables['first_post']) {
+    $variables['theme_hook_suggestions'][] = 'harmony_post__first';
+  }
+  elseif ($variables['last_post']) {
+    $variables['theme_hook_suggestions'][] = 'harmony_post__last';
+  }
 }
 
 /**
