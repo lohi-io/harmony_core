@@ -31,6 +31,30 @@ function harmony_core_views_data_alter(&$data) {
   );
 
   // Extra Threads fields.
+  $data['harmony_thread']['thread_id'] = array(
+    'title' => t('Thread ID'),
+    'help' => t('The internal ID of the thread.'),
+    'relationship' => array(
+      'title' => t('Thread ID'),
+      'base' => 'harmony_thread',
+      'field' => 'thread_id',
+      'label' => t('thread'),
+    ),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+      'allow empty' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
   $data['harmony_thread']['view_link'] = array(
     'field' => array(
       'title' => t('Link'),
