@@ -89,16 +89,22 @@ function template_preprocess_harmony_post(&$variables) {
   $variables['view_mode'] = $variables['elements']['#view_mode'];
   $variables['post'] = $variables['elements']['#post'];
   $post = $variables['post'];
+  $lang = !empty($post->language) ? $post->language : LANGUAGE_NONE;
 
   // Thread data.
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
   $thread_id = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->thread_id->value() : NULL;
-  $thread_type = $wrapper->field_harmony_thread->type->value();
+  if (!$thread_id && !empty($post->field_harmony_thread[$lang][0]['target_id'])) {
+    $thread_id = $post->field_harmony_thread[$lang][0]['target_id'];
+  }
+  $thread_type = $wrapper->field_harmony_thread->value() ? $wrapper->field_harmony_thread->type->value() : NULL;
 
   // Add in some useful variables.
   $variables['title'] = check_plain($post->title);
-  $variables['thread_url'] = url("thread/$thread_id");
-  $variables['thread_post_url'] = harmony_core_post_thread_url($thread_id, $post->post_id);
+  if ($thread_id) {
+    $variables['thread_url'] = url("thread/$thread_id");
+    $variables['thread_post_url'] = harmony_core_post_thread_url($thread_id, $post->post_id);
+  }
   $variables['url'] = url("post/$post->post_id");
   $variables['permalink_url'] = $variables['url'];
   $variables['link_created'] = $variables['thread_post_url'] && $post->status == HARMONY_PUBLISHED && $post->hidden != HARMONY_HIDDEN;
@@ -176,7 +182,9 @@ function template_preprocess_harmony_post(&$variables) {
   // Suggest some templates, including default? What's going wrong here?
   $variables['theme_hook_suggestions'][] = 'harmony_post';
   $variables['theme_hook_suggestions'][] = 'harmony_post__' . $variables['view_mode'];
-  $variables['theme_hook_suggestions'][] = "harmony_post__{$thread_type}";
+  if ($thread_type) {
+    $variables['theme_hook_suggestions'][] = "harmony_post__{$thread_type}";
+  }
   $variables['theme_hook_suggestions'][] = "harmony_post__{$post->post_id}";
 
   // Suggest templates for other things like, only post, first post and last
