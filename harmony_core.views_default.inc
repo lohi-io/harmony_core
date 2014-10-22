@@ -1212,7 +1212,7 @@ function harmony_core_views_default_views() {
     ),
     'created' => array(
       'sortable' => 1,
-      'default_sort_order' => 'desc',
+      'default_sort_order' => 'asc',
       'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
