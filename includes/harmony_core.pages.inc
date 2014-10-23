@@ -355,16 +355,19 @@ function harmony_core_post_build_content($post, $view_mode = 'full', $langcode =
 
     if ($thread_id) {
       // If this is the first post in a thread, edit the thread and not the post.
-      if ($post->first_post) {
-        $links['edit']['href'] = "thread/$thread_id/edit";
-      }
-
       $edit_query = array(
         'destination' => url("thread/$thread_id"),
       );
 
       if (!empty($_GET['page']) && is_numeric($_GET['page'])) {
         $edit_query['destination'] = url("thread/$thread_id", array('query' => array('page' => $_GET['page'])));
+      }
+      // If we're editing the thread instead, it's possible that the path alias
+      // will change, don't set a destination as the thread form will auto
+      // redirect you back anyway.
+      elseif ($post->first_post) {
+        $links['edit']['href'] = "thread/$thread_id/edit";
+        $edit_query = array();
       }
       else {
         $edit_query['destination'] = url("thread/$thread_id");
