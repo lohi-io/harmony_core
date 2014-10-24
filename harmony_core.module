@@ -449,6 +449,14 @@ function harmony_core_entity_property_info() {
     'setter callback' => 'entity_property_verbatim_set',
     'access callback' => 'harmony_core_post_revision_access',
   );
+  $post_properties['permalink'] = array(
+    'label' => t('Post permalink'),
+    'description' => t('Permanent path to the post, this is constructed on the fly and not from stored data.'),
+    'type' => 'text',
+    'schema field' => 'post_id',
+    'getter callback' => 'harmony_core_post_property_get_permalink',
+    'computed' => TRUE,
+  );
 
   return $info;
 }
@@ -4399,7 +4407,7 @@ function harmony_core_get_last_post_uri_property($data, array $options, $name, $
 }
 
 /**
- * Set the last_post_uri propert on thread entity, serialise the incoming
+ * Set the last_post_uri property on thread entity, serialise the incoming
  * array.
  */
 function harmony_core_set_last_post_uri_property(&$data, $name, $value, $langcode, $type, $info) {
@@ -4715,6 +4723,25 @@ function harmony_core_post_permalink_callback($post) {
   }
 
   drupal_goto($path, $options, 301);
+}
+
+/**
+ * Return a posts permalink URL, specific to entity property get.
+ */
+function harmony_core_post_property_get_permalink($data, array $options, $name, $type, $info) {
+  // $data is the post entity.
+  $wrapper = entity_metadata_wrapper('harmony_post', $data);
+  $path = NULL;
+
+  if ($wrapper->field_harmony_thread->value()) {
+    $thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    $path = harmony_core_post_thread_url($thread_id, $data->post_id);
+  }
+  else {
+    $path = url('post/' . $data->post_id);
+  }
+
+  return $path;
 }
 
 /**
