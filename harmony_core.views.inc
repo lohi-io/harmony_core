@@ -257,6 +257,16 @@ function harmony_core_views_data_alter(&$data) {
   // which has the "link to post" functionality.
   $data['harmony_post']['title']['field']['handler'] = 'harmony_core_views_handler_post_field';
 
+  // Custom field handler to provide a posts position within a thread, we need
+  // the thread id so we copy that handler for the most part to grab that data.
+  $data['harmony_post']['position'] = array(
+    'field' => array(
+      'title' => t('Position in thread'),
+      'help' => t('The position of the post within the thread it belongs to. Not recommended for listings which show posts from multiple threads or long lists of posts.'),
+      'handler' => 'harmony_core_views_handler_post_field_position',
+    ),
+  );
+
   // Define the post revision table, relationship and fields.
   $data['harmony_post_revision'] = array(
     'table' => array(

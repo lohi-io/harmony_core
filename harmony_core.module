@@ -4511,7 +4511,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
   // If we're not using a pager it'll be on the first page?
   if (!$pager_info['using_pager'] || empty($thread_posts)) {
     return array(
-      'position' => $position,
+      'position' => $position + 1,
       'page' => $page,
     );
   }
@@ -4535,7 +4535,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
   }
 
   return array(
-    'position' => $position,
+    'position' => $position + 1,
     'page' => $page,
   );
 }
@@ -4565,7 +4565,7 @@ function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
   if (!$view) {
     // Return page 0 if something goes wrong.
     return array(
-      'position' => $position,
+      'position' => $position + 1,
       'page' => $page,
     );
   }
@@ -4636,7 +4636,7 @@ function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
   }
 
   return array(
-    'position' => $position,
+    'position' => $position + 1,
     'page' => $page,
   );
 }
