@@ -1374,14 +1374,12 @@ function harmony_core_views_default_views() {
       'label' => '',
     ),
   );
-  /* Field: Global: View result counter */
-  $handler->display->display_options['fields']['counter']['id'] = 'counter';
-  $handler->display->display_options['fields']['counter']['table'] = 'views';
-  $handler->display->display_options['fields']['counter']['field'] = 'counter';
-  $handler->display->display_options['fields']['counter']['label'] = 'Title';
-  $handler->display->display_options['fields']['counter']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['counter']['alter']['text'] = 'Post #[counter]';
-  $handler->display->display_options['fields']['counter']['counter_start'] = '1';
+  /* Field: Post: Position in thread */
+  $handler->display->display_options['fields']['position']['id'] = 'position';
+  $handler->display->display_options['fields']['position']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['position']['field'] = 'position';
+  $handler->display->display_options['fields']['position']['label'] = '';
+  $handler->display->display_options['fields']['position']['element_label_colon'] = FALSE;
   /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';
