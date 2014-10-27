@@ -514,7 +514,7 @@ function template_preprocess_views_view_harmony_table(&$vars) {
  * Views listing header.
  */
 function theme_harmony_listing_header($variables) {
-  $text = check_plain($variables['link_text']);
+  $text = $variables['link_text'];
   $attrs = !empty($variables['link_attrs']) && is_array($variables['link_attrs']) ? $variables['link_attrs'] : array();
 
   return '<div class="harmony-listing-header clearfix">' . l($text, 'thread/add', $attrs) . '</div>';

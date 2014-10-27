@@ -33,15 +33,15 @@ class harmony_core_views_handler_thread_field_link extends views_handler_field_e
   function render($values) {
     if ($thread = $this->get_value($values)) {
       return $this->render_link($thread, $values);
-    }    
+    }
   }
 
   function render_link($thread, $values) {
     if (harmony_core_thread_access_callback('view', $thread)) {
       $this->options['alter']['make_link'] = TRUE;
       $this->options['alter']['path'] = "thread/$thread->thread_id";
-      $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
-      
+      $text = !empty($this->options['text']) ? check_plain($this->options['text']) : t('view');
+
       return $text;
     }
   }

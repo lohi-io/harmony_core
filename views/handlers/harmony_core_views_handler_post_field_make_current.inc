@@ -18,7 +18,7 @@ class harmony_core_views_handler_post_field_make_current extends harmony_core_vi
       $this->options['alter']['query'] = drupal_get_destination();
       $this->options['alter']['query']['token'] = drupal_get_token($entity->post_id . ':' . $entity->vid);
 
-      $text = !empty($this->options['text']) ? $this->options['text'] : t('Make current');
+      $text = !empty($this->options['text']) ? check_plain($this->options['text']) : t('Make current');
       return $text;
     }
     else {

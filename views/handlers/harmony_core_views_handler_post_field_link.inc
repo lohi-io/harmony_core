@@ -33,15 +33,15 @@ class harmony_core_views_handler_post_field_link extends views_handler_field_ent
   function render($values) {
     if ($post = $this->get_value($values)) {
       return $this->render_link($post, $values);
-    }    
+    }
   }
 
   function render_link($post, $values) {
     if (harmony_core_post_access_callback('view', $post)) {
       $this->options['alter']['make_link'] = TRUE;
       $this->options['alter']['path'] = "post/$post->post_id";
-      $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
-      
+      $text = !empty($this->options['text']) ? check_plain($this->options['text']) : t('view');
+
       return $text;
     }
   }

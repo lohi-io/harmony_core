@@ -24,7 +24,7 @@ class harmony_core_views_handler_post_field_link_delete extends harmony_core_vie
     $this->options['alter']['path'] = "post/$post->post_id/delete";
     $this->options['alter']['query'] = drupal_get_destination();
 
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
+    $text = !empty($this->options['text']) ? check_plain($this->options['text']) : t('delete');
     return $text;
   }
 }

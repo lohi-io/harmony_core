@@ -18,24 +18,6 @@ class harmony_core_views_handler_post_field_is_current extends views_handler_fie
     $this->additional_fields = array('post_id', 'vid');
   }
 
-  function pre_render(&$values) {
-    $this->entities = array();
-    if (!empty($values)) {
-      foreach ($values as $row_index => $value) {
-        if (!empty($value->{$this->aliases['post_id']}) && !empty($value->{$this->aliases['vid']})) {
-          $this->entities[$row_index] = harmony_post_load($value->{$this->aliases['post_id']}, $value->{$this->aliases['vid']});
-
-          if ($this->entities[$row_index]->vid == $this->entities[$row_index]->current_vid) {
-            $values[$row_index]->{$this->field_alias} = $this->options['current_text'];
-          }
-          else {
-            $values[$row_index]->{$this->field_alias} = $this->options['not_current_text'];
-          }
-        }
-      }
-    }
-  }
-
   function option_definition() {
     $options = parent::option_definition();
     $options['current_text'] = array('default' => 'Current revision', 'translatable' => TRUE);
@@ -73,5 +55,26 @@ class harmony_core_views_handler_post_field_is_current extends views_handler_fie
 
   function sanitize_value($value, $type = NULL) {
     return filter_xss_admin($value);
+  }
+
+  function pre_render(&$values) {
+    $this->entities = array();
+    if (!empty($values)) {
+      $current_text = check_plain($this->options['current_text']);
+      $not_current_text = check_plain($this->options['not_current_text']);
+
+      foreach ($values as $row_index => $value) {
+        if (!empty($value->{$this->aliases['post_id']}) && !empty($value->{$this->aliases['vid']})) {
+          $this->entities[$row_index] = harmony_post_load($value->{$this->aliases['post_id']}, $value->{$this->aliases['vid']});
+
+          if ($this->entities[$row_index]->vid == $this->entities[$row_index]->current_vid) {
+            $values[$row_index]->{$this->field_alias} = $current_text;
+          }
+          else {
+            $values[$row_index]->{$this->field_alias} = $not_current_text;
+          }
+        }
+      }
+    }
   }
 }

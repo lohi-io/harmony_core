@@ -17,7 +17,7 @@ class harmony_core_views_handler_post_field_delete_revision extends harmony_core
       $this->options['alter']['path'] = "post/$entity->post_id/revisions/$entity->vid/delete";
       $this->options['alter']['query'] = drupal_get_destination();
 
-      $text = !empty($this->options['text']) ? $this->options['text'] : t('Delete');
+      $text = !empty($this->options['text']) ? check_plain($this->options['text']) : t('Delete');
       return $text;
     }
     else {
