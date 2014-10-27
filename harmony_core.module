@@ -4497,7 +4497,7 @@ function harmony_core_post_listing_info_view_update($form, &$form_state) {
  * to work this out.
  */
 function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_last = FALSE) {
-  $position = 0;
+  $position = NULL;
   $page = 0;
 
   $thread_posts = harmony_core_get_thread_posts($thread_id);
@@ -4511,7 +4511,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
   // If we're not using a pager it'll be on the first page?
   if (!$pager_info['using_pager'] || empty($thread_posts)) {
     return array(
-      'position' => $position + 1,
+      'position' => $position + $pager_info['offset'],
       'page' => $page,
     );
   }
@@ -4526,7 +4526,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
         // Row id is zero indexed.
         // Per page isn't.
         // Page numbers start from 0, so remove 1.
-        $position = $row_id;
+        $position = $row_id + 1 + $pager_info['offset'];
         $page = ceil(($row_id + 1) / $pager_info['items_per_page']) - 1;
 
         break;
@@ -4535,7 +4535,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
   }
 
   return array(
-    'position' => $position + 1,
+    'position' => $position + $pager_info['offset'],
     'page' => $page,
   );
 }
@@ -4556,7 +4556,7 @@ function harmony_core_post_in_thread_position_basic($thread_id, $post_id, $get_l
  * position getter callback and is basically ignored in the following function.
  */
 function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
-  $position = 0;
+  $position = NULL;
   $page = 0;
   list($view_name, $view_display) = explode('|', variable_get('harmony_core_thread_post_listing_view', 'harmony_thread_posts_listing|default'));
   $view = views_get_view($view_name, TRUE);
@@ -4565,7 +4565,7 @@ function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
   if (!$view) {
     // Return page 0 if something goes wrong.
     return array(
-      'position' => $position + 1,
+      'position' => $position,
       'page' => $page,
     );
   }
@@ -4627,7 +4627,7 @@ function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
         // Per page isn't.
         // Offset will already be done by views I think?
         // Page numbers start from 0, so remove 1.
-        $position = $row_id;
+        $position = $row_id + 1 + $offset;
         $page = ceil(($row_id + 1) / $items_per_page) - 1;
 
         break;
@@ -4636,7 +4636,7 @@ function harmony_core_post_in_thread_position_views($thread_id, $post_id) {
   }
 
   return array(
-    'position' => $position + 1,
+    'position' => $position,
     'page' => $page,
   );
 }
