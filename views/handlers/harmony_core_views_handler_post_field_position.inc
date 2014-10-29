@@ -38,7 +38,7 @@ class harmony_core_views_handler_post_field_position extends views_handler_field
 
         if (!empty($position['position'])) {
           $text = !empty($this->options['text']) ? check_plain($this->options['text']) : '@position';
-          return str_replace('@position', $position['position'], $text);
+          return format_string($text, array('@position' => $position['position']));
         }
       }
 
