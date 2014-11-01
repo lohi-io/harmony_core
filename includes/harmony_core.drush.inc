@@ -39,6 +39,11 @@ function harmony_core_drush_command() {
     'description' => dt('Rebuilds the thread first and last entity references on all threads and the first_post and last_post properties on post entites. Also rebuilds thread last post URIs.'),
   );
 
+  $items['harmony-rebuild-thread-ownership'] = array(
+    'callback' => 'harmony_core_drush_rebuild_thread_ownership',
+    'description' => dt('In the case where threads have been migrated and in error set their owner to be User 1 or another user. This rebuild command will load all threads and check that their owner matches that of the first post author, if not it will set it.'),
+  );
+
   return $items;
 }
 
@@ -108,6 +113,17 @@ function harmony_core_drush_rebuild_thread_first_last() {
   if (drush_confirm('Are you sure you want to rebuild all of the Thread first and last post properites?')) {
     module_load_include('module', 'harmony_core', 'harmony_core');
     harmony_core_admin_rebuild_execute('thread_first_last');
+    drush_backend_batch_process();
+  }
+  else {
+    drush_user_abort();
+  }
+}
+
+function harmony_core_drush_rebuild_thread_ownership() {
+  if (drush_confirm('Are you sure you want to check and fix thread ownership? Potentially long process innit.')) {
+    module_load_include('module', 'harmony_core', 'harmony_core');
+    harmony_core_admin_rebuild_execute('thread_ownership');
     drush_backend_batch_process();
   }
   else {

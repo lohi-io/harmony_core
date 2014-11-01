@@ -3821,11 +3821,13 @@ function harmony_core_rebuild_meta_count($entity_type, $entity_id, $entity = NUL
         FROM {harmony_post}
         WHERE uid = :uid AND status = 1 AND hidden = 0", array(':uid' => $entity_id))->fetchField();
       $wrapper->field_harmony_post_count->set($posts);
+      $wrapper->save();
       break;
 
     case 'harmony_thread':
       $posts = harmony_core_get_thread_posts($entity_id);
       $wrapper->field_harmony_post_count->set(count($posts));
+      harmony_thread_meta_save($entity);
       break;
 
     case 'taxonomy_term':
@@ -3843,10 +3845,12 @@ function harmony_core_rebuild_meta_count($entity_type, $entity_id, $entity = NUL
         AND ht.status = 1 AND ht.hidden = 0
         AND fc.deleted = 0 AND fc.entity_type = 'harmony_thread' AND fc.field_harmony_category_tid = :tid", array(':tid' => $entity_id))->fetchField();
       $wrapper->field_harmony_post_count->set($posts);
+      $wrapper->save();
       break;
   }
 
-  $wrapper->save();
+  unset($wrapper);
+  unset($entity);
 }
 
 /**
@@ -4826,6 +4830,18 @@ function harmony_core_rebuild_actions() {
           array('_harmony_core_rebuild_thread_first_last_operation', array()),
         ),
         'finished' => '_harmony_core_rebuild_thread_first_last_finished',
+        'file' => $rebuild_file_path,
+      ),
+    ),
+    'thread_ownership' => array(
+      'title' => t('thread ownership'),
+      'fieldset title' => t('Thread ownership'),
+      'guidance text' => t('Relevant to sites with newly migrated content. In the case where threads have been migrated and in error set their owner to be User 1 or another user. This rebuild command will load all threads and check that their owner matches that of the first post author, if not it will set it.'),
+      'batch' => array(
+        'operations' => array(
+          array('_harmony_core_rebuild_thread_owner_operation', array()),
+        ),
+        'finished' => '_harmony_core_rebuild_thread_owner_finished',
         'file' => $rebuild_file_path,
       ),
     ),
