@@ -241,3 +241,58 @@ function _harmony_core_rebuild_thread_owner_operation(&$context) {
 function _harmony_core_rebuild_thread_owner_finished($success, $results, $operations) {
   _harmony_core_rebuild_finished($success, $results, $operations, 'thread_ownership');
 }
+
+/**
+ * Operation callback for checking and correcting all threads updated property.
+ */
+function _harmony_core_rebuild_thread_updated_operation(&$context) {
+  if (empty($context['sandbox'])) {
+    // Initiate multistep processing.
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['current_entity_id'] = 0;
+    $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT thread_id) FROM {harmony_thread}')->fetchField();
+  }
+
+  // Process the next 20 threads.
+  $limit = 20;
+  $thread_ids = db_query_range("SELECT thread_id FROM {harmony_thread} WHERE thread_id > :entity_id ORDER BY thread_id ASC", 0, $limit, array(':entity_id' => $context['sandbox']['current_entity_id']))->fetchCol();
+  $threads = harmony_thread_load_multiple($thread_ids, array(), TRUE);
+
+  foreach ($threads as $thread_id => $thread) {
+    if (!empty($thread)) {
+      // Load the threads first post if we can.
+      $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
+
+      if ($wrapper->field_harmony_last_post->value()) {
+        $last_post = harmony_post_load($wrapper->field_harmony_last_post->post_id->value());
+
+        if ($last_post) {
+          $thread->updated = $last_post->created;
+          // Meta save to bypass all other hooks, and for continued speeeed.
+          harmony_thread_meta_save($thread);
+        }
+      }
+
+      // Unset the things.
+      unset($wrapper);
+      unset($thread);
+      unset($last_post);
+    }
+
+    $context['sandbox']['progress']++;
+    $context['sandbox']['current_entity_id'] = $thread_id;
+  }
+
+  // Multistep processing : report progress.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+/**
+ * Finished callback for the thread ownership rebuild action.
+ */
+function _harmony_core_rebuild_thread_updated_finished($success, $results, $operations) {
+  _harmony_core_rebuild_finished($success, $results, $operations, 'thread_updated');
+}
+

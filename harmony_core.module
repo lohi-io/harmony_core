@@ -4845,6 +4845,18 @@ function harmony_core_rebuild_actions() {
         'file' => $rebuild_file_path,
       ),
     ),
+    'thread_updated' => array(
+      'title' => t('thread updated'),
+      'fieldset title' => t('Thread updated'),
+      'guidance text' => t('Run through all threads and set the Last updated property to match the last post in a threads created date.'),
+      'batch' => array(
+        'operations' => array(
+          array('_harmony_core_rebuild_thread_updated_operation', array()),
+        ),
+        'finished' => '_harmony_core_rebuild_thread_updated_finished',
+        'file' => $rebuild_file_path,
+      ),
+    ),
   );
 }
 

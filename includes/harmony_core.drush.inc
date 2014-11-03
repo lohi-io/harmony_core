@@ -44,6 +44,11 @@ function harmony_core_drush_command() {
     'description' => dt('In the case where threads have been migrated and in error set their owner to be User 1 or another user. This rebuild command will load all threads and check that their owner matches that of the first post author, if not it will set it.'),
   );
 
+  $items['harmony-rebuild-thread-updated'] = array(
+    'callback' => 'harmony_core_drush_rebuild_thread_updated',
+    'description' => dt('Run through all threads and set their updated property to match the last posts created date.'),
+  );
+
   return $items;
 }
 
@@ -110,7 +115,7 @@ function harmony_core_drush_rebuild_counts() {
 }
 
 function harmony_core_drush_rebuild_thread_first_last() {
-  if (drush_confirm('Are you sure you want to rebuild all of the Thread first and last post properites?')) {
+  if (drush_confirm('Are you sure you want to rebuild all of the Thread first and last post properties?')) {
     module_load_include('module', 'harmony_core', 'harmony_core');
     harmony_core_admin_rebuild_execute('thread_first_last');
     drush_backend_batch_process();
@@ -124,6 +129,17 @@ function harmony_core_drush_rebuild_thread_ownership() {
   if (drush_confirm('Are you sure you want to check and fix thread ownership? Potentially long process innit.')) {
     module_load_include('module', 'harmony_core', 'harmony_core');
     harmony_core_admin_rebuild_execute('thread_ownership');
+    drush_backend_batch_process();
+  }
+  else {
+    drush_user_abort();
+  }
+}
+
+function harmony_core_drush_rebuild_thread_updated() {
+  if (drush_confirm('Are you sure you want to re-set all threads updated date property.')) {
+    module_load_include('module', 'harmony_core', 'harmony_core');
+    harmony_core_admin_rebuild_execute('thread_updated');
     drush_backend_batch_process();
   }
   else {
