@@ -38,7 +38,7 @@ class harmony_core_views_handler_thread_field_last_post_uri extends views_handle
     $value = $this->get_value($values);
 
     if ($value) {
-      if (!empty($this->options['link_to_post'])) {
+      if (!empty($this->options['absolute'])) {
         $value = harmony_core_get_last_post_uri(unserialize($value), TRUE);
       }
       else {
