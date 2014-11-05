@@ -13,6 +13,21 @@
  * @ingroup views_field_handlers
  */
 class harmony_core_views_handler_thread_field_last_post_uri extends views_handler_field {
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['absolute'] = array('default' => FALSE, 'translatable' => FALSE);
+    return $options;
+  }
+
+  function options_form(&$form, &$form_state) {
+    $form['absolute'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Generate an absolute URL?'),
+      '#default_value' => !empty($this->options['absolute']),
+    );
+    parent::options_form($form, $form_state);
+  }
+
   /**
    * Render the field.
    *
@@ -23,7 +38,12 @@ class harmony_core_views_handler_thread_field_last_post_uri extends views_handle
     $value = $this->get_value($values);
 
     if ($value) {
-      $value = substr(harmony_core_get_last_post_uri(unserialize($value)), 1);
+      if (!empty($this->options['link_to_post'])) {
+        $value = harmony_core_get_last_post_uri(unserialize($value), TRUE);
+      }
+      else {
+        $value = substr(harmony_core_get_last_post_uri(unserialize($value)), 1);
+      }
     }
 
     return $this->sanitize_value($value);
