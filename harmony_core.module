@@ -4427,14 +4427,14 @@ function harmony_core_set_last_post_uri_property(&$data, $name, $value, $langcod
 /**
  * Turns a serialised array into a post URI.
  */
-function harmony_core_get_last_post_uri($post_uri) {
+function harmony_core_get_last_post_uri($post_uri, $absolute = FALSE) {
   if (!$post_uri) {
     return '';
   }
 
   $path = $post_uri['path'];
   unset($post_uri['path']);
-  return url($path, $post_uri);
+  return url($path, $post_uri, array('absolute' => $absolute));
 }
 
 /* Functions relating to working out a posts' permalink. */
