@@ -743,6 +743,9 @@ class HarmonyPostController extends HarmonyController {
           }
 
           $thread_wrapper->field_harmony_last_post->set($entity->post_id);
+
+          // Reset the known list of posts within a thread.
+          harmony_core_get_thread_posts($thread_id, array(), NULL, NULL, TRUE);
           $thread->last_post_uri = harmony_core_post_thread_url($thread_id, $entity->post_id, TRUE);
           $thread_updated = TRUE;
         }

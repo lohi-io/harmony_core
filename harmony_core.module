@@ -3562,8 +3562,15 @@ function harmony_core_post_form_submit($form, &$form_state) {
 
     // Force a refresh of the thread posts list.
     $thread_posts = harmony_core_get_thread_posts($thread_id, array(), NULL, NULL, TRUE);
-
     $thread_post_url = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
+
+    // Update the threads last post URI.
+    if ($is_new) {
+      $thread = harmony_thread_load($thread_id, TRUE);
+      $thread->last_post_uri = $thread_post_url;
+      harmony_thread_meta_save($thread);
+    }
+
     $form_state['redirect'] = array(
       $thread_post_url['path'],
       array(
@@ -4371,6 +4378,23 @@ function harmony_core_get_thread_posts($thread_id, array $options = array(), $na
     $post_ids = array();
 
     // Get a list of posts in the current thread.
+    /*$sql = "SELECT entity_id
+      FROM {field_data_field_harmony_thread} AS fdfht
+      INNER JOIN {harmony_post} AS hp ON fdfht.entity_id = hp.post_id
+      WHERE fdfht.field_harmony_thread_target_id = :thread_id
+      AND fdfht.deleted = 0
+      AND fdfht.entity_type = 'harmony_post'
+      AND hp.status = :status
+      ORDER BY hp.created ASC";
+    $results = db_query($sql, array(
+      ':thread_id' => $thread_id,
+      ':status' => HARMONY_PUBLISHED
+    ))->fetchAllAssoc('entity_id');
+
+    if (!empty($results)) {
+      $post_ids = array_keys($results);
+    }*/
+
     $query = new EntityFieldQuery;
     $query_result = $query
       ->entityCondition('entity_type', 'harmony_post')
