@@ -12,7 +12,11 @@
 function theme_harmony_post_diff_inline_metadata($variables) {
   $post = $variables['post'];
 
-  $output = "<div class='diff-inline-metadata clear-block'>";
+  $output = '<div class="diff-inline-metadata clear-block">';
+  $log = theme('harmony_post_revision_display_log', $variables);
+  if ($log) {
+    $output .= '<div class="diff-edit-reason diff-inline-legend">' . $log . '</div>';
+  }
   $output .= '<div class="diff-inline-legend clear-block">';
   $output .= '<label>' . t('Legend') . '</label>';
   $output .= theme('diff_inline_chunk', array('text' => t('Added'), 'type' => 'add'));
