@@ -89,7 +89,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
 
     $text_lang = $form['field_harmony_text']['#language'];
     $form['field_harmony_text'][$text_lang][0]['#title_display'] = 'invisible';
-    $form['field_harmony_text'][$text_lang][0]['#attributes']['placeholder'] = t('Type here.');
+    $form['field_harmony_text'][$text_lang][0]['#attributes']['placeholder'] = t('Type here...');
 
     // Thread continued from stuff.
     if ($post->is_new && !empty($_GET['field_harmony_thread_cont_from']) && is_numeric($_GET['field_harmony_thread_cont_from']) && user_access('reply as new harmony_thread')) {
