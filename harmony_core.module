@@ -3555,6 +3555,9 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $post = harmony_post_save($post);
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+  // Hooks ahoy.
+  module_invoke_all('harmony_post_save_finalised', $post);
+
   // If we've got a thread, redirect the user to the correct page and
   // place on that page, otherwise the post page.
   if ($wrapper->field_harmony_thread->value()) {
