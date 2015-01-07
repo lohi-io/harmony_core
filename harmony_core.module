@@ -1718,6 +1718,49 @@ function harmony_post_get_first_vid($post_id) {
 }
 
 /**
+ * Delete a thread when passed a post id, will only work if the post is the
+ * first in the thread.
+ */
+function harmony_post_delete_thread($post_id, $bypass_first_check = FALSE) {
+  harmony_post_delete_thread_multiple(array($post_id), $bypass_first_check);
+}
+
+/**
+ * Delete multiple threads when passed a series of post ids, the post ids must
+ * be the first within that thread.
+ */
+function harmony_post_delete_thread_multiple($post_ids, $bypass_first_check = FALSE) {
+  $thread_ids = array();
+
+  // Check post ids is a valid array.
+  if (!is_array($post_ids)) {
+    return;
+  }
+
+  // Load up our posts.
+  $posts = harmony_post_load_multiple($post_ids);
+
+  // If we've got any results, loop through, check that the post is first in
+  // its thread (or we're bypassing that check). Check it's part of a thread
+  // and then add the thread id to the list to be deleted.
+  if (!empty($posts)) {
+    foreach ($posts as $post_id => $post) {
+      if ($post->first_post || $bypass_first_check) {
+        $wrapper = entity_metadata_wrapper('harmony_post', $post);
+        if ($wrapper->field_harmony_thread->value()) {
+          $thread_ids[] = $wrapper->field_harmony_thread->thread_id->value();
+        }
+        unset($wrapper);
+      }
+    }
+  }
+
+  if (!empty($thread_ids)) {
+    harmony_thread_delete_multiple($thread_ids);
+  }
+}
+
+/**
  * Implements hook_action_info().
  */
 function harmony_core_action_info() {
