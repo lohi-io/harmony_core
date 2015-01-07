@@ -3080,11 +3080,14 @@ function harmony_core_thread_form_submit($form, &$form_state) {
     $thread = harmony_thread_meta_save($thread);
   }
 
-  // Hooks ahoy.
-  module_invoke_all('harmony_thread_save_finalised', $thread);
-
   // Setup redirects.
   $form_state['redirect'] = "thread/$thread->thread_id";
+
+  // Hooks ahoy.
+  foreach (module_implements('harmony_thread_save_finalised') as $module) {
+    $function = $module . '_harmony_thread_save_finalised';
+    $function($thread, $form_state);
+  }
 
   if ($thread->batch_process) {
     batch_process($form_state['redirect']);
@@ -3598,9 +3601,6 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $post = harmony_post_save($post);
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-  // Hooks ahoy.
-  module_invoke_all('harmony_post_save_finalised', $post);
-
   // If we've got a thread, redirect the user to the correct page and
   // place on that page, otherwise the post page.
   if ($wrapper->field_harmony_thread->value()) {
@@ -3627,6 +3627,12 @@ function harmony_core_post_form_submit($form, &$form_state) {
   }
   else {
     $form_state['redirect'] = "post/$post->post_id";
+  }
+
+  // Hooks ahoy.
+  foreach (module_implements('harmony_post_save_finalised') as $module) {
+    $function = $module . '_harmony_post_save_finalised';
+    $function($post, $form_state);
   }
 
   if (!empty($post->batch_process) && $post->batch_process) {
