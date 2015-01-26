@@ -1592,8 +1592,8 @@ function harmony_thread_meta_save($thread) {
 /**
  * Update a threads "last" properties.
  */
-function harmony_thread_update_first_or_last_properties($thread_id, $extreme = 'last', $post = NULL) {
-  return entity_get_controller('harmony_thread')->updateFirstOrLastProperties($thread_id, $extreme, $post);
+function harmony_thread_update_first_or_last_properties($thread, $post, $force_extreme = NULL) {
+  return entity_get_controller('harmony_thread')->updateThreadFirstOrLastProperties($thread, $post, $force_extreme);
 }
 
 /**
