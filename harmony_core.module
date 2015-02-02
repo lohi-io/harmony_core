@@ -3450,7 +3450,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
       $quote_content = $post_to_quote_wrapper->field_harmony_text->value();
 
       if ($quote_content) {
-        $quote = "[quote post={$post_to_quote_id}]" . $quote_content['value'] . '[/quote]' . "\n\n";
+        $quote = "[quote post={$post_to_quote_id}]" . trim($quote_content['value']) . '[/quote]' . "\n\n";
 
         // Set default value.
         $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'] = $quote . $form['field_harmony_text'][$form['field_harmony_text']['#language']][0]['#default_value'];
