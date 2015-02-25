@@ -4350,6 +4350,7 @@ function harmony_core_thread_track_view($thread_id) {
 
     try {
       db_query('UPDATE {harmony_thread} SET views = views + 1 WHERE thread_id = :thread_id', array(':thread_id' => $thread_id));
+      module_invoke_all('harmony_thread_view_tracked', $thread_id);
     }
     catch (Exception $e) {
       $transaction->rollback();
