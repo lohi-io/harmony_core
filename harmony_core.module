@@ -2452,6 +2452,17 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     $post_id = reset($vbo['selection']);
     $post = harmony_post_load($post_id);
 
+    // @todo Check to see if this post is published, load the next if not.
+    if ($post && $post->status == HARMONY_NOT_PUBLISHED) {
+      foreach ($vbo['selection'] as $vbo_post_id) {
+        $post = harmony_post_load($vbo_post_id);
+
+        if ($post->status == HARMONY_PUBLISHED) {
+          break;
+        }
+      }
+    }
+
     if ($post) {
       $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
@@ -2551,8 +2562,9 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
   );
 
   // Prepopulate values.
-  if (!empty($post)) {
-    $form['author']['#default_value'] = $wrapper->field_harmony_thread->uid->name->value();
+  if (!empty($post) && $wrapper) {
+    $form['author']['#default_value'] = $wrapper->uid->name->value();
+    $form['author']['#description'] = t('The author has been set by default to the author of the first published selected post.');
 
     // Taxonomy if the bundle has that field.
     $category_field = variable_get('harmony_core_category_field', 'field_harmony_category');
