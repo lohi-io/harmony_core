@@ -135,7 +135,7 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
   if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
     $form['revisions'] = array(
       '#type' => 'fieldset',
-      '#access' => user_access('administer forum content'),
+      '#access' => user_access('administer harmony forum content'),
       '#title' => t('Revision options'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
