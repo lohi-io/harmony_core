@@ -1,5 +1,5 @@
 name = Harmony - Atjs
-description = Provides core functionality for Harmony!
+description = Integrate Harmony with Atjs to provide @ mentioning of other users in post text.
 core = 7.x
 package = Harmony
 project = harmony_atjs
