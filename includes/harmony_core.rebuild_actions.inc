@@ -149,7 +149,8 @@ function _harmony_core_rebuild_counts_operation($target, &$context) {
         $context['sandbox']['entity_type'] = 'taxonomy_term';
         $context['sandbox']['entity_table'] = 'taxonomy_term_data';
         $context['sandbox']['id_key'] = 'tid';
-        $vocabulary = taxonomy_vocabulary_machine_name_load('harmony_category');
+        $harmony_vocabulary = variable_get('harmony_core_category_vocabulary', 'harmony_category');
+        $vocabulary = taxonomy_vocabulary_machine_name_load($harmony_vocabulary);
         $context['sandbox']['vid'] = $vocabulary->vid;
         $context['sandbox']['limit'] = 1;
         $context['sandbox']['max'] = db_query('SELECT COUNT(DISTINCT tid) FROM {taxonomy_term_data} WHERE vid = :vid', array(':vid' => $vocabulary->vid))->fetchField();
