@@ -131,42 +131,42 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
       }
     }
 
-  // Add in the log for revisions, if not new.
-  if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
-    $form['revisions'] = array(
-      '#type' => 'fieldset',
-      '#access' => user_access('administer harmony forum content'),
-      '#title' => t('Revision options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#group' => 'additional_settings',
-      '#attributes' => array(
-        'class' => array('post-form-options'),
-      ),
-    );
+    // Add in the log for revisions, if not new.
+    if (empty($post->is_new) || !empty($post->is_new) && !$post->is_new) {
+      $form['revisions'] = array(
+        '#type' => 'fieldset',
+        '#access' => user_access('administer harmony forum content'),
+        '#title' => t('Revision options'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#group' => 'additional_settings',
+        '#attributes' => array(
+          'class' => array('post-form-options'),
+        ),
+      );
 
-    $form['revisions']['log'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Reason for edit'),
-      '#rows' => 4,
-    );
+      $form['revisions']['log'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Reason for edit'),
+        '#rows' => 4,
+      );
 
-    $form['revisions']['log_show'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Show reason for edit to the public?'),
-      '#default_value' => 0,
-    );
-  }
-  else {
-    $form['revisions']['log'] = array(
-      '#type' => 'value',
-      '#value' => NULL,
-    );
-    $form['revisions']['log_show'] = array(
-      '#type' => 'value',
-      '#value' => 0,
-    );
-  }
+      $form['revisions']['log_show'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Show reason for edit to the public?'),
+        '#default_value' => 0,
+      );
+    }
+    else {
+      $form['revisions']['log'] = array(
+        '#type' => 'value',
+        '#value' => NULL,
+      );
+      $form['revisions']['log_show'] = array(
+        '#type' => 'value',
+        '#value' => 0,
+      );
+    }
 
     // Hide the thread entity reference field.
     $form['field_harmony_thread']['#access'] = FALSE;
