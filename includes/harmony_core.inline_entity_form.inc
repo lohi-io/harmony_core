@@ -173,6 +173,11 @@ class HarmonyPostInlineEntityFormController extends EntityInlineEntityFormContro
     // Hide the "Post is reply to" entity reference field.
     $form['field_harmony_post_is_reply_to']['#access'] = FALSE;
 
+    // Hide the redirect fieldset if present as they'll appear for the thread.
+    if (!empty($form['redirect'])) {
+      $form['redirect']['#access'] = FALSE;
+    }
+
     return $form;
   }
 
