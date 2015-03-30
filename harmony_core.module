@@ -4868,7 +4868,7 @@ function harmony_core_post_property_get_permalink($data, array $options, $name, 
   $wrapper = entity_metadata_wrapper('harmony_post', $data);
   $path = NULL;
 
-  if ($wrapper->field_harmony_thread->value()) {
+  if ($wrapper->field_harmony_thread->value() && $data->status == HARMONY_PUBLISHED) {
     $thread_id = $wrapper->field_harmony_thread->thread_id->value();
     $path = harmony_core_post_thread_url($thread_id, $data->post_id);
   }
