@@ -16,6 +16,10 @@ function harmony_core_token_info() {
           'name' => t('Summary'),
           'description' => t("The summary of the thread's first post text."),
         ),
+        'summary-pt' => array(
+          'name' => t('Summary plain text'),
+          'description' => t("The summary of the thread's first post text stripped of any markup."),
+        ),
       ),
     ),
   );
@@ -30,6 +34,11 @@ function harmony_core_token_info() {
       }
       $lists_replacement = t('Possible lists: !lists', array('!lists' => implode(', ', $lists)));
 
+      $info['tokens']['harmony_thread']['summary-pt-profanity'] = array(
+        'name' => t('Summary plain text profanity filtered'),
+        'description' => t("The summary of the thread's first post text stripped of markup and processed by a specified profanity word list. Use with the word list machine name. !replacements", array('!replacements' => $lists_replacement)),
+        'dynamic' => TRUE,
+      );
       $info['tokens']['harmony_thread']['summary-profanity'] = array(
         'name' => t('Summary profanity filtered'),
         'description' => t("The summary of the thread's first post text processed by a specified profanity word list. Use with the word list machine name. !replacements", array('!replacements' => $lists_replacement)),
@@ -60,33 +69,30 @@ function harmony_core_tokens($type, $tokens, array $data = array(), array $optio
     $wrapper = entity_metadata_wrapper($type, $thread);
 
     foreach ($tokens as $name => $original) {
-      if ($name === 'summary') {
+      // Summary token.
+      if ($name === 'summary' || $name === 'summary-pt' || strpos($name, 'summary-pt-profanity') === 0 || strpos($name, 'summary-profanity') === 0) {
         if ($wrapper->field_harmony_first_post->value() && $wrapper->field_harmony_first_post->field_harmony_text->value()) {
           $text = $wrapper->field_harmony_first_post->field_harmony_text->raw();
 
-          if ($sanitize) {
-            $sanitised_text = check_plain($text['value']);
-            $trimmed_text = truncate_utf8($sanitised_text, variable_get('harmony_core_meta_summary_max_length', 200), FALSE, TRUE);
-            $replacements[$original] = $trimmed_text;
+          // Strip tags if supplying the plain text version of the token.
+          if ($name === 'summary-pt' || strpos($name, 'summary-pt-profanity') === 0) {
+            if ($sanitize) {
+              $text['safe_value'] = strip_tags($text['safe_value']);
+            }
+            else {
+              $text['value'] = strip_tags($text['value']);
+            }
           }
-          else {
-            $replacements[$original] = $text['value'];
-          }
+
+          $replacements[$original] = $sanitize ? text_summary($text['safe_value'], $text['format'], variable_get('harmony_core_meta_summary_max_length', 200)) : $text['value'];
         }
       }
-      elseif (strpos($name, 'summary-profanity') === 0) {
-        if (module_exists('profanity') && $wrapper->field_harmony_first_post->value() && $wrapper->field_harmony_first_post->field_harmony_text->value()) {
-          $name_parts = explode(':', $name);
-          $text = $wrapper->field_harmony_first_post->field_harmony_text->raw();
 
-          if ($sanitize) {
-            $sanitised_text = check_plain($text['value']);
-            $trimmed_text = truncate_utf8($sanitised_text, variable_get('harmony_core_meta_summary_max_length', 200), FALSE, TRUE);
-            $replacements[$original] = $trimmed_text;
-          }
-          else {
-            $replacements[$original] = $text['value'];
-          }
+      // Profanity filtered summary token, just alter the summary generated
+      // text.
+      if (strpos($name, 'summary-pt-profanity') === 0 || strpos($name, 'summary-profanity') === 0) {
+        if (module_exists('profanity') && $replacements[$original] != '') {
+          $name_parts = explode(':', $name);
 
           // Profanity filter the content.
           if (!empty($name_parts[1])) {

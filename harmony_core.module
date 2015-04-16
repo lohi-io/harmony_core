@@ -4320,7 +4320,7 @@ function harmony_core_metatag_config_default() {
       'value' => '[harmony_thread:title] | [site:name]',
     ),
     'description' => array(
-      'value' => '[harmony_thread:summary]',
+      'value' => '[harmony_thread:summary-pt]',
     ),
   );
   $configs[$config->instance] = $config;
