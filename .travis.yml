@@ -25,7 +25,6 @@ mysql:
   encoding: utf8
 
 before_install:
-  - pwd
   - sudo apt-get update > /dev/null
   # Install php packages required for running a web server from drush on php 5.3.
   - sudo apt-get install -y --force-yes php5-cgi php5-mysql php5-cli php5-curl php5-gd > /dev/null
@@ -46,12 +45,11 @@ install:
   - cd ./tests/behat
   - composer install --no-interaction --prefer-source
   - cd ../../
-  - pwd
 
 before_script:
-  # Navigate out of module directory to prevent blown stack by recursive module lookup.
+  # Navigate out of git checkout module directory to prevent blown stack by recursive module lookup.
+  # For refernce we're here: /home/travis/build/lohi-io/harmony_core
   - cd ../..
-  - pwd
 
   # Create the database.
   - mysql -e 'create database drupal'
@@ -59,25 +57,22 @@ before_script:
   # Install Drupal and Harmony Core (and submodules).
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd drupal --profile=minimal --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
 
-  - lsvar=`ls -alhC`
-  - echo $lsvar
-
   # Symlink the module code.
-  - ln -s $(readlink -e $(cd -)) lohi-io/harmony_core/drupal/sites/all/modules/harmony_core
+  - ln -s $(readlink -e $(cd -)) drupal/sites/all/modules/harmony_core
 
   # Set some environment variables.
   - export DRUPAL_HOSTNAME="http://127.0.0.1:8888"
   - export DRUPAL_LOGIN=admin
   - export DRUPAL_PASSWORD=admin
 
-  # Jump back in.
-  - cd lohi-io/harmony_core/drupal
+  # Jump back into the install.
+  - cd drupal
 
   # Enable some more modules.
   - drush en -y harmony_default_permissions harmony_default_input_format harmony_atjs
 
   # Setup files.
-  - sudo chmod -R 777 drupal/sites/all
+  - sudo chmod -R 777 sites/all
 
   # Time for Behat stuffs.
   # Set the BEHAT_PARAMS so that Behat can find our install.
@@ -100,7 +95,7 @@ before_script:
   # Start the server.
   - drush runserver --server=builtin 8888 > /dev/null 2>&1 &
   - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; do true; done
-  - cd sites/all/modules/harmony_core/tests/behat
+  - cd modules/harmony_core/tests/behat
 
 script:
   # Let's first test with status.
