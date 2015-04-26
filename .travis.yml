@@ -44,7 +44,7 @@ install:
   # Build Behat dependencies.
   - cd ./tests/behat
   # Set the correct drupal_root.
-  - sudo sed -i 's|DRUPALROOT|/home/travis/build/lohi-io/drupal/drupal|g' behat.yml
+  - sudo sed -i 's|DRUPALROOT|/home/travis/build/drupal/drupal|g' behat.yml
   # Composer install.
   - composer install --no-interaction --prefer-source
   - cd ../../
