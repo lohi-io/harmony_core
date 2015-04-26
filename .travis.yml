@@ -57,9 +57,9 @@ before_script:
   - mysql -e 'create database drupal'
 
   # Install Drupal and Harmony Core (and submodules).
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
+  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd drupal --profile=minimal --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
 
-  - lsvar=`la -alhC`
+  - lsvar=`ls -alhC`
   - echo $lsvar
 
   # Symlink the module code.
