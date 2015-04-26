@@ -54,3 +54,6 @@ You will also want to use the same version of jQuery on admin pages.
 
 If you want to use At.js you will need to download libraries, I refer you to the instructions for that module.
 
+## Automated tests
+
+Workin on it!
