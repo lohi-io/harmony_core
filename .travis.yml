@@ -48,7 +48,7 @@ install:
 
 before_script:
   # Navigate out of git checkout module directory to prevent blown stack by recursive module lookup.
-  # For refernce we're here: /home/travis/build/lohi-io/harmony_core
+  # For reference we're here: /home/travis/build/lohi-io/harmony_core
   - cd ../..
 
   # Create the database.
@@ -58,7 +58,7 @@ before_script:
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd drupal --profile=minimal --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
 
   # Symlink the module code.
-  - ln -s $(readlink -e $(cd -)) drupal/sites/all/modules/harmony_core
+  - ln -s lohi-io/harmony_core drupal/sites/all/modules/harmony_core
 
   # Set some environment variables.
   - export DRUPAL_HOSTNAME="http://127.0.0.1:8888"
