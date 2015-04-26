@@ -57,7 +57,7 @@ before_script:
   - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd build --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
 
   # Symlink the module code.
-  - ln -s $(readlink -e $(cd -)) harmony_core/build/sites/all/modules/harmony_core
+  - ln -s $(readlink -e $(cd -)) lohi-io/harmony_core/build/sites/all/modules/harmony_core
 
   # Set some environment variables.
   - export DRUPAL_HOSTNAME="http://127.0.0.1:8888"
@@ -65,7 +65,7 @@ before_script:
   - export DRUPAL_PASSWORD=admin
 
   # Jump back in.
-  - cd harmony_core/build
+  - cd lohi-io/harmony_core/build
 
   # Enable some more modules.
   - drush en -y harmony_default_permissions harmony_default_input_format harmony_atjs
