@@ -16,8 +16,6 @@ default:
     Drupal\DrupalExtension:
       blackbox: ~
       api_driver: "drupal"
-      # We set the following via BEHAT_PARAMS which merge into these settings.
-      # drupal:
-      #  drupal_root:
-      #alias: self
-      # export BEHAT_PARAMS="extensions[Drupal\\DrupalExtension\\Extension][drupal][drupal_root]=$DISTRO/drupal"
+      # We set the following via the travis install script, finding and replacing.
+      drupal:
+        drupal_root: "DRUPALROOT"

@@ -43,6 +43,9 @@ install:
 
   # Build Behat dependencies.
   - cd ./tests/behat
+  # Set the correct drupal_root.
+  - sudo sed -i 's|DRUPALROOT|/home/travis/build/lohi-io/drupal/drupal|g' behat.yml
+  # Composer install.
   - composer install --no-interaction --prefer-source
   - cd ../../
 
@@ -78,11 +81,6 @@ before_script:
   - sudo chmod -R 777 sites/all
 
   # Time for Behat stuffs.
-  # Set the BEHAT_PARAMS so that Behat can find our install.
-  - INSTALL_DIR=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
-  # Escape the JSON! http://stackoverflow.com/questions/10572689/quoting-yaml-for-travis-ci
-  - export BEHAT_PARAMS="extensions[Drupal\DrupalExtension\Extension][drupal][drupal_root]=$INSTALL_DIR/drupal/drupal"
-
   # Setup display for Selenium.
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
