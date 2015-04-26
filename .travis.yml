@@ -95,9 +95,10 @@ before_script:
   # Start the server.
   - drush runserver --server=builtin 8888 > /dev/null 2>&1 &
   - until netstat -an 2>/dev/null | grep '8888.*LISTEN'; do true; done
+  - cd sites/all/modules
   - LS_VAR=`ls -alhC`
   - echo $LS_VAR
-  - cd sites/all/modules/harmony_core/tests/behat
+  - cd harmony_core/tests/behat
 
 script:
   # Let's first test with status.
