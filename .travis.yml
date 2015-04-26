@@ -80,7 +80,8 @@ before_script:
   # Time for Behat stuffs.
   # Set the BEHAT_PARAMS so that Behat can find our install.
   - INSTALL_DIR=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
-  - export BEHAT_PARAMS='{"extensions" : {"Drupal\\DrupalExtension" : {"drupal" : {"drupal_root" : "$INSTALL_DIR/drupal/drupal"}}}}'
+  # Escape the JSON! http://stackoverflow.com/questions/10572689/quoting-yaml-for-travis-ci
+  - ! 'export BEHAT_PARAMS=''{"extensions" : {"Drupal\\DrupalExtension" : {"drupal" : {"drupal_root" : "$INSTALL_DIR/drupal/drupal"}}}}'''
 
   # Setup display for Selenium.
   - export DISPLAY=:99.0
