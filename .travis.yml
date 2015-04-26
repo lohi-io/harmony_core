@@ -12,12 +12,12 @@ php:
   - 5.3
   - 5.4
   - 5.5
-  - hhvm
+#  - hhvm
 
 matrix:
   fast_finish: true
   allow_failures:
-    - php: hhvm
+#    - php: hhvm
 
 mysql:
   database: drupal
@@ -80,7 +80,7 @@ before_script:
   # Time for Behat stuffs.
   # Set the BEHAT_PARAMS so that Behat can find our install.
   - INSTALL_DIR=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
-  - export BEHAT_PARAMS="{'extensions' : {'Drupal\\DrupalExtension' : {'drupal' : {'drupal_root' : '$INSTALL_DIR/drupal/drupal'}}}}"
+  - export BEHAT_PARAMS='{"extensions" : {"Drupal\\DrupalExtension" : {"drupal" : {"drupal_root" : "$INSTALL_DIR/drupal/drupal"}}}}'
 
   # Setup display for Selenium.
   - export DISPLAY=:99.0
