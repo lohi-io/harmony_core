@@ -1,5 +1,7 @@
 # Harmony core
 
+[![Build Status](https://travis-ci.org/lohi-io/harmony_core.svg?branch=7.x-1.x)](https://travis-ci.org/lohi-io/harmony_core)
+
 ## Features, things of note
 + Thread & Post entities along with fields supplied by Features
 + This module makes the assumptions that the following don't exist and that you're installing on to a vanilla install (hey, this is the core of a distro!) Taxonomy vocabs, Flags.
