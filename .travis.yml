@@ -95,6 +95,6 @@ before_script:
 
 script:
   # Let's first test with status.
-  drush st --uri=http://127.0.0.1:8888
+  # - drush st --uri=http://127.0.0.1:8888
   # Run the Behat tests.
-  # - ./bin/behat
+  ./bin/behat
