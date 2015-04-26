@@ -58,4 +58,4 @@ If you want to use At.js you will need to download libraries, I refer you to the
 
 ## Automated tests
 
-Workin on it!
+Workin on it! Just the one basic proof of concept for now.
