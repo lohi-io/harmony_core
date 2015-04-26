@@ -31,7 +31,7 @@ before_install:
 
 install:
   # Set the timezone.
-  if [ $TRAVIS_PHP_VERSION != 'hhvm' ]; then echo 'date.timezone = "Europe/London"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi
+  echo 'date.timezone = "Europe/London"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
 
   # Add composer's global bin directory to the path
   # see: https://github.com/drush-ops/drush#install---composer
@@ -80,7 +80,7 @@ before_script:
   # Time for Behat stuffs.
   # Set the BEHAT_PARAMS so that Behat can find our install.
   - INSTALL_DIR=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
-  - export BEHAT_PARAMS="extensions[Drupal\\DrupalExtension\\Extension][drupal][drupal_root]=$INSTALL_DIR/drupal/drupal"
+  - export BEHAT_PARAMS="{'extensions' : {'Drupal\\DrupalExtension' : {'drupal' : {'drupal_root' : '$INSTALL_DIR/drupal/drupal'}}}}"
 
   # Setup display for Selenium.
   - export DISPLAY=:99.0
