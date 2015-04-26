@@ -54,7 +54,7 @@ before_script:
   - mysql -e 'create database drupal'
 
   # Install Drupal and Harmony Core (and submodules).
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd build --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core harmony_default_permissions harmony_default_input_format harmony_atjs
+  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd build --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
 
   # Symlink the module code.
   - ln -s $(readlink -e $(cd -)) harmony_core/build/sites/all/modules/harmony_core
@@ -66,6 +66,9 @@ before_script:
 
   # Jump back in.
   - cd harmony_core/build
+
+  # Enable some more modules.
+  - drush en -y harmony_default_permissions harmony_default_input_format harmony_atjs
 
   # Setup files.
   - sudo chmod -R 777 build/sites/all
