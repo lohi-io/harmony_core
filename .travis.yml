@@ -57,10 +57,12 @@ before_script:
   - mysql -e 'create database drupal'
 
   # Install Drupal and Harmony Core (and submodules).
-  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd build --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
+  - php -d sendmail_path=`which true` ~/.composer/vendor/bin/drush.php --yes qd drupal --profile=standard --no-server --db-url=mysql://root:@127.0.0.1/drupal --account-name=admin --account-pass=admin --enable=harmony_core
+
+  - la -alh
 
   # Symlink the module code.
-  - ln -s $(readlink -e $(cd -)) lohi-io/harmony_core/build/sites/all/modules/harmony_core
+  - ln -s $(readlink -e $(cd -)) lohi-io/harmony_core/drupal/sites/all/modules/harmony_core
 
   # Set some environment variables.
   - export DRUPAL_HOSTNAME="http://127.0.0.1:8888"
@@ -68,18 +70,18 @@ before_script:
   - export DRUPAL_PASSWORD=admin
 
   # Jump back in.
-  - cd lohi-io/harmony_core/build
+  - cd lohi-io/harmony_core/drupal
 
   # Enable some more modules.
   - drush en -y harmony_default_permissions harmony_default_input_format harmony_atjs
 
   # Setup files.
-  - sudo chmod -R 777 build/sites/all
+  - sudo chmod -R 777 drupal/sites/all
 
   # Time for Behat stuffs.
   # Set the BEHAT_PARAMS so that Behat can find our install.
-  - DISTRO=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
-  - export BEHAT_PARAMS="extensions[Drupal\\DrupalExtension\\Extension][drupal][drupal_root]=$DISTRO/build"
+  - INSTALL_DIR=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
+  - export BEHAT_PARAMS="extensions[Drupal\\DrupalExtension\\Extension][drupal][drupal_root]=$INSTALL_DIR/drupal"
 
   # Setup display for Selenium.
   - export DISPLAY=:99.0
