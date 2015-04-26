@@ -1,9 +1,10 @@
 # Harmony Travis CI config.
 # Lessons learned from the following places:
+#  - https://www.drupal.org/node/2353081 (Thanks btopro for the first nudge)
 #  - https://github.com/sonnym/travis-ci-drupal-module-example/blob/7.x-1.x/.travis.yml
-#  - https://www.drupal.org/node/2353081
-#  - https://github.com/commerceguys/kickstart-drops-7/blob/master/profiles/commerce_kickstart/.travis.yml
+#  - https://github.com/commerceguys/kickstart-drops-7/blob/master/profiles/commerce_kickstart/.travis.yml (BEHAT_PARAMS is the most important thing from this)
 #  - https://github.com/RESTful-Drupal/restful/blob/7.x-1.x/.travis.yml
+#  - https://github.com/Gizra/behat-drupal-phantomjs (the lock file here was the key)
 
 language: php
 
@@ -58,6 +59,11 @@ before_script:
   # Symlink the module code.
   - ln -s $(readlink -e $(cd -)) harmony_core/build/sites/all/modules/harmony_core
 
+  # Set some environment variables.
+  - export DRUPAL_HOSTNAME="http://127.0.0.1:8888"
+  - export DRUPAL_LOGIN=admin
+  - export DRUPAL_PASSWORD=admin
+
   # Jump back in.
   - cd harmony_core/build
 
@@ -65,6 +71,10 @@ before_script:
   - sudo chmod -R 777 build/sites/all
 
   # Time for Behat stuffs.
+  # Set the BEHAT_PARAMS so that Behat can find our install.
+  - DISTRO=`echo $TRAVIS_BUILD_DIR | sed -e "s/\/[^\/]*$//"`
+  - export BEHAT_PARAMS="extensions[Drupal\\DrupalExtension\\Extension][drupal][drupal_root]=$DISTRO/build"
+
   # Setup display for Selenium.
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
