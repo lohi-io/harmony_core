@@ -1259,8 +1259,13 @@ function harmony_core_thread_access_callback($op, $entity, $account = NULL, $thr
   // - No modules say to deny access.
   // - At least one module says to grant access.
   // If no module specified either allow or deny, we fall back to the
-  // thread_access table.
-  $access = module_invoke_all('harmony_thread_access', $op, $entity, $account, $entity_type);
+  // harmony_access_records table.
+  //
+  // For the create operation when invoking harmony_thread_access
+  // implementations we change the entity type to "harmony_post" as the check
+  // is "can we create posts within this thread?".
+  $hta_invoke_type = $op === 'create' ? 'harmony_post' : $entity_type;
+  $access = module_invoke_all('harmony_thread_access', $op, $entity, $account, $hta_invoke_type);
   if (in_array(HARMONY_ACCESS_DENY, $access, TRUE)) {
     $rights[$account->uid][$cid][$op] = FALSE;
     return FALSE;
