@@ -4847,8 +4847,21 @@ function harmony_core_meta_get_property($type, $property = NULL, $all = FALSE) {
  * Redirect the user from the permalink URL to it's place within its thread.
  */
 function harmony_core_post_permalink_callback($post) {
+  global $user;
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
+  $path = 'post/' . $post->post_id;
+  $options = array();
+
+  // In the case that the post is unpublished check to see if the user has
+  // access, if so send them to the posts individual page.
+  if ($post->status == HARMONY_NOT_PUBLISHED && harmony_core_entity_access_check('view', $post, $user, 'harmony_post')) {
+      drupal_goto($path, $options, 301);
+  }
+
+  // First check to see if the post is published or not, if so set the default
+  // path of the post URL. If it's attached to a thread (which it should be)
+  // then use that instead.
   if ($wrapper->field_harmony_thread->value()) {
     $thread_id = $wrapper->field_harmony_thread->thread_id->value();
     $thread_post_url = harmony_core_post_thread_url($thread_id, $post->post_id, TRUE);
@@ -4856,10 +4869,6 @@ function harmony_core_post_permalink_callback($post) {
     $path = $thread_post_url['path'];
     unset($thread_post_url['path']);
     $options = $thread_post_url;
-  }
-  else {
-    $path = 'post/' . $post->post_id;
-    $options = array();
   }
 
   drupal_goto($path, $options, 301);
