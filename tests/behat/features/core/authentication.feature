@@ -11,12 +11,7 @@ Feature: Authentication
     Given I am logged in as a user with the "authenticated user" role
     Then I should not see "Login"
 
-  @api
-  Scenario: Log in as an admin
-    Given I am logged in as a user with the "administrator" role
-    Then I should not see "Login"
-
   @api @javascript
   Scenario: Log in via selenium
-    Given I am logged in as a user with the "administrator" role
+    Given I am logged in as a user with the "authenticated user" role
     Then I should not see "Login"
