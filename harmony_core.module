@@ -567,7 +567,6 @@ function harmony_core_permission() {
     'edit own harmony_threads' => array(
       'title' => t('Edit own threads'),
       'description' => t('Allows users to edit their own threads.'),
-      'restrict access' => TRUE,
     ),
     'delete any harmony_thread' => array(
       'title' => t('Delete any thread'),
