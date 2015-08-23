@@ -113,7 +113,7 @@ function harmony_core_entity_info() {
 
   foreach ($types as $type => $info) {
     $entities['harmony_thread']['bundles'][$type] = array(
-      'label' => $info->label,
+      'label' => check_plain($info->label),
       'admin' => array(
         'path' => 'admin/harmony/structure/thread/%harmony_thread_type',
         'real path' => 'admin/harmony/structure/thread/' . $type,
