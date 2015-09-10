@@ -19,7 +19,7 @@ class harmony_core_views_plugin_argument_default_post extends views_plugin_argum
       }
     }
 
-    if (arg(0) == 'post' && ctype_digit(arg(1))) {
+    if (arg(0) == 'post' && ctype_digit((string) arg(1))) {
       return arg(1);
     }
   }

@@ -470,7 +470,7 @@ class HarmonyThreadController extends HarmonyController {
    */
   function updateThreadFirstOrLastProperties($thread, $post, $force_extreme = NULL) {
     // Grab the thread not from cache.
-    if (ctype_digit($thread)) {
+    if (ctype_digit((string) $thread)) {
       $thread = harmony_thread_load($thread, TRUE);
     }
 
