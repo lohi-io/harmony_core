@@ -3349,6 +3349,7 @@ function harmony_core_harmony_thread_type_delete($harmony_thread_type) {
  * Post add/edit form callback.
  */
 function harmony_core_post_form($form, &$form_state, $post) {
+  global $user;
   $form = array();
 
   $form['post'] = array(
@@ -3445,12 +3446,16 @@ function harmony_core_post_form($form, &$form_state, $post) {
     }
   }
   else {
-    $bail_out = TRUE;
-    $bail_out_reason = 'No thread id was specified.';
+    // When AJAX stuff is happening we don't want to stop things.
+    if (!isset($_REQUEST['ajax_page_state'])) {
+      $bail_out = TRUE;
+      $bail_out_reason = 'No thread id was specified.';
+    }
   }
 
   // Bail out!
   if ($bail_out) {
+    watchdog('harmony_core', 'The user @name attempted to edit a post but something went wrong... @reason', array('@name' => $user->name, '@reason' => $bail_out_reason), WATCHDOG_NOTICE);
     return array(
       'text' => array(
         '#markup' => t("<p>The thread you're trying to post in is either locked, appears in an unpublished thread or is missing. If this is in error please contact the site administrator."),
@@ -3462,7 +3467,7 @@ function harmony_core_post_form($form, &$form_state, $post) {
   $form['title'] = array(
     '#type' => 'value',
     '#title' => t('Post title'),
-    '#default_value' => $thread->title,
+    '#default_value' => !empty($thread->title) ? $thread->title : NULL,
   );
 
   // Quoting integration with entity_quote.
