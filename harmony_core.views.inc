@@ -147,10 +147,13 @@ function harmony_core_views_data_alter(&$data) {
   $data['field_data_field_harmony_post_count']['harmony_thread_replies']['field']['handler'] = 'harmony_core_views_handler_thread_field_replies';
 
   $data['harmony_thread']['public'] = array(
+    'title' => t('Public'),
+    'help' => t('Whether or not the thread is visible to the public.'),
     'field' => array(
-      'title' => t('Public'),
-      'help' => t('Whether or not the thread is visible to the public.'),
       'handler' => 'HarmonyCoreViewsHandlerFieldPublic',
+    ),
+    'filter' => array(
+      'handler' => 'HarmonyCoreViewsHandlerFilterPublic',
     ),
   );
 
@@ -286,10 +289,13 @@ function harmony_core_views_data_alter(&$data) {
   );
 
   $data['harmony_post']['public'] = array(
+    'title' => t('Public'),
+    'help' => t('Whether or not a post is visible to the public, this accounts for cases where a post is still published within an unpublished thread.'),
     'field' => array(
-      'title' => t('Public'),
-      'help' => t('Whether or not a post is visible to the public, this accounts for cases where a post is still published within an unpublished thread.'),
       'handler' => 'HarmonyCoreViewsHandlerFieldPostPublic',
+    ),
+    'filter' => array(
+      'handler' => 'HarmonyCoreViewsHandlerFilterPostPublic',
     ),
   );
 

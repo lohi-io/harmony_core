@@ -136,4 +136,6 @@ files[] = views/handlers/harmony_core_views_plugin_argument_default_thread.inc
 files[] = views/handlers/harmony_core_views_plugin_row_post_view.inc
 files[] = views/handlers/HarmonyCoreViewsHandlerFieldPostPublic.php
 files[] = views/handlers/HarmonyCoreViewsHandlerFieldPublic.php
+files[] = views/handlers/HarmonyCoreViewsHandlerFilterPostPublic.php
+files[] = views/handlers/HarmonyCoreViewsHandlerFilterPublic.php
 files[] = views/plugins/harmony_core_views_plugin_style_harmony_table.inc
