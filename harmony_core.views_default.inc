@@ -34,10 +34,9 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
-    'title' => 'title',
     'field_harmony_thread' => 'field_harmony_thread',
     'name' => 'name',
-    'status' => 'status',
+    'public' => 'public',
     'created' => 'created',
     'updated' => 'updated',
     'edit_link' => 'delete_link',
@@ -46,13 +45,6 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['default'] = 'updated';
   $handler->display->display_options['style_options']['info'] = array(
     'views_bulk_operations' => array(
-      'align' => '',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
-    'title' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -71,9 +63,7 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'status' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
+    'public' => array(
       'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
@@ -81,14 +71,14 @@ function harmony_core_views_default_views() {
     'created' => array(
       'sortable' => 1,
       'default_sort_order' => 'asc',
-      'align' => '',
+      'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
     ),
     'updated' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => '',
+      'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
     ),
@@ -231,10 +221,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['relationship'] = 'uid';
   $handler->display->display_options['fields']['name']['label'] = 'Author';
-  /* Field: Post: Status */
-  $handler->display->display_options['fields']['status']['id'] = 'status';
-  $handler->display->display_options['fields']['status']['table'] = 'harmony_post';
-  $handler->display->display_options['fields']['status']['field'] = 'status';
+  /* Field: Post: Public */
+  $handler->display->display_options['fields']['public']['id'] = 'public';
+  $handler->display->display_options['fields']['public']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['public']['field'] = 'public';
   /* Field: Post: Date created */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'harmony_post';
@@ -293,19 +283,21 @@ function harmony_core_views_default_views() {
     1 => 0,
     3 => 0,
   );
-  /* Filter criterion: Post: Status */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'harmony_post';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['label'] = 'Status';
-  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
+  /* Filter criterion: Post: Public */
+  $handler->display->display_options['filters']['public']['id'] = 'public';
+  $handler->display->display_options['filters']['public']['table'] = 'harmony_post';
+  $handler->display->display_options['filters']['public']['field'] = 'public';
+  $handler->display->display_options['filters']['public']['value'] = 'All';
+  $handler->display->display_options['filters']['public']['group'] = 1;
+  $handler->display->display_options['filters']['public']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['public']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['public']['expose']['label'] = 'Public';
+  $handler->display->display_options['filters']['public']['expose']['operator'] = 'public_op';
+  $handler->display->display_options['filters']['public']['expose']['identifier'] = 'public';
+  $handler->display->display_options['filters']['public']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
+    4 => 0,
     3 => 0,
   );
   /* Filter criterion: Date: Date (harmony_post) */
@@ -313,6 +305,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['date_filter']['table'] = 'harmony_post';
   $handler->display->display_options['filters']['date_filter']['field'] = 'date_filter';
   $handler->display->display_options['filters']['date_filter']['operator'] = '>';
+  $handler->display->display_options['filters']['date_filter']['group'] = 1;
   $handler->display->display_options['filters']['date_filter']['exposed'] = TRUE;
   $handler->display->display_options['filters']['date_filter']['expose']['operator_id'] = 'date_filter_op';
   $handler->display->display_options['filters']['date_filter']['expose']['label'] = 'Posted after';
@@ -333,6 +326,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['date_filter_1']['table'] = 'harmony_post';
   $handler->display->display_options['filters']['date_filter_1']['field'] = 'date_filter';
   $handler->display->display_options['filters']['date_filter_1']['operator'] = '<';
+  $handler->display->display_options['filters']['date_filter_1']['group'] = 1;
   $handler->display->display_options['filters']['date_filter_1']['exposed'] = TRUE;
   $handler->display->display_options['filters']['date_filter_1']['expose']['operator_id'] = 'date_filter_1_op';
   $handler->display->display_options['filters']['date_filter_1']['expose']['label'] = 'Posted before';
@@ -387,9 +381,9 @@ function harmony_core_views_default_views() {
     'title' => 'title',
     'field_harmony_category' => 'field_harmony_category',
     'field_harmony_post_count' => 'field_harmony_post_count',
-    'status' => 'status',
     'created' => 'created',
     'updated' => 'updated',
+    'public' => 'public',
     'locked' => 'locked',
     'pinned' => 'pinned',
     'edit_link' => 'delete_link',
@@ -423,24 +417,22 @@ function harmony_core_views_default_views() {
       'separator' => '',
       'empty_column' => 0,
     ),
-    'status' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
-      'separator' => '',
-      'empty_column' => 0,
-    ),
     'created' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => '',
+      'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
     ),
     'updated' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => '',
+      'align' => 'views-align-center',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'public' => array(
+      'align' => 'views-align-center',
       'separator' => '',
       'empty_column' => 0,
     ),
@@ -656,10 +648,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['updated']['field'] = 'updated';
   $handler->display->display_options['fields']['updated']['label'] = 'Updated';
   $handler->display->display_options['fields']['updated']['date_format'] = 'short';
-  /* Field: Thread: Status */
-  $handler->display->display_options['fields']['status']['id'] = 'status';
-  $handler->display->display_options['fields']['status']['table'] = 'harmony_thread';
-  $handler->display->display_options['fields']['status']['field'] = 'status';
+  /* Field: Thread: Public */
+  $handler->display->display_options['fields']['public']['id'] = 'public';
+  $handler->display->display_options['fields']['public']['table'] = 'harmony_thread';
+  $handler->display->display_options['fields']['public']['field'] = 'public';
   /* Field: Thread: Locked */
   $handler->display->display_options['fields']['locked']['id'] = 'locked';
   $handler->display->display_options['fields']['locked']['table'] = 'harmony_thread';
@@ -716,6 +708,40 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['field_harmony_category_tid']['type'] = 'select';
   $handler->display->display_options['filters']['field_harmony_category_tid']['vocabulary'] = 'harmony_category';
   $handler->display->display_options['filters']['field_harmony_category_tid']['hierarchy'] = 1;
+  /* Filter criterion: User: Name */
+  $handler->display->display_options['filters']['uid']['id'] = 'uid';
+  $handler->display->display_options['filters']['uid']['table'] = 'users';
+  $handler->display->display_options['filters']['uid']['field'] = 'uid';
+  $handler->display->display_options['filters']['uid']['relationship'] = 'uid';
+  $handler->display->display_options['filters']['uid']['value'] = '';
+  $handler->display->display_options['filters']['uid']['group'] = 1;
+  $handler->display->display_options['filters']['uid']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['uid']['expose']['operator_id'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['label'] = 'Author(s)';
+  $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
+  $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'uid';
+  $handler->display->display_options['filters']['uid']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Thread: Public */
+  $handler->display->display_options['filters']['public']['id'] = 'public';
+  $handler->display->display_options['filters']['public']['table'] = 'harmony_thread';
+  $handler->display->display_options['filters']['public']['field'] = 'public';
+  $handler->display->display_options['filters']['public']['value'] = 'All';
+  $handler->display->display_options['filters']['public']['group'] = 1;
+  $handler->display->display_options['filters']['public']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['public']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['public']['expose']['label'] = 'Public';
+  $handler->display->display_options['filters']['public']['expose']['operator'] = 'public_op';
+  $handler->display->display_options['filters']['public']['expose']['identifier'] = 'public';
+  $handler->display->display_options['filters']['public']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    4 => 0,
+    3 => 0,
+  );
   /* Filter criterion: Thread: Locked */
   $handler->display->display_options['filters']['locked']['id'] = 'locked';
   $handler->display->display_options['filters']['locked']['table'] = 'harmony_thread';
@@ -745,37 +771,6 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['filters']['pinned']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
-  );
-  /* Filter criterion: Thread: Status */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'harmony_thread';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['label'] = 'Status';
-  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-  );
-  /* Filter criterion: User: Name */
-  $handler->display->display_options['filters']['uid']['id'] = 'uid';
-  $handler->display->display_options['filters']['uid']['table'] = 'users';
-  $handler->display->display_options['filters']['uid']['field'] = 'uid';
-  $handler->display->display_options['filters']['uid']['relationship'] = 'uid';
-  $handler->display->display_options['filters']['uid']['value'] = '';
-  $handler->display->display_options['filters']['uid']['group'] = 1;
-  $handler->display->display_options['filters']['uid']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['uid']['expose']['operator_id'] = 'uid_op';
-  $handler->display->display_options['filters']['uid']['expose']['label'] = 'Author(s)';
-  $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
-  $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'uid';
-  $handler->display->display_options['filters']['uid']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
   );
   /* Filter criterion: Date: Date (harmony_thread) */
   $handler->display->display_options['filters']['date_filter_1']['id'] = 'date_filter_1';
