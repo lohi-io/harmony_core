@@ -31,7 +31,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '50';
-  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
     'field_harmony_thread' => 'field_harmony_thread',
@@ -45,9 +45,11 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['default'] = 'updated';
   $handler->display->display_options['style_options']['info'] = array(
     'views_bulk_operations' => array(
-      'align' => '',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'field_harmony_thread' => array(
       'sortable' => 0,
@@ -55,42 +57,56 @@ function harmony_core_views_default_views() {
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'name' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'public' => array(
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'created' => array(
       'sortable' => 1,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'default_sort_order' => 'desc',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'updated' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'edit_link' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'delete_link' => array(
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => ' ',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -375,7 +391,7 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['exposed_form']['type'] = 'basic';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '50';
-  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
     'title' => 'title',
@@ -392,9 +408,11 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_options']['default'] = 'updated';
   $handler->display->display_options['style_options']['info'] = array(
     'views_bulk_operations' => array(
-      'align' => '',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'title' => array(
       'sortable' => 0,
@@ -402,63 +420,83 @@ function harmony_core_views_default_views() {
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'field_harmony_category' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'field_harmony_post_count' => array(
       'sortable' => 1,
-      'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'default_sort_order' => 'desc',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'created' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'updated' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'public' => array(
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'locked' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'pinned' => array(
       'sortable' => 0,
       'default_sort_order' => 'asc',
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'edit_link' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
     'delete_link' => array(
-      'align' => 'views-align-center',
+      'align' => 'text-center',
       'separator' => ' ',
       'empty_column' => 0,
+      'cell_class' => '',
+      'meta_field' => 0,
     ),
   );
   /* No results behavior: Global: Text area */
@@ -1161,9 +1199,9 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'harmony_table';
   $handler->display->display_options['style_options']['columns'] = array(
     'views_bulk_operations' => 'views_bulk_operations',
-    'counter' => 'counter',
+    'position' => 'position',
     'name' => 'name',
-    'status' => 'status',
+    'public' => 'public',
     'created' => 'created',
     'updated' => 'updated',
     'hostname' => 'hostname',
@@ -1180,7 +1218,7 @@ function harmony_core_views_default_views() {
       'cell_class' => '',
       'meta_field' => 0,
     ),
-    'counter' => array(
+    'position' => array(
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -1196,9 +1234,7 @@ function harmony_core_views_default_views() {
       'cell_class' => '',
       'meta_field' => 0,
     ),
-    'status' => array(
-      'sortable' => 0,
-      'default_sort_order' => 'asc',
+    'public' => array(
       'align' => 'text-center',
       'separator' => '',
       'empty_column' => 0,
@@ -1381,10 +1417,10 @@ function harmony_core_views_default_views() {
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['relationship'] = 'uid';
   $handler->display->display_options['fields']['name']['label'] = 'Author';
-  /* Field: Post: Status */
-  $handler->display->display_options['fields']['status']['id'] = 'status';
-  $handler->display->display_options['fields']['status']['table'] = 'harmony_post';
-  $handler->display->display_options['fields']['status']['field'] = 'status';
+  /* Field: Post: Public */
+  $handler->display->display_options['fields']['public']['id'] = 'public';
+  $handler->display->display_options['fields']['public']['table'] = 'harmony_post';
+  $handler->display->display_options['fields']['public']['field'] = 'public';
   /* Field: Post: Date created */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'harmony_post';
@@ -1464,19 +1500,20 @@ function harmony_core_views_default_views() {
     1 => 0,
     3 => 0,
   );
-  /* Filter criterion: Post: Status */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'harmony_post';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['group'] = 1;
-  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['label'] = 'Status';
-  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
-  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
+  /* Filter criterion: Post: Public */
+  $handler->display->display_options['filters']['public']['id'] = 'public';
+  $handler->display->display_options['filters']['public']['table'] = 'harmony_post';
+  $handler->display->display_options['filters']['public']['field'] = 'public';
+  $handler->display->display_options['filters']['public']['value'] = 'All';
+  $handler->display->display_options['filters']['public']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['public']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['public']['expose']['label'] = 'Public';
+  $handler->display->display_options['filters']['public']['expose']['operator'] = 'public_op';
+  $handler->display->display_options['filters']['public']['expose']['identifier'] = 'public';
+  $handler->display->display_options['filters']['public']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
+    4 => 0,
     3 => 0,
   );
 
