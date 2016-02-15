@@ -217,10 +217,13 @@ function harmony_core_post_publish_action($post, $context = array()) {
   $wrapper = entity_metadata_wrapper('harmony_post', $post);
   $thread_id = $wrapper->field_harmony_thread->thread_id->value();
 
-  if ($thread_id && $post->hidden == HARMONY_NOT_HIDDEN && $wrapper->field_harmony_thread->status == HARMONY_NOT_PUBLISHED) {
+  if ($thread_id && $post->hidden == HARMONY_HIDDEN && $wrapper->field_harmony_thread->status->value() == HARMONY_NOT_PUBLISHED) {
+    $post->hidden = HARMONY_NOT_HIDDEN;
+
     $thread = harmony_thread_load($thread_id);
     harmony_core_thread_publish_action($thread);
     harmony_thread_save($thread);
+
     watchdog('action', 'Whilst republishing a post the thread %id was also republished..', array('%id' => $thread_id));
   }
 
@@ -253,6 +256,7 @@ function harmony_core_post_unpublish_action($post, $context = array()) {
       $thread = harmony_thread_load($thread_id);
       harmony_core_thread_unpublish_action($thread);
       harmony_thread_save($thread);
+      $post->hidden = HARMONY_HIDDEN;
 
       watchdog('action', "Somone tried to unpublish post %post_id, as it's the only post in the thread the thread was unpublished instead. The thread that was unpublished was %thread_id.", array('%post_id' => $post->post_id, '%thread_id' => $thread_id));
     }
