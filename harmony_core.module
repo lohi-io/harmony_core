@@ -2130,6 +2130,12 @@ function harmony_core_thread_form($form, &$form_state, $thread = NULL) {
     ),
     '#weight' => 95,
   );
+  $form['options']['public_wrapper'] = array(
+    '#type' => 'container',
+  );
+  $form['options']['public_wrapper']['public'] = array(
+    '#markup' => t('Public:') . ' ' . theme('harmony_public_state', array('status' => $thread->status, 'hidden' => NULL)),
+  );
   $form['options']['status'] = array(
     '#type' => 'checkbox',
     '#title' => t('Published'),
@@ -2651,6 +2657,12 @@ function harmony_core_post_form($form, &$form_state, $post) {
       'class' => array('post-form-options'),
     ),
     '#weight' => 95,
+  );
+  $form['options']['public_wrapper'] = array(
+    '#type' => 'container',
+  );
+  $form['options']['public_wrapper']['public'] = array(
+    '#markup' => t('Public:') . ' ' . theme('harmony_public_state', array('status' => $post->status, 'hidden' => $post->hidden)),
   );
   $form['options']['status'] = array(
     '#type' => 'checkbox',
