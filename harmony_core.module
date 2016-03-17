@@ -127,6 +127,7 @@ function harmony_core_entity_info() {
 
   $entities['harmony_thread_type'] = array(
     'label' => t('Thread Type'),
+    'plural label' => t('Thread Types'),
     'controller class' => 'EntityAPIControllerExportable',
     'base table' => 'harmony_thread_type',
     'fieldable' => FALSE,
