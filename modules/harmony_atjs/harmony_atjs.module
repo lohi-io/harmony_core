@@ -29,7 +29,7 @@ function harmony_atjs_atjs_ajax_results_alter(&$results, $context) {
             $filepath = $entity->picture->uri;
           }
         }
-        else if (is_object($entity_picture) && !empty($entity->picture->uri)) {
+        else if (is_object($entity->picture) && !empty($entity->picture->uri)) {
           $filepath = $entity->picture->uri;
         }
       }
