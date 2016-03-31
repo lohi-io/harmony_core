@@ -2043,8 +2043,8 @@ function harmony_core_thread_new_object($type = NULL) {
     'uid' => $user->uid,
     'language' => LANGUAGE_NONE,
     'status' => HARMONY_PUBLISHED,
-    'created' => REQUEST_TIME,
-    'updated' => REQUEST_TIME,
+    'created' => 0,
+    'updated' => 0,
     'pinned' => HARMONY_NOT_PINNED,
     'locked' => HARMONY_NOT_LOCKED,
     'hidden' => HARMONY_NOT_HIDDEN,
@@ -2237,6 +2237,13 @@ function harmony_core_thread_form_submit($form, &$form_state) {
   $wrapper->pinned->set($form_state['values']['pinned']);
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->hidden->set($form_state['values']['hidden']);
+
+  if ($wrapper->created->value() == 0) {
+    $wrapper->created->set(REQUEST_TIME);
+  }
+  if ($wrapper->updated->value() == 0) {
+    $wrapper->updated->set(REQUEST_TIME);
+  }
 
   field_attach_submit('harmony_thread', $thread, $form, $form_state);
 
@@ -2797,6 +2804,13 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $wrapper->log->set($form_state['values']['log']);
   $wrapper->log_show->set($form_state['values']['log_show']);
   unset($wrapper);
+
+  if ($wrapper->created->value() == 0) {
+    $wrapper->created->set(REQUEST_TIME);
+  }
+  if ($wrapper->updated->value() == 0) {
+    $wrapper->updated->set(REQUEST_TIME);
+  }
 
   field_attach_submit('harmony_post', $post, $form, $form_state);
 
