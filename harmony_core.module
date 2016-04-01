@@ -2803,7 +2803,6 @@ function harmony_core_post_form_submit($form, &$form_state) {
   $wrapper->locked->set($form_state['values']['locked']);
   $wrapper->log->set($form_state['values']['log']);
   $wrapper->log_show->set($form_state['values']['log_show']);
-  unset($wrapper);
 
   if ($wrapper->created->value() == 0) {
     $wrapper->created->set(REQUEST_TIME);
@@ -2811,6 +2810,8 @@ function harmony_core_post_form_submit($form, &$form_state) {
   if ($wrapper->updated->value() == 0) {
     $wrapper->updated->set(REQUEST_TIME);
   }
+
+  unset($wrapper);
 
   field_attach_submit('harmony_post', $post, $form, $form_state);
 
