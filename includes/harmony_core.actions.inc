@@ -493,86 +493,157 @@ function harmony_core_post_reassign_action_submit($form, &$form_state) {
   return harmony_core_action_get_thread_entityreference_form_submit($form, $form_state);
 }
 
+/**
+ * Given a post entity re-assign it to a specified thread from another whilst
+ * maintaining all of the metadata both on the post, source thread and
+ * destination thread.
+ */
 function harmony_core_post_reassign_action(&$post, $context) {
-  // We can't re-assign the first post otherwise there wouldn't be
-  // anything in the thread, instead recommend merging threads.
-  // @todo code to allow re-assigning of first post.
+  /**
+   * We don't allow the first post in a thread to be re-assigned as that
+   * doesn't make logical sense, that statement may come back to bite us :/
+   *
+   * As an alternative recommend merging threads instead.
+   *
+   * @todo review this assumption.
+   */
   if ($post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
       '@thread_merge_url' => url('admin/harmony/content/threads'),
     );
-    drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
+    drupal_set_message(t('Post ID @post_id is the first post in a thread, if you wish to move it you could <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
   }
   else {
     $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-    // Hold on to the old thread_id. @todo, verify this works :|
-    $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    /**
+     * Grab the source thread ID
+     */
+    $source_thread_id = $wrapper->field_harmony_thread->thread_id->value();
+    $source_thread = harmony_thread_load($source_thread_id);
 
-    // Get the number of likes against this post, and update the old thread.
-    $post_likes = NULL;
-    $likes = flag_get_counts('harmony_post', $post->post_id);
-    if (!empty($likes['harmony_likes'])) {
-      $post_likes = $likes['harmony_likes'];
-      $old_thread_likes = $wrapper->field_harmony_thread->likes->value();
-      $wrapper->field_harmony_thread->likes->set($old_thread_likes - $post_likes);
-      $wrapper->field_harmony_thread->save();
+    /**
+     * Get info on the destination thread.
+     */
+    $destination_thread_id = $context['thread_id'];
+    $destination_thread = harmony_thread_load($destination_thread_id);
+
+    /**
+     * Check we loaded the threads, stranger things have happened.
+     */
+    if (!$source_thread || !$destination_thread) {
+      drupal_set_message(t("We failed to load either the thread that the post @id lives in, or the thread you're trying to send it to.", array('@id' => $post->post_id)), 'error');
+      return;
     }
 
-    // Setup the new values, save a little later.
-    $wrapper->title->set($context['thread_title']);
-    $wrapper->field_harmony_thread->set($context['thread_id']);
+    $source_thread_wrapper = entity_metadata_wrapper('harmony_thread', $source_thread);
+    $source_thread_changed = FALSE;
+    $destination_thread_wrapper = entity_metadata_wrapper('harmony_thread', $destination_thread);
+    $destination_thread_changed = FALSE;
 
-    $message_vars = array(
-      '@post_id' => $post->post_id,
-      '%thread_title' => $context['thread_title'],
-    );
+    $destination_thread_title = $context['thread_title'];
 
-    // Is this post the last in the old thread? If so update the old thread.
-    if ($wrapper->last_post->value()) {
-      $old_thread = harmony_thread_load($old_thread_id);
-      $old_thread_posts = harmony_core_get_thread_posts($old_thread->thread_id);
+    /**
+     * If this post is public then we need to consider the following:
+     *   1. Last post entity ref (on thread)*
+     *   2. Last post flag on the post entity*
+     *   3. Last user to update the thread*
+     *   4. Number of likes within a thread
+     *   5. Post count within thread
+     *   6. Post count in a category
+     *
+     * These things apply to both the old thread the post belonged to and the
+     * new thread.
+     *
+     * * = thing that should be sorted by firstlastrebuild call.
+     */
+    if ($post->status == HARMONY_PUBLISHED && $post->hidden == HARMONY_NOT_HIDDEN) {
+      /**
+       * Deal with likes first.
+       */
+      $likes_count = 0;
+      $likes = flag_get_counts('harmony_post', $post->post_id);
+      $likes_count = !empty($likes['harmony_likes']) ? $likes['harmony_likes'] : 0;
 
-      // Get last item in the array.
-      $new_last_post_id = array_pop($thread_posts);
+      /**
+       * If there are likes against this post then re-assign them.
+       */
+      if ($likes_count > 0) {
+        $source_thread_likes = intval($source_thread_wrapper->likes->value()) - $likes_count;
+        $source_thread_wrapper->likes->set($source_thread_likes);
 
-      // Update the thread.
-      $old_thread_wrapper = entity_metadata_wrapper('harmony_thread', $old_thread);
-      $old_thread_wrapper->field_harmony_last_post->set($new_last_post_id);
-      $old_thread_wrapper->save();
-
-      // Update the post.
-      if ($post->post_id == $new_last_post_id) {
-        $wrapper->last_post->set(1);
+        $destination_thread_likes = intval($destination_thread_wrapper->likes->value()) + $likes_count;
+        $destination_thread_wrapper->likes->set($destination_thread_likes);
       }
-      else {
-        // Update the last post property on the new last post.
-        $new_last_post = harmony_post_load($new_last_post_id);
-        $new_last_post_wrapper = entity_metadata_wrapper('harmony_post', $new_last_post);
-        $new_last_post_wrapper->last_post->set(1);
-        $new_last_post_wrapper->save();
+
+      /**
+       * Update the post count field.
+       */
+      $source_thread_post_count = $source_thread_wrapper->field_harmony_post_count->value() - 1;
+      $source_thread_wrapper->field_harmony_post_count->set($source_thread_post_count);
+
+      $destination_thread_post_count = $destination_thread_wrapper->field_harmony_post_count->value() + 1;
+      $destination_thread_wrapper->field_harmony_post_count->set($destination_thread_post_count);
+
+      /**
+       * Update the post count on a category (if the threads are in
+       * categories).
+       */
+      $category_field = variable_get('harmony_core_category_field', 'field_harmony_category');
+      if ($source_thread_wrapper->__isset($category_field) && $source_thread_wrapper->{$category_field}->value()) {
+        harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $source_thread_wrapper->{$category_field}->tid->value(), 'decrement');
       }
+      if ($destination_thread_wrapper->__isset($category_field) && $destination_thread_wrapper->{$category_field}->value()) {
+        harmony_core_update_meta_count(array('field_harmony_post_count'), 'taxonomy_term', $destination_thread_wrapper->{$category_field}->tid->value());
+      }
+
+      /**
+       * Note that a resave is needed.
+       */
+      $source_thread_changed = TRUE;
+      $destination_thread_changed = TRUE;
     }
 
-    // Save the current post.
+    /**
+     * Set the title and entity reference field on the thread to the
+     * destination thread.
+     */
+    $wrapper->field_harmony_thread->set($destination_thread_id);
+    $wrapper->title->set($destination_thread_title);
+
+    /**
+     * Save the post.
+     */
     $wrapper->save();
 
-    // Update the new thread's likes.
-    if ($post_likes) {
-      $new_thread_likes = $wrapper->field_harmony_thread->likes->value();
-      $wrapper->field_harmony_thread->likes->set($new_thread_likes + $post_likes);
-      $wrapper->field_harmony_thread->save();
+    /**
+     * Save the threads (if needed) and rebuild their first and last references
+     * and properties.
+     */
+    if ($source_thread_changed) {
+      harmony_thread_meta_save($source_thread);
+      harmony_thread_rebuild_first_last_posts($source_thread);
+    }
+    if ($destination_thread_changed) {
+      harmony_thread_meta_save($destination_thread);
+      harmony_thread_rebuild_first_last_posts($destination_thread);
     }
 
-    // Decrement the old thread's post count.
-    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $old_thread_id, 'decrement');
+    /**
+     * Regenerate access records for the post.
+     * @todo
+     */
 
-    // Increment the new thread's.
-    harmony_core_update_meta_count(array('field_harmony_post_count'), 'harmony_thread', $context['thread_id']);
-
-    // Inform the user.
-    drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot;.', $message_vars));
+    /**
+     * Provide feedback.
+     */
+    $message_vars = array(
+      '@post_id' => $post->post_id,
+      '%thread_title' => $destination_thread_title,
+      '%source_thread_title' => $source_thread->title,
+    );
+    drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot; from &quot;%source_thread_title&quot;.', $message_vars));
   }
 }
 
