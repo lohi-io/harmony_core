@@ -198,8 +198,8 @@ function harmony_core_entity_info() {
 * Implements hook_entity_info_alter().
 */
 function harmony_core_entity_info_alter(&$entity_info) {
-  $entity_info['user']['view modes']['harmony_user_post_profile'] = array(
-    'label' => t('Post profile'),
+    $entity_info['user']['view modes']['harmony_user_post_profile'] = array(
+      'label' => t('Post profile'),
     'custom settings' => TRUE,
   );
 }
