@@ -562,7 +562,6 @@ function harmony_core_post_reassign_action(&$post, $context) {
       /**
        * Deal with likes first.
        */
-      $likes_count = 0;
       $likes = flag_get_counts('harmony_post', $post->post_id);
       $likes_count = !empty($likes['harmony_likes']) ? $likes['harmony_likes'] : 0;
 
