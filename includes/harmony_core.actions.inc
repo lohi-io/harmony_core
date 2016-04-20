@@ -614,7 +614,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
     /**
      * Save the post.
      */
-    $wrapper->save();
+    harmony_post_meta_save($post);
 
     /**
      * Save the threads (if needed) and rebuild their first and last references
@@ -642,7 +642,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
       '%thread_title' => $destination_thread_title,
       '%source_thread_title' => $source_thread->title,
     );
-    drupal_set_message(t('Post ID: @post_id re-assigned to the thread &quot;%thread_title&quot; from &quot;%source_thread_title&quot;.', $message_vars));
+    drupal_set_message(t('Post ID: @post_id re-assigned from &quot;%source_thread_title&quot; to &quot;%thread_title&quot;.', $message_vars));
   }
 }
 
