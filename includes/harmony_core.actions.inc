@@ -797,7 +797,6 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
 
   // Setup date overrides if in play.
   if ($form_state['values']['override_created']) {
-    $thread->override_created = TRUE;
     $thread->created = REQUEST_TIME;
     $thread->updated = REQUEST_TIME;
   }
@@ -835,10 +834,11 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
     'thread' => $thread,
     'thread_id' => $thread->thread_id,
     'thread_title' => $thread->title,
+    'override_created' => $form_state['values']['override_created'],
   );
 }
 
-function harmony_core_post_split_action(&$post, $context) {
+function harmony_core_post_split_action($post, $context) {
   // We can't re-assign the first post otherwise there wouldn't be
   // anything in the thread, instead recommend merging threads.
   // @todo code to allow re-assigning of first post.
@@ -850,121 +850,8 @@ function harmony_core_post_split_action(&$post, $context) {
     drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
   }
   else {
-    // Push title to posts, set the updated on the thread.
-    $thread = $context['thread'];
-    $thread_id = $context['thread_id'];
-    $thread_title = $context['thread_title'];
-
-    // Wrappers!
-    $wrapper = entity_metadata_wrapper('harmony_post', $post);
-    $thread_wrapper = entity_metadata_wrapper('harmony_thread', $thread);
-
-    // Grab the old thread.
-    $old_thread_id = $wrapper->field_harmony_thread->thread_id->value();
-    $old_thread = harmony_thread_load($old_thread_id);
-    $old_thread_wrapper = entity_metadata_wrapper('harmony_thread', $old_thread);
-
-    // Update post title.
-    $post->title = $thread_title;
-
-    // Update meta information.
-    if ($post->status == HARMONY_PUBLISHED && $post->hidden == HARMONY_NOT_HIDDEN) {
-      $update_first_post = FALSE;
-      $update_last_post = FALSE;
-
-      // Update timestamps if the post is published.
-      if (!isset($thread->override_created)) {
-        if ($post->created < $thread->created) {
-          $thread->created = $post->created;
-          $update_first_post = TRUE;
-        }
-        if ($post->updated > $thread->updated) {
-          $thread->updated = $post->updated;
-          $update_last_post = TRUE;
-        }
-      }
-
-      // Update thread & category post counts if published. Isn't this done in
-      // the controller? Nope as we bypass this by using harmony_thread_meta_save.
-      // We need to increase and decrease values between new and old.
-      // Don't use harmony_core_update_meta_count as we can do it faster here.
-      $thread_post_count = $thread_wrapper->field_harmony_post_count->value();
-      $thread_wrapper->field_harmony_post_count->set($thread_post_count + 1);
-
-      // Decrease the old threads' post count.
-      if ($old_thread->status == HARMONY_PUBLISHED) {
-        $old_thread_post_count = $old_thread_wrapper->field_harmony_post_count->value();
-        $old_thread_wrapper->field_harmony_post_count->set($old_thread_post_count - 1);
-      }
-
-      // Category now.
-      $category_field = variable_get('harmony_core_category_field', 'field_harmony_category');
-      if ($thread_wrapper->__isset($category_field) && $thread_wrapper->{$category_field}->value()) {
-        $new_category_tid = $thread_wrapper->{$category_field}->tid->value();
-
-        // Check to see if the post has in effect changed category, if so then
-        // we need to decrement the value there as well.
-
-        // If the old thread is published, has the category field and a value
-        // then decrement. Don't increment the new category if the it's the
-        // same as the old one and the new thread is published.
-        $increment_new_category_count = $thread->status == HARMONY_PUBLISHED;
-        if ($old_thread->status == HARMONY_PUBLISHED && $old_thread_wrapper->__isset($category_field) && $old_thread_wrapper->{$category_field}->value()) {
-          if ($old_thread_wrapper->{$category_field}->tid->value() != $new_category_tid) {
-            $old_category_post_count = $old_thread_wrapper->{$category_field}->field_harmony_post_count->value();
-            $old_thread_wrapper->{$category_field}->field_harmony_post_count->set($old_category_post_count - 1);
-            $old_thread_wrapper->{$category_field}->save();
-          }
-          // Category is the same, don't increment the new count.
-          elseif ($thread->status == HARMONY_NOT_PUBLISHED) {
-            $increment_new_category_count = FALSE;
-          }
-        }
-
-        // Update the new category count.
-        if ($increment_new_category_count) {
-          $category_post_count = $thread_wrapper->{$category_field}->field_harmony_post_count->value();
-          $thread_wrapper->{$category_field}->field_harmony_post_count->set($category_post_count + 1);
-          $thread_wrapper->{$category_field}->save();
-        }
-      }
-
-      // Likes too.
-      // Get the number of likes against this post, and update the old thread.
-      $post_likes = NULL;
-      $likes = flag_get_counts('harmony_post', $post->post_id);
-      if (!empty($likes['harmony_likes'])) {
-        $post_likes = $likes['harmony_likes'];
-
-        // Remove from the old thread.
-        $old_thread_likes = $old_thread_wrapper->likes->value();
-        $old_thread_wrapper->likes->set($old_thread_likes - $post_likes);
-
-        // Add to the new one!
-        $thread_likes = $thread_wrapper->likes->value();
-        $thread_wrapper->likes->set($thread_likes + $post_likes);
-      }
-
-      // Should the move post action do this stuff too?
-    }
-
-    // Change the thread entity ref.
-    $wrapper->field_harmony_thread->set($thread_id);
-
-    // Save the post early.
-    $post = harmony_post_meta_save($post);
-
-    // Update the threads.
-    $old_thread = harmony_thread_meta_save($old_thread);
-    $thread = harmony_thread_meta_save($thread);
-
-    // Rebuild the first and last thread properties.
-    harmony_thread_rebuild_first_last_posts($old_thread);
-    $thread_posts = harmony_thread_rebuild_first_last_posts($thread);
-
-    // At this point as views bulk operations will save the entity for us it'll
-    // override any changes made elsewhere unless we grab it here and re-apply.
-    $post->first_post = $thread_posts['first'] == $post->post_id ? 1 : 0;
-    $post->last_post = $thread_posts['last'] == $post->post_id ? 1 : 0;
+    // Re-assign the thread, $context will contain all of the required
+    // information.
+    harmony_core_post_reassign_action($post, $context);
   }
 }
