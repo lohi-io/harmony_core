@@ -612,6 +612,13 @@ function harmony_core_post_reassign_action(&$post, $context) {
     $wrapper->title->set($destination_thread_title);
 
     /**
+     * If clearing the "reply to" value is wanted, do it.
+     */
+    if (!empty($context['remove_post_reply_to'])) {
+      $wrapper->field_harmony_post_is_reply_to->set(NULL);
+    }
+
+    /**
      * Save the post.
      */
     harmony_post_meta_save($post);
@@ -755,6 +762,12 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
     '#default_value' => 0,
     '#description' => t("Tick to change the new threads created date to be now. This would be instead of taking the oldest post (first in the new thread) selecteds created date."),
   );
+  $form['options']['remove_post_reply_to'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove any "reply to" references on posts'),
+    '#default_value' => 0,
+    '#description' => t("If a post is a reply to another post and you wish these values to be unlinked check this box!"),
+  );
 
   // Add in help text and an author field for re-assigning.
   $form['guidance_text'] = array(
@@ -835,6 +848,7 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
     'thread_id' => $thread->thread_id,
     'thread_title' => $thread->title,
     'override_created' => $form_state['values']['override_created'],
+    'remove_post_reply_to' => $form_state['values']['remove_post_reply_to'],
   );
 }
 
