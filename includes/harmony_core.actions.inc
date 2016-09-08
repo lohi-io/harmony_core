@@ -507,7 +507,7 @@ function harmony_core_post_reassign_action(&$post, $context) {
    *
    * @todo review this assumption.
    */
-  if ($post->first_post) {
+  if (!isset($context['skip_first_last_actions']) && $post->first_post) {
     $error_vars = array(
       '@post_id' => $post->post_id,
       '@thread_merge_url' => url('admin/harmony/content/threads'),
@@ -633,7 +633,10 @@ function harmony_core_post_reassign_action(&$post, $context) {
     }
     if ($destination_thread_changed) {
       harmony_thread_meta_save($destination_thread);
-      harmony_thread_rebuild_first_last_posts($destination_thread);
+
+      if (!isset($context['skip_first_last_actions'])) {
+        harmony_thread_rebuild_first_last_posts($destination_thread);
+      }
     }
 
     /**
@@ -662,30 +665,63 @@ function harmony_core_post_split_action_form($settings, $vbo = array()) {
   $thread = harmony_core_thread_new_object();
   $thread->updated = 0;
 
-  // Attempt to grab the first selected post which will be the base of
-  // information for the new thread.
-  if (!empty($vbo['selection']) && is_array($vbo['selection'])) {
-    // Attempt to load the entity.
-    $post_id = reset($vbo['selection']);
-    $post = harmony_post_load($post_id);
+  /**
+   * Return an invalid form if a selection somehow hasn't been made.
+   */
+  if (empty($vbo['selection'])) {
+    $form['warning'] = array(
+      '#markup' => '<p>' . t("You've not selected any posts to split into a new thread.") . '</p>',
+    );
+  }
 
-    // @todo Check to see if this post is published, load the next if not.
-    if ($post && $post->status == HARMONY_NOT_PUBLISHED) {
-      foreach ($vbo['selection'] as $vbo_post_id) {
-        $post = harmony_post_load($vbo_post_id);
+  /**
+   * Grab the first selected post to base the new thread off of.
+   */
+  $post_id = reset($vbo['selection']);
+  $post = harmony_post_load($post_id);
 
-        if ($post->status == HARMONY_PUBLISHED) {
-          break;
-        }
+  /**
+   * Check to see if this post is published, load the next if not.
+   */
+  if ($post && $post->status == HARMONY_NOT_PUBLISHED) {
+    foreach ($vbo['selection'] as $vbo_post_id) {
+      $post = harmony_post_load($vbo_post_id);
+
+      if ($post->status == HARMONY_PUBLISHED) {
+        break;
       }
     }
+  }
 
-    if ($post) {
-      $wrapper = entity_metadata_wrapper('harmony_post', $post);
+  if ($post) {
+    $wrapper = entity_metadata_wrapper('harmony_post', $post);
 
-      $thread->title = $wrapper->field_harmony_thread->title->value();
-      $thread->type = $wrapper->field_harmony_thread->type->value();
+    $thread->title = $wrapper->field_harmony_thread->title->value();
+    $thread->type = $wrapper->field_harmony_thread->type->value();
+
+    $form['first_post'] = array(
+      '#type' => 'value',
+      '#value' => $post,
+    );
+  }
+
+  /**
+   * Find the last valid post in the selection.
+   */
+  $selected_posts_reversed = array_reverse($vbo['selection']);
+  foreach ($selected_posts_reversed as $selected_post_id) {
+    $last_post = $post && $post->post_id == $selected_post_id ? $post : harmony_post_load($selected_post_id);
+
+    if ($last_post->status == HARMONY_PUBLISHED) {
+      break;
     }
+  }
+  if ($last_post) {
+    $form['last_post'] = array(
+      '#type' => 'value',
+      '#value' => $last_post,
+    );
+    unset($last_post);
   }
 
   // Create form elements, straight copy from harmony_core_thread_form().
@@ -808,10 +844,23 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
   $is_new = $thread->is_new;
   $wrapper = entity_metadata_wrapper('harmony_thread', $thread);
 
-  // Setup date overrides if in play.
+  /**
+   * If overriding the date created to be now, do so!
+   */
   if ($form_state['values']['override_created']) {
     $thread->created = REQUEST_TIME;
     $thread->updated = REQUEST_TIME;
+  }
+  /**
+   * No? OK set to first and last posts' dates.
+   */
+  else {
+    if (!empty($form_state['values']['first_post'])) {
+      $thread->created = $form_state['values']['first_post']->created;
+    }
+    if (!empty($form_state['values']['last_post'])) {
+      $thread->updated = $form_state['values']['last_post']->created;
+    }
   }
 
   // Set the title from the form value.
@@ -839,8 +888,31 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
   // Field API will enforce it's default value (1) which we don't want.
   $wrapper->field_harmony_post_count->set(0);
 
+  /**
+   * Set the first post in the thread.
+   */
+  if (!empty($form_state['values']['first_post'])) {
+    $wrapper->field_harmony_first_post->set($form_state['values']['first_post']->post_id);
+  }
+
+  /**
+   * Set the last user to reply as the author of the last post selected.
+   */
+  if (!empty($form_state['values']['last_post'])) {
+    $wrapper->field_harmony_last_post->set($form_state['values']['last_post']->post_id);
+    $wrapper->field_harmony_last_user_to_reply->set($form_state['values']['last_post']->uid);
+  }
+
   // Do a full save of the thread.
   $thread = harmony_thread_save($thread);
+
+  /**
+   * Set the last post URI now that we've got a thread ID.
+   */
+  if (isset($thread->thread_id) && !empty($form_state['values']['last_post'])) {
+    $thread->last_post_uri = harmony_core_post_thread_url($thread->thread_id, $form_state['values']['last_post']->post_id, TRUE);
+    harmony_thread_meta_save($thread);
+  }
 
   // Pass on the thread details for use in the action.
   return array(
@@ -849,6 +921,9 @@ function harmony_core_post_split_action_submit($form, &$form_state) {
     'thread_title' => $thread->title,
     'override_created' => $form_state['values']['override_created'],
     'remove_post_reply_to' => $form_state['values']['remove_post_reply_to'],
+    'first_post' => $form_state['values']['first_post']->post_id,
+    'last_post' => $form_state['values']['last_post']->post_id,
+    'skip_first_last_actions' => TRUE,
   );
 }
 
@@ -864,8 +939,15 @@ function harmony_core_post_split_action($post, $context) {
     drupal_set_message(t('You cannot move the first post in a thread (Post ID: @post_id), if you wish to do this you can <a href="@thread_merge_url">merge the thread with another</a>.', $error_vars), 'error');
   }
   else {
-    // Re-assign the thread, $context will contain all of the required
-    // information.
+    /**
+     * Take the chance to set first & last.
+     */
+    $post->first_post = $post->post_id == $context['first_post'];
+    $post->last_post = $post->post_id == $context['last_post'];
+
+    /**
+     * Re-assign the post to the new thread.
+     */
     harmony_core_post_reassign_action($post, $context);
   }
 }
